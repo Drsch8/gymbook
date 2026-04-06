@@ -36,6 +36,7 @@ const DEFAULT_PREFS: UserPreferences = {
   weightUnit: 'kg',
   restTimerDefault: 90,
   darkMode: true,
+  planSessionIndex: 0,
 }
 
 export async function getPreferences(): Promise<UserPreferences> {
@@ -46,6 +47,16 @@ export async function getPreferences(): Promise<UserPreferences> {
 export async function savePreferences(prefs: Partial<UserPreferences>): Promise<void> {
   const current = await getPreferences()
   await db.preferences.put({ ...current, ...prefs, id: 1 })
+}
+
+export async function advancePlanSession(): Promise<void> {
+  const current = await getPreferences()
+  await db.preferences.put({ ...current, planSessionIndex: current.planSessionIndex + 1, id: 1 })
+}
+
+export async function resetPlan(): Promise<void> {
+  const current = await getPreferences()
+  await db.preferences.put({ ...current, planSessionIndex: 0, id: 1 })
 }
 
 // ── Sessions ───────────────────────────────────────────────────────────────

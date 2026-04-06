@@ -83,6 +83,12 @@ export const EXERCISES: Exercise[] = [
   { id: 'hiit',                 name: 'HIIT',                   category: 'cardio',      trackingType: 'time',        muscleGroups: ['full_body'] },
   { id: 'battle_ropes',         name: 'Battle Ropes',           category: 'cardio',      trackingType: 'time',        muscleGroups: ['full_body'] },
   { id: 'burpee',               name: 'Burpee',                 category: 'bodyweight',  trackingType: 'reps_only',   muscleGroups: ['full_body'] },
+  { id: 'mountain_climber',    name: 'Mountain Climber',       category: 'bodyweight',  trackingType: 'reps_only',   muscleGroups: ['abs', 'full_body'] },
+  { id: 'jump_squat',          name: 'Jump Squat',             category: 'bodyweight',  trackingType: 'reps_only',   muscleGroups: ['quads', 'glutes'] },
+  { id: 'glute_bridge',        name: 'Glute Bridge',           category: 'bodyweight',  trackingType: 'reps_only',   muscleGroups: ['glutes', 'hamstrings'] },
+  { id: 'bodyweight_row',      name: 'Bodyweight Row',         category: 'bodyweight',  trackingType: 'reps_only',   muscleGroups: ['back', 'biceps'] },
+  { id: 'pike_push_up',        name: 'Pike Push-up',           category: 'bodyweight',  trackingType: 'reps_only',   muscleGroups: ['shoulders', 'triceps'] },
+  { id: 'diamond_push_up',     name: 'Diamond Push-up',        category: 'bodyweight',  trackingType: 'reps_only',   muscleGroups: ['triceps', 'chest'] },
 
   // ── Olympic / Full Body ────────────────────────────────────────────────────
   { id: 'clean_and_jerk',       name: 'Clean & Jerk',           category: 'strength',    trackingType: 'reps_weight', muscleGroups: ['full_body'] },

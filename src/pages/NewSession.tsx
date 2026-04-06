@@ -3,7 +3,7 @@ import { useLocation, useNavigate } from 'react-router-dom'
 import { ExerciseSearch } from '../components/ExerciseSearch'
 import { ExerciseCard } from '../components/ExerciseCard'
 import { RestTimer } from '../components/RestTimer'
-import { getLastSessionForExercise, getPreferences, saveSession } from '../db'
+import { getLastSessionForExercise, getPreferences, getSessions, saveSession, advancePlanSession } from '../db'
 import { nanoid } from '../utils/nanoid'
 import { getPreset } from '../data/presets'
 import type { Exercise, ExerciseSet, SessionExercise, WeightUnit } from '../types'
@@ -24,9 +24,11 @@ function newSessionExercise(exercise: Exercise): SessionExercise {
 export function NewSession() {
   const navigate = useNavigate()
   const location = useLocation()
-  const repeated = (location.state as { repeat?: SessionExercise[] } | null)?.repeat ?? []
+  const state = location.state as { repeat?: SessionExercise[]; name?: string; planSessionIndex?: number } | null
+  const repeated = state?.repeat ?? []
+  const planSessionIndex = state?.planSessionIndex
   const [exercises, setExercises] = useState<SessionExercise[]>(repeated)
-  const [sessionName, setSessionName] = useState((location.state as { name?: string } | null)?.name ?? '')
+  const [sessionName, setSessionName] = useState(state?.name ?? '')
   const [previousSets, setPreviousSets] = useState<Record<string, ExerciseSet[]>>({})
   const [weightUnit, setWeightUnit] = useState<WeightUnit>('kg')
   const [restSeconds, setRestSeconds] = useState(90)
@@ -34,11 +36,24 @@ export function NewSession() {
   const [lastCompleted, setLastCompleted] = useState(0)
   const [expandedId, setExpandedId] = useState<string | null>(repeated[0]?.id ?? null)
   const [variantOptions, setVariantOptions] = useState<PresetVariant[] | null>(null)
+  const [chipCounts, setChipCounts] = useState<Record<string, number>>({})
   const startedAt = useRef(new Date().toISOString())
   const bottomRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     getPreferences().then(p => { setWeightUnit(p.weightUnit); setRestSeconds(p.restTimerDefault) })
+  }, [])
+
+  useEffect(() => {
+    getSessions(500).then(sessions => {
+      const counts: Record<string, number> = {}
+      for (const s of sessions) {
+        if (s.name && TITLE_CHIPS.includes(s.name)) {
+          counts[s.name] = (counts[s.name] ?? 0) + 1
+        }
+      }
+      setChipCounts(counts)
+    })
   }, [])
 
   const addExercise = async (exercise: Exercise) => {
@@ -75,6 +90,9 @@ export function NewSession() {
       finishedAt: new Date().toISOString(),
       exercises,
     })
+    if (planSessionIndex !== undefined) {
+      await advancePlanSession()
+    }
     navigate('/', { replace: true })
   }
 
@@ -117,11 +135,13 @@ export function NewSession() {
                   if (isActive) {
                     setSessionName('')
                     setVariantOptions(null)
+                    if (exercises.length === 0) setShowSearch(true)
                   } else {
                     setSessionName(chip)
                     if (exercises.length === 0) {
                       const preset = getPreset(chip)
                       setVariantOptions(preset?.variants ?? null)
+                      setShowSearch(false)
                     } else {
                       setVariantOptions(null)
                     }
@@ -133,14 +153,14 @@ export function NewSession() {
                     : 'bg-stone-100 text-stone-600 hover:bg-stone-200'
                 }`}
               >
-                {chip}
+                {chip}{chipCounts[chip] ? ` (${chipCounts[chip]})` : ''}
               </button>
             ))}
           </div>
         </div>
 
         {variantOptions && (
-          <div className="bg-white border border-stone-200 rounded-2xl overflow-hidden">
+          <div key={sessionName} className="bg-white border border-stone-200 rounded-2xl overflow-hidden">
             <p className="px-4 pt-3 pb-2 text-xs font-semibold text-stone-400 uppercase tracking-wider">Choose a session</p>
             <div className="divide-y divide-stone-100">
               {variantOptions.map(variant => (
