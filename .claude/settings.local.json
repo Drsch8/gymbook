@@ -1,0 +1,17 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm install:*)",
+      "Bash(npm run:*)",
+      "Bash(identify /Users/david/GitHub/gymbook/public/icon.png)",
+      "Bash(sips -g pixelWidth -g pixelHeight /Users/david/GitHub/gymbook/public/icon.png)",
+      "Bash(sips -z 180 180 /Users/david/GitHub/gymbook/public/icon.png --out /Users/david/GitHub/gymbook/public/apple-touch-icon.png)",
+      "Bash(sips -z 32 32 /Users/david/GitHub/gymbook/public/icon.png --out /Users/david/GitHub/gymbook/public/favicon-32.png)",
+      "Bash(sips -z 192 192 /Users/david/GitHub/gymbook/public/icon.png --out /Users/david/GitHub/gymbook/public/icons/icon-192.png)",
+      "Bash(sips -z 512 512 /Users/david/GitHub/gymbook/public/icon.png --out /Users/david/GitHub/gymbook/public/icons/icon-512.png)",
+      "Bash(sips -z 16 16 /Users/david/GitHub/gymbook/public/icon.png --out /Users/david/GitHub/gymbook/public/favicon-16.png)",
+      "Bash(python3 -c ':*)",
+      "Bash(python3:*)"
+    ]
+  }
+}

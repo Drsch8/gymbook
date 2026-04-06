@@ -1,11 +1,12 @@
 import Dexie, { type Table } from 'dexie'
-import type { Session, Template, BodyweightEntry, UserPreferences } from '../types'
+import type { Session, Template, BodyweightEntry, UserPreferences, PlannedWorkout } from '../types'
 
 export class GymBookDB extends Dexie {
   sessions!: Table<Session>
   templates!: Table<Template>
   bodyweight!: Table<BodyweightEntry>
   preferences!: Table<UserPreferences & { id: number }>
+  planned!: Table<PlannedWorkout>
 
   constructor() {
     super('gymbook')
@@ -15,6 +16,14 @@ export class GymBookDB extends Dexie {
       templates:   '&id, name, createdAt',
       bodyweight:  '&id, date',
       preferences: '&id',
+    })
+
+    this.version(2).stores({
+      sessions:    '&id, date, startedAt',
+      templates:   '&id, name, createdAt',
+      bodyweight:  '&id, date',
+      preferences: '&id',
+      planned:     '&id, date',
     })
   }
 }
@@ -61,6 +70,20 @@ export async function deleteSession(id: string): Promise<void> {
 export async function getLastSessionForExercise(exerciseId: string): Promise<Session | undefined> {
   const all = await db.sessions.orderBy('startedAt').reverse().toArray()
   return all.find(s => s.exercises.some(e => e.exerciseId === exerciseId))
+}
+
+// ── Planned workouts ───────────────────────────────────────────────────────
+
+export async function getPlannedWorkouts(): Promise<PlannedWorkout[]> {
+  return db.planned.orderBy('date').toArray()
+}
+
+export async function savePlannedWorkout(plan: PlannedWorkout): Promise<void> {
+  await db.planned.put(plan)
+}
+
+export async function deletePlannedWorkout(id: string): Promise<void> {
+  await db.planned.delete(id)
 }
 
 // ── Templates ──────────────────────────────────────────────────────────────

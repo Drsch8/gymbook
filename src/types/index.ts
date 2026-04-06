@@ -66,6 +66,12 @@ export interface BodyweightEntry {
   weight: number // always stored in kg
 }
 
+export interface PlannedWorkout {
+  id: string
+  date: string   // YYYY-MM-DD
+  title?: string // e.g. "Legs", "Upper"
+}
+
 export type WeightUnit = 'kg' | 'lbs'
 
 export interface UserPreferences {

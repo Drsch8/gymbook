@@ -17,7 +17,7 @@ function fmt(n: number | undefined, unit = '') {
 }
 
 function NumCell({
-  value, onChange, placeholder, step = 1, inputMode = 'numeric', disabled, unit,
+  value, onChange, placeholder, step = 1, inputMode = 'numeric', disabled,
 }: {
   value: number | undefined
   onChange: (v: number | undefined) => void
@@ -25,14 +25,12 @@ function NumCell({
   step?: number
   inputMode?: 'numeric' | 'decimal'
   disabled: boolean
-  unit?: string
 }) {
   const inputRef = useRef<HTMLInputElement>(null)
   const dragStart = useRef<number | null>(null)
   const dragBase = useRef<number>(0)
   const lastStep = useRef<number>(0)
   const [dragging, setDragging] = useState(false)
-  const [delta, setDelta] = useState(0) // steps from base during drag
 
   const clamp = (v: number) => Math.max(0, +(v).toFixed(2))
 
@@ -41,7 +39,6 @@ function NumCell({
     dragStart.current = e.touches[0].clientY
     dragBase.current = value ?? 0
     lastStep.current = 0
-    setDelta(0)
     setDragging(true)
   }
 
@@ -52,7 +49,6 @@ function NumCell({
     const steps = Math.round(dy / 7)
     if (steps !== lastStep.current) {
       lastStep.current = steps
-      setDelta(steps)
       onChange(clamp(dragBase.current + steps * step))
       if ('vibrate' in navigator) navigator.vibrate(4)
     }
@@ -61,12 +57,7 @@ function NumCell({
   const handleTouchEnd = () => {
     dragStart.current = null
     setDragging(false)
-    setDelta(0)
   }
-
-  const displayDelta = delta !== 0
-    ? `${delta > 0 ? '+' : ''}${+(delta * step).toFixed(2)}${unit ? ` ${unit}` : ''}`
-    : null
 
   return (
     <div
@@ -76,36 +67,6 @@ function NumCell({
       onTouchEnd={handleTouchEnd}
       onClick={() => !disabled && !dragging && inputRef.current?.focus()}
     >
-      {/* Floating delta pill — visible while dragging */}
-      {dragging && (
-        <div className={[
-          'absolute -top-8 left-1/2 -translate-x-1/2 z-10',
-          'px-2 py-0.5 rounded-full text-xs font-mono font-semibold whitespace-nowrap',
-          'pointer-events-none select-none',
-          delta > 0
-            ? 'bg-stone-900 text-white'
-            : delta < 0
-              ? 'bg-red-500 text-white'
-              : 'bg-stone-200 text-stone-600',
-        ].join(' ')}>
-          {delta > 0 && <span className="mr-0.5">↑</span>}
-          {delta < 0 && <span className="mr-0.5">↓</span>}
-          {displayDelta ?? '·'}
-        </div>
-      )}
-
-      {/* Drag hint arrows — shown when not dragging and not disabled */}
-      {!disabled && !dragging && (
-        <div className="absolute inset-y-0 right-1.5 flex flex-col items-center justify-center gap-0 opacity-0 group-hover:opacity-100 pointer-events-none">
-          <svg className="w-2.5 h-2.5 text-stone-300" fill="none" viewBox="0 0 10 6" stroke="currentColor" strokeWidth={1.5}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M1 5l4-4 4 4" />
-          </svg>
-          <svg className="w-2.5 h-2.5 text-stone-300" fill="none" viewBox="0 0 10 6" stroke="currentColor" strokeWidth={1.5}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M1 1l4 4 4-4" />
-          </svg>
-        </div>
-      )}
-
       <input
         ref={inputRef}
         type="number"
@@ -116,7 +77,6 @@ function NumCell({
         value={value ?? ''}
         placeholder={placeholder}
         onChange={e => onChange(e.target.value === '' ? undefined : +e.target.value)}
-        // font-size: 16px prevents iOS Safari from zooming on focus
         style={{ fontSize: '16px' }}
         className={[
           'w-full text-center rounded-lg py-2 font-mono transition-colors',
@@ -161,27 +121,25 @@ export function SetRow({ set, index, trackingType, weightUnit, onChange, onRemov
       {trackingType === 'reps_weight' && (
         <>
           <NumCell value={set.reps} onChange={v => onChange({ ...set, reps: v })}
-            placeholder="—" step={1} inputMode="numeric" disabled={locked} unit="reps" />
+            placeholder="—" step={1} inputMode="numeric" disabled={locked} />
           <NumCell value={displayWeight(set.weight)} onChange={v => onChange({ ...set, weight: storeWeight(v) })}
-            placeholder="—" step={weightUnit === 'lbs' ? 2.5 : 1.25} inputMode="decimal" disabled={locked} unit={weightUnit} />
+            placeholder="—" step={weightUnit === 'lbs' ? 2.5 : 1.25} inputMode="decimal" disabled={locked} />
         </>
       )}
       {trackingType === 'reps_only' && (
         <NumCell value={set.reps} onChange={v => onChange({ ...set, reps: v })}
-          placeholder="—" step={1} inputMode="numeric" disabled={locked} unit="reps" />
+          placeholder="—" step={1} inputMode="numeric" disabled={locked} />
       )}
       {trackingType === 'time' && (
         <NumCell value={set.duration} onChange={v => onChange({ ...set, duration: v })}
-          placeholder="—" step={5} inputMode="numeric" disabled={locked} unit="s" />
+          placeholder="—" step={5} inputMode="numeric" disabled={locked} />
       )}
 
       <button
         onClick={onComplete}
         className={[
           'shrink-0 w-8 h-8 rounded-xl flex items-center justify-center transition-colors text-sm font-semibold',
-          locked
-            ? 'bg-stone-900 text-white'
-            : 'bg-stone-100 text-stone-400 hover:bg-stone-200 border border-stone-200',
+          locked ? 'bg-stone-900 text-white' : 'bg-stone-100 text-stone-400 hover:bg-stone-200 border border-stone-200',
         ].join(' ')}
         aria-label={locked ? 'Mark incomplete' : 'Mark complete'}
       >

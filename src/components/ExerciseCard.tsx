@@ -1,4 +1,3 @@
-import { useState } from 'react'
 import { nanoid } from '../utils/nanoid'
 import type { ExerciseSet, SessionExercise, WeightUnit } from '../types'
 import { SetRow } from './SetRow'
@@ -7,6 +6,8 @@ interface Props {
   item: SessionExercise
   weightUnit: WeightUnit
   previousSets?: ExerciseSet[]
+  collapsed: boolean
+  onToggle: () => void
   onChange: (updated: SessionExercise) => void
   onRemove: () => void
   onSetCompleted: () => void
@@ -16,9 +17,7 @@ function newSet(): ExerciseSet {
   return { id: nanoid(), completed: false }
 }
 
-export function ExerciseCard({ item, weightUnit, previousSets, onChange, onRemove, onSetCompleted }: Props) {
-  const [collapsed, setCollapsed] = useState(false)
-
+export function ExerciseCard({ item, weightUnit, previousSets, collapsed, onToggle, onChange, onRemove, onSetCompleted }: Props) {
   const updateSet = (index: number, updated: ExerciseSet) =>
     onChange({ ...item, sets: item.sets.map((s, i) => (i === index ? updated : s)) })
 
@@ -40,27 +39,45 @@ export function ExerciseCard({ item, weightUnit, previousSets, onChange, onRemov
   }
 
   const completedCount = item.sets.filter(s => s.completed).length
+  const allDone = completedCount === item.sets.length && item.sets.length > 0
 
   return (
-    <div className="bg-white border border-stone-200 rounded-2xl overflow-hidden">
-      <div className="flex items-center justify-between px-4 py-3 border-b border-stone-100">
-        <button className="flex items-center gap-2 flex-1 text-left" onClick={() => setCollapsed(c => !c)}>
-          <span className="font-semibold text-stone-900">{item.exerciseName}</span>
-          <span className="text-xs text-stone-400 ml-1">{completedCount}/{item.sets.length}</span>
-          <svg className={`w-4 h-4 text-stone-300 ml-auto transition-transform ${collapsed ? '-rotate-90' : ''}`}
+    <div className={`bg-white border rounded-2xl overflow-hidden transition-colors ${allDone ? 'border-stone-200' : 'border-stone-200'}`}>
+      <button
+        className="w-full flex items-center justify-between px-4 py-3 border-b border-stone-100 text-left"
+        onClick={onToggle}
+      >
+        <div className="flex items-center gap-2 min-w-0">
+          {allDone && (
+            <span className="shrink-0 w-4 h-4 rounded-full bg-stone-900 flex items-center justify-center">
+              <svg className="w-2.5 h-2.5 text-white" fill="none" viewBox="0 0 10 8" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M1 4l3 3 5-6" />
+              </svg>
+            </span>
+          )}
+          <span className={`font-semibold truncate ${allDone ? 'text-stone-400' : 'text-stone-900'}`}>
+            {item.exerciseName}
+          </span>
+          <span className="text-xs text-stone-400 shrink-0">{completedCount}/{item.sets.length}</span>
+        </div>
+        <div className="flex items-center gap-3 shrink-0 ml-2">
+          <button
+            onClick={e => { e.stopPropagation(); onRemove() }}
+            className="text-stone-300 hover:text-red-500 transition-colors text-xs"
+          >
+            Remove
+          </button>
+          <svg className={`w-4 h-4 text-stone-300 transition-transform ${collapsed ? '-rotate-90' : ''}`}
             fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
           </svg>
-        </button>
-        <button onClick={onRemove} className="ml-3 shrink-0 text-stone-300 hover:text-red-500 transition-colors text-xs">
-          Remove
-        </button>
-      </div>
+        </div>
+      </button>
 
       {!collapsed && (
         <div className="px-4 pb-4 pt-2 space-y-1">
           <div className="flex items-center gap-2 pb-1 text-xs text-stone-400 px-1">
-            <span className="w-6 text-center shrink-0">#</span>
+            <span className="w-5 text-center shrink-0">#</span>
             <span className="w-14 text-center shrink-0 hidden sm:block">Prev</span>
             {item.trackingType === 'reps_weight' && (
               <><span className="flex-1 text-center">Reps</span><span className="flex-1 text-center">{weightUnit}</span></>
