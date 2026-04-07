@@ -13,6 +13,30 @@ interface Props {
   onSetCompleted: () => void
 }
 
+// Machine alternatives for fog (bodyweight) exercises
+const MACHINE_ALTS: [RegExp, string][] = [
+  [/liegestütz/i, 'Brust-Press-Maschine / Bankdrücken'],
+  [/military press|überkopfpresse/i, 'Schulterdrücken-Maschine'],
+  [/trizepsdip|trizepsstrecker/i, 'Trizeps-Pushdown'],
+  [/türklimmzug/i, 'Latzug-Maschine'],
+  [/türziehen/i, 'Rudermaschine / Kabelzug'],
+  [/klimmzug/i, 'Latzug-Maschine'],
+  [/curl mit handtuch/i, 'Bizeps-Curl / Kabelzug'],
+  [/umgekehrtes bankdrücken/i, 'Kabelrudern / Rudermaschine'],
+  [/kniebeuge|ausfallschritt/i, 'Beinpresse'],
+  [/rumänisches kreuzheben/i, 'Beinbeuger-Maschine'],
+  [/beinheber/i, 'Beinhebestation'],
+  [/schwimmer|rückenheber/i, 'Rückenstrecker-Maschine'],
+]
+
+function getMachineAlt(exerciseId: string, exerciseName: string): string | null {
+  if (!exerciseId.startsWith('fog_')) return null
+  for (const [pattern, machine] of MACHINE_ALTS) {
+    if (pattern.test(exerciseName)) return machine
+  }
+  return null
+}
+
 function newSet(): ExerciseSet {
   return { id: nanoid(), completed: false }
 }
@@ -40,34 +64,42 @@ export function ExerciseCard({ item, weightUnit, previousSets, collapsed, onTogg
 
   const completedCount = item.sets.filter(s => s.completed).length
   const allDone = completedCount === item.sets.length && item.sets.length > 0
+  const machineAlt = getMachineAlt(item.exerciseId, item.exerciseName)
 
   return (
-    <div className={`bg-white border rounded-2xl overflow-hidden transition-colors ${allDone ? 'border-stone-200' : 'border-stone-200'}`}>
+    <div className="bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-2xl overflow-hidden transition-colors">
       <button
-        className="w-full flex items-center justify-between px-4 py-3 border-b border-stone-100 text-left"
+        className="w-full flex items-center justify-between px-4 py-3 border-b border-stone-100 dark:border-stone-700 text-left"
         onClick={onToggle}
       >
         <div className="flex items-center gap-2 min-w-0">
           {allDone && (
-            <span className="shrink-0 w-4 h-4 rounded-full bg-stone-900 flex items-center justify-center">
-              <svg className="w-2.5 h-2.5 text-white" fill="none" viewBox="0 0 10 8" stroke="currentColor" strokeWidth={2}>
+            <span className="shrink-0 w-4 h-4 rounded-full bg-stone-900 dark:bg-stone-300 flex items-center justify-center">
+              <svg className="w-2.5 h-2.5 text-white dark:text-stone-900" fill="none" viewBox="0 0 10 8" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M1 4l3 3 5-6" />
               </svg>
             </span>
           )}
-          <span className={`font-semibold truncate ${allDone ? 'text-stone-400' : 'text-stone-900'}`}>
-            {item.exerciseName}
-          </span>
-          <span className="text-xs text-stone-400 shrink-0">{completedCount}/{item.sets.length}</span>
+          <div className="min-w-0">
+            <span className={`font-semibold truncate block ${allDone ? 'text-stone-400 dark:text-stone-500' : 'text-stone-900 dark:text-stone-100'}`}>
+              {item.exerciseName}
+            </span>
+            {machineAlt && (
+              <span className="text-[10px] text-stone-400 dark:text-stone-500 block leading-tight mt-0.5">
+                {machineAlt}
+              </span>
+            )}
+          </div>
         </div>
         <div className="flex items-center gap-3 shrink-0 ml-2">
+          <span className="text-xs text-stone-400 dark:text-stone-500 shrink-0">{completedCount}/{item.sets.length}</span>
           <button
             onClick={e => { e.stopPropagation(); onRemove() }}
-            className="text-stone-300 hover:text-red-500 transition-colors text-xs"
+            className="text-stone-300 dark:text-stone-600 hover:text-red-500 transition-colors text-xs"
           >
             Remove
           </button>
-          <svg className={`w-4 h-4 text-stone-300 transition-transform ${collapsed ? '-rotate-90' : ''}`}
+          <svg className={`w-4 h-4 text-stone-300 dark:text-stone-600 transition-transform ${collapsed ? '-rotate-90' : ''}`}
             fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
           </svg>
@@ -76,7 +108,7 @@ export function ExerciseCard({ item, weightUnit, previousSets, collapsed, onTogg
 
       {!collapsed && (
         <div className="px-4 pb-4 pt-2 space-y-1">
-          <div className="flex items-center gap-2 pb-1 text-xs text-stone-400 px-1">
+          <div className="flex items-center gap-2 pb-1 text-xs text-stone-400 dark:text-stone-500 px-1">
             <span className="w-5 text-center shrink-0">#</span>
             <span className="w-14 text-center shrink-0 hidden sm:block">Prev</span>
             {item.trackingType === 'reps_weight' && (
@@ -101,7 +133,7 @@ export function ExerciseCard({ item, weightUnit, previousSets, collapsed, onTogg
           ))}
 
           <button onClick={addSet}
-            className="mt-2 w-full py-2 rounded-xl border border-dashed border-stone-200 text-stone-400 text-sm hover:border-stone-400 hover:text-stone-600 transition-colors">
+            className="mt-2 w-full py-2 rounded-xl border border-dashed border-stone-200 dark:border-stone-600 text-stone-400 dark:text-stone-500 text-sm hover:border-stone-400 dark:hover:border-stone-400 hover:text-stone-600 dark:hover:text-stone-300 transition-colors">
             + Add set
           </button>
         </div>

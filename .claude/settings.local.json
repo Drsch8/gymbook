@@ -11,7 +11,9 @@
       "Bash(sips -z 512 512 /Users/david/GitHub/gymbook/public/icon.png --out /Users/david/GitHub/gymbook/public/icons/icon-512.png)",
       "Bash(sips -z 16 16 /Users/david/GitHub/gymbook/public/icon.png --out /Users/david/GitHub/gymbook/public/favicon-16.png)",
       "Bash(python3 -c ':*)",
-      "Bash(python3:*)"
+      "Bash(python3:*)",
+      "Bash(npx tsc:*)",
+      "Bash(node:*)"
     ]
   }
 }

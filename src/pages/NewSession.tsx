@@ -3,7 +3,7 @@ import { useLocation, useNavigate } from 'react-router-dom'
 import { ExerciseSearch } from '../components/ExerciseSearch'
 import { ExerciseCard } from '../components/ExerciseCard'
 import { RestTimer } from '../components/RestTimer'
-import { getLastSessionForExercise, getPreferences, getSessions, saveSession, advancePlanSession } from '../db'
+import { getLastSessionForExercise, getPreferences, getSessions, saveSession, advancePlanSession, advanceFogProgram } from '../db'
 import { nanoid } from '../utils/nanoid'
 import { getPreset } from '../data/presets'
 import type { Exercise, ExerciseSet, SessionExercise, WeightUnit } from '../types'
@@ -24,9 +24,10 @@ function newSessionExercise(exercise: Exercise): SessionExercise {
 export function NewSession() {
   const navigate = useNavigate()
   const location = useLocation()
-  const state = location.state as { repeat?: SessionExercise[]; name?: string; planSessionIndex?: number } | null
+  const state = location.state as { repeat?: SessionExercise[]; name?: string; planSessionIndex?: number; fogProgramId?: string } | null
   const repeated = state?.repeat ?? []
   const planSessionIndex = state?.planSessionIndex
+  const fogProgramId = state?.fogProgramId
   const [exercises, setExercises] = useState<SessionExercise[]>(repeated)
   const [sessionName, setSessionName] = useState(state?.name ?? '')
   const [previousSets, setPreviousSets] = useState<Record<string, ExerciseSet[]>>({})
@@ -93,6 +94,9 @@ export function NewSession() {
     if (planSessionIndex !== undefined) {
       await advancePlanSession()
     }
+    if (fogProgramId) {
+      await advanceFogProgram(fogProgramId)
+    }
     navigate('/', { replace: true })
   }
 
@@ -100,16 +104,16 @@ export function NewSession() {
   const totalSets = exercises.reduce((n, e) => n + e.sets.length, 0)
 
   return (
-    <div className="flex flex-col min-h-screen bg-stone-50">
-      <header className="sticky top-0 z-40 bg-white/80 backdrop-blur border-b border-stone-200 px-4 py-3 flex items-center justify-between">
-        <button onClick={() => navigate(-1)} className="text-stone-400 hover:text-stone-700 transition-colors text-sm">
+    <div className="flex flex-col min-h-screen bg-stone-50 dark:bg-stone-900">
+      <header className="sticky top-0 z-40 bg-white/80 dark:bg-stone-900/80 backdrop-blur border-b border-stone-200 dark:border-stone-700 px-4 py-3 flex items-center justify-between">
+        <button onClick={() => navigate(-1)} className="text-stone-400 hover:text-stone-700 dark:hover:text-stone-200 transition-colors text-sm">
           ← Back
         </button>
-        <span className="text-sm text-stone-400 font-mono">{totalCompleted}/{totalSets} sets</span>
+        <span className="text-sm text-stone-400 dark:text-stone-500 font-mono">{totalCompleted}/{totalSets} sets</span>
         <button
           onClick={finish}
           disabled={exercises.length === 0}
-          className="px-4 py-1.5 rounded-xl bg-stone-900 hover:bg-stone-800 disabled:opacity-30 disabled:cursor-not-allowed text-white text-sm font-semibold transition-colors"
+          className="px-4 py-1.5 rounded-xl bg-stone-900 dark:bg-stone-100 hover:bg-stone-800 dark:hover:bg-white disabled:opacity-30 disabled:cursor-not-allowed text-white dark:text-stone-900 text-sm font-semibold transition-colors"
         >
           Finish
         </button>
@@ -117,14 +121,14 @@ export function NewSession() {
 
       <div className="flex-1 px-4 py-5 space-y-3 max-w-lg mx-auto w-full">
         {/* Session title */}
-        <div className="bg-white border border-stone-200 rounded-2xl px-4 py-3 space-y-2.5">
+        <div className="bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-2xl px-4 py-3 space-y-2.5">
           <input
             type="text"
             value={sessionName}
             onChange={e => setSessionName(e.target.value)}
             placeholder="Session title (optional)"
             style={{ fontSize: '16px' }}
-            className="w-full bg-transparent text-stone-900 placeholder-stone-400 font-semibold focus:outline-none"
+            className="w-full bg-transparent text-stone-900 dark:text-stone-100 placeholder-stone-400 dark:placeholder-stone-500 font-semibold focus:outline-none"
           />
           <div className="flex flex-wrap gap-1.5">
             {TITLE_CHIPS.map(chip => (
@@ -149,8 +153,8 @@ export function NewSession() {
                 }}
                 className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${
                   sessionName === chip
-                    ? 'bg-stone-900 text-white'
-                    : 'bg-stone-100 text-stone-600 hover:bg-stone-200'
+                    ? 'bg-stone-900 dark:bg-stone-100 text-white dark:text-stone-900'
+                    : 'bg-stone-100 dark:bg-stone-700 text-stone-600 dark:text-stone-300 hover:bg-stone-200 dark:hover:bg-stone-600'
                 }`}
               >
                 {chip}{chipCounts[chip] ? ` (${chipCounts[chip]})` : ''}

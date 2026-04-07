@@ -7,6 +7,7 @@ const DEFAULT: UserPreferences = {
   restTimerDefault: 90,
   darkMode: true,
   planSessionIndex: 0,
+  programProgress: {},
 }
 
 export function usePreferences() {

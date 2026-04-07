@@ -79,4 +79,5 @@ export interface UserPreferences {
   restTimerDefault: number // seconds
   darkMode: boolean
   planSessionIndex: number // which session in the training plan is next (0-based)
+  programProgress: Record<string, number> // fogProgramId -> next session index
 }

@@ -37,6 +37,7 @@ const DEFAULT_PREFS: UserPreferences = {
   restTimerDefault: 90,
   darkMode: true,
   planSessionIndex: 0,
+  programProgress: {},
 }
 
 export async function getPreferences(): Promise<UserPreferences> {
@@ -57,6 +58,20 @@ export async function advancePlanSession(): Promise<void> {
 export async function resetPlan(): Promise<void> {
   const current = await getPreferences()
   await db.preferences.put({ ...current, planSessionIndex: 0, id: 1 })
+}
+
+export async function advanceFogProgram(programId: string): Promise<void> {
+  const current = await getPreferences()
+  const progress = { ...(current.programProgress ?? {}) }
+  progress[programId] = (progress[programId] ?? 0) + 1
+  await db.preferences.put({ ...current, programProgress: progress, id: 1 })
+}
+
+export async function resetFogProgram(programId: string): Promise<void> {
+  const current = await getPreferences()
+  const progress = { ...(current.programProgress ?? {}) }
+  progress[programId] = 0
+  await db.preferences.put({ ...current, programProgress: progress, id: 1 })
 }
 
 // ── Sessions ───────────────────────────────────────────────────────────────
