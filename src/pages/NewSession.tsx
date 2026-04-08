@@ -6,6 +6,8 @@ import { RestTimer } from '../components/RestTimer'
 import { getLastSessionForExercise, getPreferences, getSessions, saveSession, advancePlanSession, advanceFogProgram } from '../db'
 import { nanoid } from '../utils/nanoid'
 import { getPreset } from '../data/presets'
+import { TRAINING_METHODS } from '../data/fogPrograms'
+import { ZirkelTimer } from '../components/MethodTimer'
 import type { Exercise, ExerciseSet, SessionExercise, WeightUnit } from '../types'
 import type { PresetVariant } from '../data/presets'
 
@@ -24,12 +26,17 @@ function newSessionExercise(exercise: Exercise): SessionExercise {
 export function NewSession() {
   const navigate = useNavigate()
   const location = useLocation()
-  const state = location.state as { repeat?: SessionExercise[]; name?: string; planSessionIndex?: number; fogProgramId?: string } | null
+  const state = location.state as { repeat?: SessionExercise[]; name?: string; tags?: string[]; method?: string; planSessionIndex?: number; fogProgramId?: string } | null
   const repeated = state?.repeat ?? []
   const planSessionIndex = state?.planSessionIndex
   const fogProgramId = state?.fogProgramId
+  const isClassSession = !!(fogProgramId || planSessionIndex !== undefined)
+  const trainingMethod = state?.method
+    ? TRAINING_METHODS.find(m => m.shortName === state.method || m.name === state.method) ?? null
+    : null
   const [exercises, setExercises] = useState<SessionExercise[]>(repeated)
-  const [sessionName, setSessionName] = useState(state?.name ?? '')
+  const [sessionName, setSessionName] = useState(isClassSession ? (state?.name ?? '') : '')
+  const [sessionTags, setSessionTags] = useState<string[]>(state?.tags ?? [])
   const [previousSets, setPreviousSets] = useState<Record<string, ExerciseSet[]>>({})
   const [weightUnit, setWeightUnit] = useState<WeightUnit>('kg')
   const [restSeconds, setRestSeconds] = useState(90)
@@ -83,9 +90,11 @@ export function NewSession() {
   }
 
   const finish = async () => {
+    const derivedName = sessionName.trim() || (sessionTags.length > 0 ? sessionTags.join(' · ') : undefined)
     await saveSession({
       id: nanoid(),
-      name: sessionName.trim() || undefined,
+      name: derivedName,
+      tags: sessionTags.length > 0 ? sessionTags : undefined,
       date: new Date().toISOString().slice(0, 10),
       startedAt: startedAt.current,
       finishedAt: new Date().toISOString(),
@@ -122,49 +131,81 @@ export function NewSession() {
       <div className="flex-1 px-4 py-5 space-y-3 max-w-lg mx-auto w-full">
         {/* Session title */}
         <div className="bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-2xl px-4 py-3 space-y-2.5">
-          <input
-            type="text"
-            value={sessionName}
-            onChange={e => setSessionName(e.target.value)}
-            placeholder="Session title (optional)"
-            style={{ fontSize: '16px' }}
-            className="w-full bg-transparent text-stone-900 dark:text-stone-100 placeholder-stone-400 dark:placeholder-stone-500 font-semibold focus:outline-none"
-          />
-          <div className="flex flex-wrap gap-1.5">
-            {TITLE_CHIPS.map(chip => (
-              <button
-                key={chip}
-                onClick={() => {
-                  const isActive = sessionName === chip
-                  if (isActive) {
-                    setSessionName('')
-                    setVariantOptions(null)
-                    if (exercises.length === 0) setShowSearch(true)
-                  } else {
-                    setSessionName(chip)
-                    if (exercises.length === 0) {
-                      const preset = getPreset(chip)
-                      setVariantOptions(preset?.variants ?? null)
-                      setShowSearch(false)
-                    } else {
-                      setVariantOptions(null)
-                    }
-                  }
-                }}
-                className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${
-                  sessionName === chip
-                    ? 'bg-stone-900 dark:bg-stone-100 text-white dark:text-stone-900'
-                    : 'bg-stone-100 dark:bg-stone-700 text-stone-600 dark:text-stone-300 hover:bg-stone-200 dark:hover:bg-stone-600'
-                }`}
-              >
-                {chip}{chipCounts[chip] ? ` (${chipCounts[chip]})` : ''}
-              </button>
-            ))}
-          </div>
+          {isClassSession ? (
+            <>
+              <p style={{ fontSize: '16px' }} className="w-full text-stone-900 dark:text-stone-100 font-semibold">
+                {sessionName || 'Session'}
+              </p>
+              <div className="flex flex-wrap gap-1.5">
+                {TITLE_CHIPS.map(chip => (
+                  <span
+                    key={chip}
+                    className={`px-3 py-1 rounded-full text-xs font-medium ${
+                      sessionTags.includes(chip)
+                        ? 'bg-stone-900 dark:bg-stone-100 text-white dark:text-stone-900'
+                        : 'bg-stone-100 dark:bg-stone-700 text-stone-400 dark:text-stone-500'
+                    }`}
+                  >
+                    {chip}
+                  </span>
+                ))}
+              </div>
+              {trainingMethod && (
+                <div className="pt-0.5 border-t border-stone-100 dark:border-stone-700">
+                  <p className="text-xs font-semibold text-stone-500 dark:text-stone-400">{trainingMethod.shortName}</p>
+                  <p className="text-xs text-stone-400 dark:text-stone-500 mt-0.5 leading-relaxed">{trainingMethod.description}</p>
+                </div>
+              )}
+            </>
+          ) : (
+            <>
+              <input
+                type="text"
+                value={sessionName}
+                onChange={e => setSessionName(e.target.value)}
+                placeholder="Session title (optional)"
+                style={{ fontSize: '16px' }}
+                className="w-full bg-transparent text-stone-900 dark:text-stone-100 placeholder-stone-400 dark:placeholder-stone-500 font-semibold focus:outline-none"
+              />
+              <div className="flex flex-wrap gap-1.5">
+                {TITLE_CHIPS.map(chip => {
+                  const active = sessionTags.includes(chip)
+                  return (
+                    <button
+                      key={chip}
+                      onClick={() => {
+                        if (active) {
+                          setSessionTags(prev => prev.filter(t => t !== chip))
+                          setVariantOptions(null)
+                          if (exercises.length === 0 && sessionTags.length <= 1) setShowSearch(true)
+                        } else {
+                          setSessionTags(prev => [...prev, chip])
+                          if (exercises.length === 0) {
+                            const preset = getPreset(chip)
+                            if (preset) {
+                              setVariantOptions(preset.variants)
+                              setShowSearch(false)
+                            }
+                          }
+                        }
+                      }}
+                      className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${
+                        active
+                          ? 'bg-stone-900 dark:bg-stone-100 text-white dark:text-stone-900'
+                          : 'bg-stone-100 dark:bg-stone-700 text-stone-600 dark:text-stone-300 hover:bg-stone-200 dark:hover:bg-stone-600'
+                      }`}
+                    >
+                      {chip}{chipCounts[chip] ? ` (${chipCounts[chip]})` : ''}
+                    </button>
+                  )
+                })}
+              </div>
+            </>
+          )}
         </div>
 
         {variantOptions && (
-          <div key={sessionName} className="bg-white border border-stone-200 rounded-2xl overflow-hidden">
+          <div key={sessionTags.join(',')} className="bg-white border border-stone-200 rounded-2xl overflow-hidden">
             <p className="px-4 pt-3 pb-2 text-xs font-semibold text-stone-400 uppercase tracking-wider">Choose a session</p>
             <div className="divide-y divide-stone-100">
               {variantOptions.map(variant => (
@@ -195,7 +236,9 @@ export function NewSession() {
           </div>
         )}
 
-        {lastCompleted > 0 && (
+        {state?.method === 'Zirkelintervalle' && <ZirkelTimer />}
+
+        {lastCompleted > 0 && state?.method !== 'Zirkelintervalle' && (
           <div className="flex justify-center py-1">
             <RestTimer key={lastCompleted} defaultSeconds={restSeconds} />
           </div>
@@ -212,6 +255,7 @@ export function NewSession() {
             onChange={updated => updateExercise(i, updated)}
             onRemove={() => removeExercise(i)}
             onSetCompleted={() => setLastCompleted(Date.now())}
+            method={isClassSession ? state?.method : undefined}
           />
         ))}
 

@@ -45,6 +45,7 @@ export interface SessionExercise {
 export interface Session {
   id: string
   name?: string          // optional custom label
+  tags?: string[]        // e.g. ['Push', 'Pull']
   date: string           // ISO date string YYYY-MM-DD
   startedAt: string      // ISO datetime
   finishedAt?: string    // ISO datetime

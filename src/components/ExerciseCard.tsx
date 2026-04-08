@@ -1,6 +1,7 @@
 import { nanoid } from '../utils/nanoid'
 import type { ExerciseSet, SessionExercise, WeightUnit } from '../types'
 import { SetRow } from './SetRow'
+import { MethodTimer } from './MethodTimer'
 
 interface Props {
   item: SessionExercise
@@ -11,6 +12,7 @@ interface Props {
   onChange: (updated: SessionExercise) => void
   onRemove: () => void
   onSetCompleted: () => void
+  method?: string
 }
 
 // Machine alternatives for fog (bodyweight) exercises
@@ -41,7 +43,9 @@ function newSet(): ExerciseSet {
   return { id: nanoid(), completed: false }
 }
 
-export function ExerciseCard({ item, weightUnit, previousSets, collapsed, onToggle, onChange, onRemove, onSetCompleted }: Props) {
+export function ExerciseCard({ item, weightUnit, previousSets, collapsed, onToggle, onChange, onRemove, onSetCompleted, method }: Props) {
+  // Methods that replace standard set rows with a dedicated timer UI
+  const timerOnly = method === 'Stufenintervalle' || method === 'Hochintensitätssätze'
   const updateSet = (index: number, updated: ExerciseSet) =>
     onChange({ ...item, sets: item.sets.map((s, i) => (i === index ? updated : s)) })
 
@@ -107,35 +111,54 @@ export function ExerciseCard({ item, weightUnit, previousSets, collapsed, onTogg
       </button>
 
       {!collapsed && (
-        <div className="px-4 pb-4 pt-2 space-y-1">
-          <div className="flex items-center gap-2 pb-1 text-xs text-stone-400 dark:text-stone-500 px-1">
-            <span className="w-5 text-center shrink-0">#</span>
-            <span className="w-14 text-center shrink-0 hidden sm:block">Prev</span>
-            {item.trackingType === 'reps_weight' && (
-              <><span className="flex-1 text-center">Reps</span><span className="flex-1 text-center">{weightUnit}</span></>
-            )}
-            {item.trackingType === 'reps_only' && <span className="flex-1 text-center">Reps</span>}
-            {item.trackingType === 'time' && <span className="flex-1 text-center">Seconds</span>}
-            <span className="w-8 shrink-0" /><span className="w-8 shrink-0" />
-          </div>
+        <div className="px-4 pb-4 pt-2 space-y-2">
+          {method && <MethodTimer method={method} />}
 
-          {item.sets.map((set, i) => (
-            <SetRow
-              key={set.id}
-              set={set} index={i}
-              trackingType={item.trackingType}
-              weightUnit={weightUnit}
-              previousSet={previousSets?.[i]}
-              onChange={updated => updateSet(i, updated)}
-              onRemove={() => removeSet(i)}
-              onComplete={() => completeSet(i)}
-            />
-          ))}
+          {!timerOnly && (
+            <div className="space-y-1">
+              <div className="flex items-center gap-2 pb-1 text-xs text-stone-400 dark:text-stone-500 px-1">
+                <span className="w-5 text-center shrink-0">#</span>
+                <span className="w-14 text-center shrink-0 hidden sm:block">Prev</span>
+                {item.trackingType === 'reps_weight' && (
+                  <><span className="flex-1 text-center">Reps</span><span className="flex-1 text-center">{weightUnit}</span></>
+                )}
+                {item.trackingType === 'reps_only' && <span className="flex-1 text-center">Reps</span>}
+                {item.trackingType === 'time' && <span className="flex-1 text-center">Seconds</span>}
+                <span className="w-8 shrink-0" /><span className="w-8 shrink-0" />
+              </div>
 
-          <button onClick={addSet}
-            className="mt-2 w-full py-2 rounded-xl border border-dashed border-stone-200 dark:border-stone-600 text-stone-400 dark:text-stone-500 text-sm hover:border-stone-400 dark:hover:border-stone-400 hover:text-stone-600 dark:hover:text-stone-300 transition-colors">
-            + Add set
-          </button>
+              {item.sets.map((set, i) => (
+                <SetRow
+                  key={set.id}
+                  set={set} index={i}
+                  trackingType={item.trackingType}
+                  weightUnit={weightUnit}
+                  previousSet={previousSets?.[i]}
+                  onChange={updated => updateSet(i, updated)}
+                  onRemove={() => removeSet(i)}
+                  onComplete={() => completeSet(i)}
+                />
+              ))}
+
+              <button onClick={addSet}
+                className="mt-2 w-full py-2 rounded-xl border border-dashed border-stone-200 dark:border-stone-600 text-stone-400 dark:text-stone-500 text-sm hover:border-stone-400 dark:hover:border-stone-400 hover:text-stone-600 dark:hover:text-stone-300 transition-colors">
+                + Add set
+              </button>
+            </div>
+          )}
+
+          {timerOnly && (
+            <button
+              onClick={() => completeSet(0)}
+              className={`w-full py-2.5 rounded-xl text-sm font-semibold transition-colors ${
+                item.sets[0]?.completed
+                  ? 'bg-stone-900 dark:bg-stone-100 text-white dark:text-stone-900'
+                  : 'bg-stone-100 dark:bg-stone-700 text-stone-700 dark:text-stone-300 hover:bg-stone-200 dark:hover:bg-stone-600'
+              }`}
+            >
+              {item.sets[0]?.completed ? '✓ Übung abgeschlossen' : 'Übung abschließen'}
+            </button>
+          )}
         </div>
       )}
     </div>

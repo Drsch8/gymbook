@@ -1,8 +1,15 @@
-import { exportToCSV } from '../db'
+import { useEffect, useState } from 'react'
+import { exportToCSV, resetFogProgram, getPreferences } from '../db'
 import { usePreferences } from '../hooks/usePreferences'
+import { FOG_PROGRAMS, flattenFogProgram } from '../data/fogPrograms'
 
 export function Settings() {
   const { prefs, update } = usePreferences()
+  const [programProgress, setProgramProgress] = useState<Record<string, number>>({})
+
+  useEffect(() => {
+    getPreferences().then(p => setProgramProgress(p.programProgress ?? {}))
+  }, [])
 
   const handleExport = async () => {
     const csv = await exportToCSV()
@@ -81,6 +88,35 @@ export function Settings() {
             className="px-4 py-2 rounded-xl bg-stone-100 dark:bg-stone-700 hover:bg-stone-200 dark:hover:bg-stone-600 text-stone-700 dark:text-stone-300 text-sm font-medium transition-colors">
             Export CSV
           </button>
+        </div>
+
+        <div className="bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-2xl px-4 py-4">
+          <p className="text-stone-900 dark:text-stone-100 text-sm font-medium mb-0.5">Programme zurücksetzen</p>
+          <p className="text-stone-400 dark:text-stone-500 text-xs mb-3">Fortschritt eines Programms auf Einheit 1 zurücksetzen</p>
+          <div className="space-y-2">
+            {FOG_PROGRAMS.map(program => {
+              const progress = programProgress[program.id] ?? 0
+              const total = flattenFogProgram(program).length
+              return (
+                <div key={program.id} className="flex items-center justify-between">
+                  <div>
+                    <p className="text-xs font-medium text-stone-700 dark:text-stone-300">{program.name}</p>
+                    <p className="text-xs text-stone-400 dark:text-stone-500">{progress}/{total} Einheiten</p>
+                  </div>
+                  <button
+                    disabled={progress === 0}
+                    onClick={async () => {
+                      await resetFogProgram(program.id)
+                      setProgramProgress(p => ({ ...p, [program.id]: 0 }))
+                    }}
+                    className="px-3 py-1.5 rounded-lg text-xs font-medium bg-stone-100 dark:bg-stone-700 text-stone-600 dark:text-stone-300 hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-900/20 dark:hover:text-red-400 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                  >
+                    Reset
+                  </button>
+                </div>
+              )
+            })}
+          </div>
         </div>
       </div>
     </div>

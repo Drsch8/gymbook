@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { getPreferences, resetFogProgram } from '../db'
+import { getPreferences } from '../db'
 import { nanoid } from '../utils/nanoid'
 import { FOG_PROGRAMS, flattenFogProgram, TRAINING_METHODS } from '../data/fogPrograms'
 import type { FogProgram, FogFlatSession } from '../data/fogPrograms'
@@ -8,27 +8,31 @@ import type { SessionExercise } from '../types'
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
-const FOCUS_TO_TAG: Record<string, string> = {
-  'Drücken': 'Push',
-  'Ziehen': 'Pull',
-  'Drücken/Ziehen': 'Push & Pull',
-  'Beine': 'Legs',
-  'Core': 'Core',
-  'Beine/Core': 'Legs & Core',
-  'Ganzkörper': 'Full Body',
+const FOCUS_TO_TAGS: Record<string, string[]> = {
+  'Drücken': ['Push'],
+  'Ziehen': ['Pull'],
+  'Drücken/Ziehen': ['Push', 'Pull'],
+  'Beine': ['Legs'],
+  'Core': ['Core'],
+  'Beine/Core': ['Legs', 'Core'],
+  'Ganzkörper': ['Full Body'],
 }
 
 function makeExercises(session: FogFlatSession, programId: string): SessionExercise[] {
+  const timerOnly = session.method === 'Stufenintervalle' || session.method === 'Hochintensitätssätze'
+  const sets = timerOnly
+    ? [{ id: nanoid(), completed: false }]
+    : [
+        { id: nanoid(), reps: 10, completed: false },
+        { id: nanoid(), reps: 10, completed: false },
+        { id: nanoid(), reps: 10, completed: false },
+      ]
   return session.exercises.map(name => ({
     id: nanoid(),
     exerciseId: `fog_${programId}_${name.replace(/[^a-z0-9]/gi, '_').toLowerCase()}`,
     exerciseName: name,
     trackingType: 'reps_only' as const,
-    sets: [
-      { id: nanoid(), reps: 10, completed: false },
-      { id: nanoid(), reps: 10, completed: false },
-      { id: nanoid(), reps: 10, completed: false },
-    ],
+    sets: sets.map(s => ({ ...s, id: nanoid() })),
   }))
 }
 
@@ -242,12 +246,10 @@ function ProgramCard({
   program,
   sessionIndex,
   onStart,
-  onReset,
 }: {
   program: FogProgram
   sessionIndex: number
   onStart: () => void
-  onReset: () => void
 }) {
   const [showInfo, setShowInfo] = useState(false)
 
@@ -278,19 +280,13 @@ function ProgramCard({
             <p className="text-lg font-bold text-stone-900 dark:text-stone-100">
               {program.name} ✓
             </p>
-            <p className="text-xs text-stone-400 dark:text-stone-500 mt-1 mb-4">Alle {total} Einheiten abgeschlossen!</p>
-            <button
-              onClick={onReset}
-              className="px-5 py-2 rounded-xl bg-stone-900 dark:bg-stone-100 text-white dark:text-stone-900 text-sm font-semibold hover:bg-stone-800 dark:hover:bg-white transition-colors"
-            >
-              Neu starten
-            </button>
+            <p className="text-xs text-stone-400 dark:text-stone-500 mt-1">Alle {total} Einheiten abgeschlossen!</p>
           </div>
         ) : (
           <div className="px-4 py-3">
             {/* Next session title — announcing what's coming */}
             <p className="text-lg font-bold text-stone-900 dark:text-stone-100 leading-tight mb-1">
-              {current ? (FOCUS_TO_TAG[current.focus] ?? current.focus) : program.name}
+              {current ? (FOCUS_TO_TAGS[current.focus] ?? [current.focus]).join(' · ') : program.name}
             </p>
 
             {/* Current session info */}
@@ -318,22 +314,12 @@ function ProgramCard({
               />
             </div>
 
-            <div className="flex gap-2">
-              <button
-                onClick={onStart}
-                className="flex-1 py-3 rounded-xl bg-stone-900 dark:bg-stone-100 hover:bg-stone-800 dark:hover:bg-white active:scale-[0.98] transition text-white dark:text-stone-900 font-semibold text-sm"
-              >
-                {started ? 'Weiter' : 'Starten'}
-              </button>
-              {started && (
-                <button
-                  onClick={onReset}
-                  className="px-3 py-3 rounded-xl border border-stone-200 dark:border-stone-600 text-stone-400 dark:text-stone-500 hover:text-stone-700 dark:hover:text-stone-300 hover:border-stone-400 dark:hover:border-stone-400 transition text-xs"
-                >
-                  Reset
-                </button>
-              )}
-            </div>
+            <button
+              onClick={onStart}
+              className="w-full py-3 rounded-xl bg-stone-900 dark:bg-stone-100 hover:bg-stone-800 dark:hover:bg-white active:scale-[0.98] transition text-white dark:text-stone-900 font-semibold text-sm"
+            >
+              {started ? 'Weiter' : 'Starten'}
+            </button>
           </div>
         )}
       </div>
@@ -370,19 +356,16 @@ export function Home() {
     if (index >= flat.length) return
     const session = flat[index]
     const exercises = makeExercises(session, program.id)
-    const tag = FOCUS_TO_TAG[session.focus] ?? session.focus
+    const tags = FOCUS_TO_TAGS[session.focus] ?? [session.focus]
     navigate('/session/new', {
       state: {
         fogProgramId: program.id,
-        name: tag,
+        name: tags.join(' · '),
+        tags,
+        method: session.method,
         repeat: exercises,
       },
     })
-  }
-
-  async function handleReset(programId: string) {
-    await resetFogProgram(programId)
-    setProgramProgress(prev => ({ ...prev, [programId]: 0 }))
   }
 
   return (
@@ -407,7 +390,6 @@ export function Home() {
           program={program}
           sessionIndex={getIndex(program.id)}
           onStart={() => handleStart(program)}
-          onReset={() => handleReset(program.id)}
         />
       ))}
 
