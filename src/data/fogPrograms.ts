@@ -89,31 +89,48 @@ export const TRAINING_METHODS = [
     name: 'Stufenintervall',
     shortName: 'Stufenintervalle',
     description:
-      'Pyramide: 1 Wdh., Pause, 2 Wdh., Pause, 3 Wdh. … bis kurz vor Muskelversagen, dann rückwärts. Pause = Länge des vorigen Intervalls. 7,5 Minuten pro Übung.',
+      'Das Stufenintervall ist eine Pyramide – du steigst hoch und dann wieder runter.\n\n' +
+      'Ablauf: 1 Wdh., Pause, 2 Wdh., Pause, 3 Wdh., Pause … so weiter, bis du kurz vor dem Muskelversagen bist. Dann rückwärts: eine Stufe weniger, Pause, eine Stufe weniger …\n\n' +
+      'Die Pause dauert genauso lang wie das vorige Intervall. Wer 10 Sekunden für 3 Wdh. gebraucht hat, pausiert 10 Sekunden.\n\n' +
+      'Ziel: Finde dein Maximum auf dem Weg nach oben – bleib bei der Stufenzahl, bei der du knapp ans Versagen kommst, ohne vollständig zu versagen. Die zweite Hälfte (Abstieg) ist dann Muskelausdauer pur.\n\n' +
+      'Dauer: 7,5 Minuten pro Übung. Der Pfeil im Timer zeigt an, ob du noch im Aufstieg (↑) oder schon im Abstieg (↓) bist.',
   },
   {
     name: 'Intervallsatz',
     shortName: 'Intervallsätze',
     description:
-      '3 Sätze pro Übung, 6–12 Wiederholungen. 3-Minuten-Intervalle: Beginn bei 0 min, 3 min, 6 min – jeweils bis Muskelversagen oder 12 Wdh.',
+      'Klassisches Krafttraining mit festem Takt: Du machst exakt 3 Sätze pro Übung, und jeder Satz beginnt auf die Sekunde.\n\n' +
+      'Ablauf: Minute 0 → Satz 1, Minute 3 → Satz 2, Minute 6 → Satz 3. Die verbleibende Zeit bis zum nächsten Start ist deine Pause – sie wird kürzer, je länger du für den Satz brauchst.\n\n' +
+      'Wiederholungen: 6–12 pro Satz, bis zum Muskelversagen oder bei 12 aufhören. Wähle ein Gewicht, bei dem du innerhalb dieser Spanne versagst.\n\n' +
+      'Ziel: Alle drei Sätze mit gleicher oder leicht abnehmender Wiederholungszahl absolvieren. Wenn du in jedem Satz 12 schaffst, ist das Gewicht zu leicht – nächstes Mal mehr.',
   },
   {
     name: 'Supersatz',
     shortName: 'Supersätze',
     description:
-      '4-Minuten-Intervalle. Übungspaare: 1–5 Wdh. bei der ersten, 6–12 Wdh. bei der zweiten Übung. 2 Supersätze pro Paar, insgesamt 6 Supersätze.',
+      'Supersätze kombinieren je zwei Übungen zu einem Paar, das du ohne Pause hintereinander absolvierst – ein 4-Minuten-Block pro Übung.\n\n' +
+      'Ablauf: Der Timer läuft 4 Minuten für Übung 1, dann 4 Minuten für Übung 2, dann wieder Übung 1 usw. – zwei vollständige Runden durch alle Übungen (Reihenfolge: 1 → 2 → 3 → 1 → 2 → 3).\n\n' +
+      'Wiederholungen: Übung 1 (schwere Grundübung): 1–5 Wdh. mit viel Gewicht. Übung 2 (leichtere Assistenzübung): 6–12 Wdh.\n\n' +
+      'Ziel: Die kurzen Sätze mit langer Pause dazwischen ermöglichen maximale Kraft bei Übung 1, während Übung 2 den Muskel weiter ermüdet. Synergieeffekt = mehr Gesamtvolumen in weniger Zeit.',
   },
   {
     name: 'Zirkelintervall',
     shortName: 'Zirkelintervalle',
     description:
-      'So viele Runden der vorgegebenen Übungen wie möglich in 20 Minuten – ohne Pause, außer bei Muskelversagen.',
+      'Der Zirkel ist Ausdauer und Kraft in einem: Du absolvierst alle Übungen der Reihe nach – und fängst von vorn an, so oft es in 20 Minuten geht.\n\n' +
+      'Ablauf: Übung 1 → Übung 2 → Übung 3 → … → von vorn. Kein Pause-Timer, kein fester Satz-Beginn. Du entscheidest das Tempo selbst.\n\n' +
+      'Pause: Nur dann pausieren, wenn du wirklich am Muskelversagen bist – und so kurz wie möglich. Ziel ist kontinuierliche Belastung.\n\n' +
+      'Ziel: So viele Runden wie möglich in 20 Minuten. Notiere die Rundenanzahl – das ist dein Benchmark für das nächste Mal. Der Kreislauf wird dauerhaft belastet: Herzfrequenz bleibt hoch, Kalorienverbrauch ist hoch.',
   },
   {
     name: 'Hochintensitätssatz',
     shortName: 'Hochintensitätssätze',
     description:
-      '8 Runden: 20 Sekunden Training + 10 Sekunden Pause = 4 Minuten gesamt. Gleichbleibendes Tempo über alle Sätze halten.',
+      'Hochintensitätssätze sind HIIT im Tabata-Format: maximale Intensität, kurze Pause, wiederholen.\n\n' +
+      'Ablauf: 8 Runden à 20 Sekunden Training + 10 Sekunden Pause = 4 Minuten pro Übung. Der Timer wechselt automatisch.\n\n' +
+      'Intensität: Während der 20 Sekunden arbeitest du so schnell und sauber wie möglich – aber nicht so hart, dass du in Runde 3 zusammenbrichst. Ziel ist ein gleichmäßiges Tempo über alle 8 Runden.\n\n' +
+      'Fehler vermeiden: Nicht in der ersten Runde alles geben. Starte bei 80 % und halte das durch. Wenn du in späteren Runden massiv langsamer wirst, war die Intensität zu hoch.\n\n' +
+      'Wirkung: Erhöhter Nachbrenneffekt (EPOC) – der Stoffwechsel bleibt auch nach dem Training erhöht. Kombiniert Kraft und Ausdauer in minimaler Zeit.',
   },
 ]
 

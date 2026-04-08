@@ -1,5 +1,6 @@
-import { useEffect, useRef, useState } from 'react'
+import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { InfoPanel } from '../components/InfoPanel'
 import { usePreferences } from '../hooks/usePreferences'
 import { nanoid } from '../utils/nanoid'
 import { FOG_PROGRAMS, flattenFogProgram, TRAINING_METHODS } from '../data/fogPrograms'
@@ -28,50 +29,26 @@ function makeExercises(session: FogFlatSession, programId: string): SessionExerc
   }))
 }
 
-// ── Shared panel shell ────────────────────────────────────────────────────────
-
-function Panel({ title, onClose, children }: { title: string; onClose: () => void; children: React.ReactNode }) {
-  const prevOverflow = useRef(document.body.style.overflow)
-  useEffect(() => {
-    document.body.style.overflow = 'hidden'
-    return () => { document.body.style.overflow = prevOverflow.current }
-  }, [])
-
-  return (
-    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4" onClick={onClose}>
-      <div className="absolute inset-0 bg-black/50" />
-      <div
-        className="relative bg-white dark:bg-stone-800 rounded-2xl w-full max-w-lg h-[80vh] overflow-hidden flex flex-col shadow-xl"
-        onClick={e => e.stopPropagation()}
-      >
-        <div className="flex items-center justify-between px-5 py-4 border-b border-stone-100 dark:border-stone-700 shrink-0">
-          <h2 className="text-base font-bold text-stone-900 dark:text-stone-100">{title}</h2>
-          <button onClick={onClose} className="text-stone-400 hover:text-stone-700 dark:hover:text-stone-200 transition-colors">
-            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
-        </div>
-        <div className="overflow-y-auto flex-1 px-5 py-4">{children}</div>
-      </div>
-    </div>
-  )
-}
+// Panel is now InfoPanel from components
 
 // ── Trainingsmethoden panel ───────────────────────────────────────────────────
 
 function TrainingMethodsPanel({ onClose }: { onClose: () => void }) {
   return (
-    <Panel title="Trainingsmethoden" onClose={onClose}>
+    <InfoPanel title="Trainingsmethoden" onClose={onClose}>
       <div className="space-y-5">
         {TRAINING_METHODS.map(m => (
           <div key={m.name}>
             <p className="text-sm font-semibold text-stone-900 dark:text-stone-100 mb-1">{m.name}</p>
-            <p className="text-xs text-stone-500 dark:text-stone-400 leading-relaxed">{m.description}</p>
+            <div className="space-y-2">
+              {m.description.split('\n\n').map((para, i) => (
+                <p key={i} className="text-xs text-stone-500 dark:text-stone-400 leading-relaxed">{para}</p>
+              ))}
+            </div>
           </div>
         ))}
       </div>
-    </Panel>
+    </InfoPanel>
   )
 }
 
@@ -97,7 +74,7 @@ function ProgramInfoPanel({
   ]
 
   return (
-    <Panel title={program.name} onClose={onClose}>
+    <InfoPanel title={program.name} onClose={onClose}>
       <div className="flex bg-stone-100 dark:bg-stone-700 rounded-xl p-1 gap-1 mb-4 -mx-1">
         {tabs.map(t => (
           <button
@@ -224,7 +201,7 @@ function ProgramInfoPanel({
           )}
         </div>
       )}
-    </Panel>
+    </InfoPanel>
   )
 }
 

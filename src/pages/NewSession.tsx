@@ -7,7 +7,7 @@ import { getLastSessionForExercise, getPreferences, getSessions, saveSession, ad
 import { nanoid } from '../utils/nanoid'
 import { getPreset } from '../data/presets'
 import { TRAINING_METHODS } from '../data/fogPrograms'
-import { ZirkelTimer } from '../components/MethodTimer'
+import { InfoPanel } from '../components/InfoPanel'
 import type { Exercise, ExerciseSet, SessionExercise, WeightUnit } from '../types'
 import type { PresetVariant } from '../data/presets'
 
@@ -73,10 +73,10 @@ function fmtFlat(s: number) {
 
 const TIMER_SIZE = { fontSize: 'min(28vw, 128px)', fontVariantNumeric: 'tabular-nums' } as const
 
-function BigTime({ children, dim }: { children: React.ReactNode; dim?: boolean }) {
+function BigTime({ children, dim, blue }: { children: React.ReactNode; dim?: boolean; blue?: boolean }) {
   return (
     <span
-      className={`font-black leading-none tabular-nums ${dim ? 'text-stone-600' : 'text-stone-100'}`}
+      className={`font-black leading-none tabular-nums ${dim ? 'text-stone-600' : blue ? 'text-blue-400' : 'text-stone-100'}`}
       style={TIMER_SIZE}
     >
       {children}
@@ -89,9 +89,19 @@ function PauseBtn({ running, onToggle, disabled }: { running: boolean; onToggle:
     <button
       onClick={onToggle}
       disabled={disabled}
-      className="px-8 py-2 rounded-full bg-stone-800 hover:bg-stone-700 text-stone-300 text-sm font-semibold transition-colors disabled:opacity-30"
+      className="text-stone-400 hover:text-stone-200 transition-colors disabled:opacity-30 p-1.5"
+      aria-label={running ? 'Pause' : 'Resume'}
     >
-      {running ? '⏸ Pause' : '▶ Resume'}
+      {running ? (
+        <svg width="26" height="26" viewBox="0 0 26 26" fill="currentColor">
+          <rect x="4" y="3" width="6" height="20" rx="2"/>
+          <rect x="16" y="3" width="6" height="20" rx="2"/>
+        </svg>
+      ) : (
+        <svg width="26" height="26" viewBox="0 0 26 26" fill="currentColor">
+          <polygon points="5,2 23,13 5,24"/>
+        </svg>
+      )}
     </button>
   )
 }
@@ -109,9 +119,8 @@ function ProgressStrip({ progress, accent }: { progress: number; accent?: string
 
 // ── Stufenintervall flat timer ─────────────────────────────────────────────────
 
-function FlatStufen({ onDone, onProgress }: { onDone: () => void; onProgress: (p: number) => void }) {
+function FlatStufen({ running, onDone, onProgress }: { running: boolean; onDone: () => void; onProgress: (p: number) => void }) {
   const [seconds, setSeconds] = useState(450)
-  const [running, setRunning] = useState(true)
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
   const onDoneRef = useRef(onDone)
   onDoneRef.current = onDone
@@ -132,28 +141,34 @@ function FlatStufen({ onDone, onProgress }: { onDone: () => void; onProgress: (p
 
   useEffect(() => {
     if (!done) return
-    setRunning(false)
     const t = setTimeout(() => onDoneRef.current(), 800)
     return () => clearTimeout(t)
   }, [done])
 
+  const arrow = done ? null : seconds > 225 ? '↑' : '↓'
+
   return (
     <>
       <BigTime dim={done}>{done ? '0:00' : fmtFlat(seconds)}</BigTime>
-      <PauseBtn running={running} onToggle={() => setRunning(r => !r)} disabled={done} />
+      {arrow && (
+        <p className={`text-4xl font-black mt-2 transition-colors ${seconds > 225 ? 'text-stone-300' : 'text-stone-500'}`}>
+          {arrow}
+        </p>
+      )}
     </>
   )
 }
 
 // ── Intervallsätze flat timer ──────────────────────────────────────────────────
 
-function FlatIntervall({ onDone, onProgress }: { onDone: () => void; onProgress: (p: number) => void }) {
+function FlatIntervall({ running, onResume, onDone, onProgress }: { running: boolean; onResume: () => void; onDone: () => void; onProgress: (p: number) => void }) {
   const [satz, setSatz] = useState(1)
   const [seconds, setSeconds] = useState(180)
-  const [running, setRunning] = useState(true)
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
   const onDoneRef = useRef(onDone)
   onDoneRef.current = onDone
+  const onResumeRef = useRef(onResume)
+  onResumeRef.current = onResume
   const done = satz > 3
 
   useEffect(() => {
@@ -171,9 +186,8 @@ function FlatIntervall({ onDone, onProgress }: { onDone: () => void; onProgress:
 
   useEffect(() => {
     if (seconds !== 0 || done) return
-    setRunning(false)
     const t = setTimeout(() => {
-      if (satz >= 3) { setSatz(4) } else { setSatz(s => s + 1); setSeconds(180); setRunning(true) }
+      if (satz >= 3) { setSatz(4) } else { setSatz(s => s + 1); setSeconds(180); onResumeRef.current() }
     }, 800)
     return () => clearTimeout(t)
   }, [seconds]) // eslint-disable-line
@@ -188,74 +202,154 @@ function FlatIntervall({ onDone, onProgress }: { onDone: () => void; onProgress:
     <>
       <BigTime dim={done}>{done ? '—' : fmtFlat(seconds)}</BigTime>
       <p className="text-xl font-semibold text-stone-500 mt-2">{done ? 'Fertig ✓' : `Satz ${satz} / 3`}</p>
-      {!done && <PauseBtn running={running} onToggle={() => setRunning(r => !r)} disabled={seconds === 0} />}
     </>
   )
 }
 
-// ── Supersätze flat timer ──────────────────────────────────────────────────────
+// ── SuperPanel ─────────────────────────────────────────────────────────────────
 
-function FlatSuper({ onDone, onProgress }: { onDone: () => void; onProgress: (p: number) => void }) {
-  const [count, setCount] = useState(1)
-  const [seconds, setSeconds] = useState(240)
-  const [running, setRunning] = useState(true)
+function SuperPanel({ exercises, onClose, onComplete }: {
+  exercises: SessionExercise[]
+  onClose: () => void
+  onComplete: () => void
+}) {
+  const BLOCK = 240 // 4 minutes per exercise block
+  const numEx = exercises.length
+  const totalBlocks = numEx * 2 // cycle twice: 1-2-3-1-2-3
+
+  const [countdown, setCountdown] = useState(5)
+  const [block, setBlock] = useState(0)
+  const [seconds, setSeconds] = useState(BLOCK)
+  const [running, setRunning] = useState(false)
+  const [timerDone, setTimerDone] = useState(false)
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
-  const onDoneRef = useRef(onDone)
-  onDoneRef.current = onDone
-  const done = count > 6
-  const pair = Math.ceil(count / 2)
-  const setInPair = ((count - 1) % 2) + 1
+  const ready = countdown === 0
 
   useEffect(() => {
-    onProgress(((count - 1) * 240 + (240 - seconds)) / 1440)
-  }, [count, seconds, onProgress])
+    if (countdown <= 0) return
+    const t = setTimeout(() => setCountdown(c => c - 1), 1000)
+    return () => clearTimeout(t)
+  }, [countdown])
 
   useEffect(() => {
-    if (running && seconds > 0 && !done) {
+    if (ready && !timerDone) setRunning(true)
+  }, [ready, timerDone])
+
+  useEffect(() => {
+    if (running && seconds > 0) {
       intervalRef.current = setInterval(() => setSeconds(s => s - 1), 1000)
     } else {
       if (intervalRef.current) clearInterval(intervalRef.current)
     }
     return () => { if (intervalRef.current) clearInterval(intervalRef.current) }
-  }, [running, seconds, done])
+  }, [running, seconds])
 
   useEffect(() => {
-    if (seconds !== 0 || done) return
+    if (seconds !== 0 || !ready || timerDone) return
     setRunning(false)
     const t = setTimeout(() => {
-      if (count >= 6) { setCount(7) } else { setCount(c => c + 1); setSeconds(240); setRunning(true) }
+      if (block >= totalBlocks - 1) {
+        setTimerDone(true)
+      } else {
+        setBlock(b => b + 1)
+        setSeconds(BLOCK)
+        setRunning(true)
+      }
     }, 800)
     return () => clearTimeout(t)
   }, [seconds]) // eslint-disable-line
 
-  useEffect(() => {
-    if (!done) return
-    const t = setTimeout(() => onDoneRef.current(), 800)
-    return () => clearTimeout(t)
-  }, [done])
+  const currentExIdx = block % numEx
+  const round = Math.floor(block / numEx) + 1
+  const progress = (block * BLOCK + (BLOCK - seconds)) / (totalBlocks * BLOCK)
 
   return (
-    <>
-      <BigTime dim={done}>{done ? '—' : fmtFlat(seconds)}</BigTime>
-      <p className="text-xl font-semibold text-stone-500 mt-2">
-        {done ? 'Fertig ✓' : `Paar ${pair} / 3 · Satz ${setInPair} / 2`}
-      </p>
-      {!done && <PauseBtn running={running} onToggle={() => setRunning(r => !r)} disabled={seconds === 0} />}
-    </>
+    <div className="fixed inset-0 z-[100] bg-stone-950 flex flex-col select-none">
+      {/* Header */}
+      <div className="flex items-start justify-between px-5 shrink-0" style={{ paddingTop: 'calc(env(safe-area-inset-top) + 16px)', paddingBottom: 12 }}>
+        <div className="min-w-0 pr-4">
+          <p className="text-sm font-medium text-stone-500 mb-1">Supersätze</p>
+          <p className="text-2xl font-bold text-stone-100 leading-snug">
+            {!ready ? 'Get ready!' : timerDone ? 'Fertig ✓' : exercises[currentExIdx]?.exerciseName}
+          </p>
+        </div>
+        <button onClick={onClose} className="shrink-0 text-stone-500 hover:text-stone-300 text-sm font-semibold transition-colors mt-1">
+          Quit
+        </button>
+      </div>
+
+      {/* Timer hero */}
+      <div className="flex flex-col items-center justify-center pt-6 pb-4 shrink-0">
+        {!ready ? (
+          <BigTime>{countdown}s</BigTime>
+        ) : (
+          <>
+            <BigTime dim={timerDone}>{timerDone ? '—' : fmtFlat(seconds)}</BigTime>
+            {!timerDone && (
+              <p className="text-xl font-semibold text-stone-500 mt-2">
+                Runde {round} / 2 · Übung {currentExIdx + 1} / {numEx}
+              </p>
+            )}
+          </>
+        )}
+      </div>
+
+      {/* Exercise list */}
+      <div className="flex-1 overflow-y-auto px-5 pb-2">
+        <div className="space-y-2">
+          {exercises.map((item, i) => {
+            const isActive = ready && !timerDone && i === currentExIdx
+            return (
+              <div
+                key={item.id}
+                className={`flex items-center gap-3 rounded-2xl px-4 py-3 border transition-colors ${
+                  isActive ? 'bg-stone-100 border-stone-200' : 'bg-stone-900 border-stone-800'
+                }`}
+              >
+                <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${isActive ? 'bg-stone-900' : 'bg-stone-600'}`} />
+                <p className={`text-sm font-medium ${isActive ? 'text-stone-900 font-semibold' : 'text-stone-300'}`}>
+                  {i + 1}. {item.exerciseName}
+                </p>
+              </div>
+            )
+          })}
+        </div>
+      </div>
+
+      {/* Bottom */}
+      <div className="shrink-0 px-5 space-y-3" style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 28px)', paddingTop: 12 }}>
+        {!ready && <p className="text-center text-stone-500 text-sm font-medium">Get ready!</p>}
+        {ready && !timerDone && (
+          <div className="flex items-center">
+            <PauseBtn running={running} onToggle={() => setRunning(r => !r)} />
+          </div>
+        )}
+        {ready && <ProgressStrip progress={progress} />}
+        {timerDone && (
+          <button
+            onClick={onComplete}
+            className="w-full py-4 rounded-2xl bg-stone-100 hover:bg-white active:scale-[0.98] text-stone-900 font-bold text-base transition-all"
+          >
+            Finish ✓
+          </button>
+        )}
+      </div>
+    </div>
   )
 }
 
 // ── Hochintensität flat timer ──────────────────────────────────────────────────
 
-function FlatHoch({ onDone, onProgress }: { onDone: () => void; onProgress: (p: number) => void }) {
+function FlatHoch({ running, onPhaseChange, onDone, onProgress }: { running: boolean; onPhaseChange: (p: 'work' | 'rest') => void; onDone: () => void; onProgress: (p: number) => void }) {
   const [round, setRound] = useState(1)
   const [phase, setPhase] = useState<'work' | 'rest'>('work')
   const [seconds, setSeconds] = useState(20)
-  const [running, setRunning] = useState(true)
   const [done, setDone] = useState(false)
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
   const onDoneRef = useRef(onDone)
   onDoneRef.current = onDone
+  const onPhaseChangeRef = useRef(onPhaseChange)
+  onPhaseChangeRef.current = onPhaseChange
 
   useEffect(() => {
     const totalSecs = 8 * 30
@@ -268,9 +362,9 @@ function FlatHoch({ onDone, onProgress }: { onDone: () => void; onProgress: (p: 
     intervalRef.current = setInterval(() => {
       setSeconds(s => {
         if (s > 1) return s - 1
-        if (phase === 'work') { setPhase('rest'); return 10 }
-        if (round >= 8) { setRunning(false); setDone(true); return 0 }
-        setRound(r => r + 1); setPhase('work'); return 20
+        if (phase === 'work') { setPhase('rest'); onPhaseChangeRef.current('rest'); return 10 }
+        if (round >= 8) { setDone(true); return 0 }
+        setRound(r => r + 1); setPhase('work'); onPhaseChangeRef.current('work'); return 20
       })
     }, 1000)
     return () => { if (intervalRef.current) clearInterval(intervalRef.current) }
@@ -282,25 +376,21 @@ function FlatHoch({ onDone, onProgress }: { onDone: () => void; onProgress: (p: 
     return () => clearTimeout(t)
   }, [done])
 
-  const accent = done ? 'bg-stone-400' : phase === 'rest' ? 'bg-blue-500' : 'bg-stone-100'
+  const isRest = phase === 'rest' && !done
 
   return (
     <>
-      <BigTime dim={done}>
+      <BigTime dim={done} blue={isRest}>
         {done ? '—' : `0:${String(seconds).padStart(2, '0')}`}
       </BigTime>
       <p className="text-xl font-semibold text-stone-500 mt-2">
         {done ? 'Fertig ✓' : `Runde ${round} / 8`}
       </p>
       {!done && (
-        <p className={`text-sm font-bold uppercase tracking-[0.2em] ${phase === 'work' ? 'text-stone-300' : 'text-blue-400'}`}>
-          {phase === 'work' ? 'Arbeit' : 'Pause'}
+        <p className={`text-3xl font-black mt-1 ${isRest ? 'text-blue-400' : 'text-stone-200'}`}>
+          {phase === 'work' ? 'Work Out!' : 'Pause'}
         </p>
       )}
-      {!done && <PauseBtn running={running} onToggle={() => setRunning(r => !r)} />}
-      <div className="w-full px-6">
-        <ProgressStrip progress={((round - 1) * 30 + (phase === 'rest' ? 20 : 0) + (phase === 'work' ? 20 - seconds : 10 - seconds)) / 240} accent={accent} />
-      </div>
     </>
   )
 }
@@ -314,10 +404,11 @@ function ClassExercisePanel({ exercise, method, onClose, onComplete }: {
   onComplete: () => void
 }) {
   const [countdown, setCountdown] = useState(5)
+  const [running, setRunning] = useState(false)
   const [timerDone, setTimerDone] = useState(false)
   const [progress, setProgress] = useState(0)
+  const [hochPhase, setHochPhase] = useState<'work' | 'rest'>('work')
   const ready = countdown === 0
-  const pair = method === 'Supersätze' ? parsePair(exercise.exerciseName) : null
 
   useEffect(() => {
     if (countdown <= 0) return
@@ -325,11 +416,19 @@ function ClassExercisePanel({ exercise, method, onClose, onComplete }: {
     return () => clearTimeout(t)
   }, [countdown])
 
+  useEffect(() => {
+    if (ready) setRunning(true)
+  }, [ready])
+
   const handleFinish = () => { onComplete(); onClose() }
 
   // stable callback refs to avoid re-renders
   const onDoneStable = useRef(() => setTimerDone(true))
   const onProgressStable = useRef((p: number) => setProgress(p))
+
+  const accent = method === 'Hochintensitätssätze'
+    ? (hochPhase === 'rest' ? 'bg-blue-500' : 'bg-stone-100')
+    : undefined
 
   return (
     <div className="fixed inset-0 z-[100] bg-stone-950 flex flex-col select-none">
@@ -337,14 +436,7 @@ function ClassExercisePanel({ exercise, method, onClose, onComplete }: {
       <div className="flex items-start justify-between px-5 shrink-0" style={{ paddingTop: 'calc(env(safe-area-inset-top) + 16px)', paddingBottom: 12 }}>
         <div className="min-w-0 pr-4">
           <p className="text-sm font-medium text-stone-500 mb-1">{method}</p>
-          {pair ? (
-            <>
-              <p className="text-2xl font-bold text-stone-100 leading-snug">{pair.a}</p>
-              <p className="text-2xl font-bold text-stone-600 leading-snug">{pair.b}</p>
-            </>
-          ) : (
-            <p className="text-2xl font-bold text-stone-100 leading-snug">{exercise.exerciseName}</p>
-          )}
+          <p className="text-2xl font-bold text-stone-100 leading-snug">{exercise.exerciseName}</p>
         </div>
         <button onClick={onClose} className="shrink-0 text-stone-500 hover:text-stone-300 text-sm font-semibold transition-colors mt-1">
           Quit
@@ -356,27 +448,118 @@ function ClassExercisePanel({ exercise, method, onClose, onComplete }: {
         {!ready ? (
           <BigTime>{countdown}s</BigTime>
         ) : method === 'Stufenintervalle' ? (
-          <FlatStufen onDone={onDoneStable.current} onProgress={onProgressStable.current} />
+          <FlatStufen running={running} onDone={onDoneStable.current} onProgress={onProgressStable.current} />
         ) : method === 'Intervallsätze' ? (
-          <FlatIntervall onDone={onDoneStable.current} onProgress={onProgressStable.current} />
-        ) : method === 'Supersätze' ? (
-          <FlatSuper onDone={onDoneStable.current} onProgress={onProgressStable.current} />
+          <FlatIntervall running={running} onResume={() => setRunning(true)} onDone={onDoneStable.current} onProgress={onProgressStable.current} />
         ) : method === 'Hochintensitätssätze' ? (
-          <FlatHoch onDone={onDoneStable.current} onProgress={onProgressStable.current} />
+          <FlatHoch running={running} onPhaseChange={setHochPhase} onDone={onDoneStable.current} onProgress={onProgressStable.current} />
         ) : null}
       </div>
 
       {/* ── Bottom ── */}
-      <div className="shrink-0 px-5 space-y-4" style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 28px)' }}>
-        {!ready && (
-          <p className="text-center text-stone-500 text-sm font-medium">Get ready!</p>
+      <div className="shrink-0 px-5 space-y-3" style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 28px)', paddingTop: 12 }}>
+        {!ready && <p className="text-center text-stone-500 text-sm font-medium">Get ready!</p>}
+        {ready && !timerDone && (
+          <div className="flex items-center">
+            <PauseBtn running={running} onToggle={() => setRunning(r => !r)} />
+          </div>
         )}
-        {ready && method !== 'Hochintensitätssätze' && (
-          <ProgressStrip progress={progress} />
-        )}
+        {ready && <ProgressStrip progress={progress} accent={accent} />}
         {timerDone && (
           <button
             onClick={handleFinish}
+            className="w-full py-4 rounded-2xl bg-stone-100 hover:bg-white active:scale-[0.98] text-stone-900 font-bold text-base transition-all"
+          >
+            Finish ✓
+          </button>
+        )}
+      </div>
+    </div>
+  )
+}
+
+// ── ZirkelPanel ────────────────────────────────────────────────────────────────
+
+function ZirkelPanel({ exercises, onClose, onComplete }: {
+  exercises: SessionExercise[]
+  onClose: () => void
+  onComplete: () => void
+}) {
+  const [countdown, setCountdown] = useState(5)
+  const [seconds, setSeconds] = useState(1200)
+  const [running, setRunning] = useState(false)
+  const [timerDone, setTimerDone] = useState(false)
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
+  const ready = countdown === 0
+
+  useEffect(() => {
+    if (countdown <= 0) return
+    const t = setTimeout(() => setCountdown(c => c - 1), 1000)
+    return () => clearTimeout(t)
+  }, [countdown])
+
+  useEffect(() => {
+    if (ready && !timerDone) setRunning(true)
+  }, [ready, timerDone])
+
+  useEffect(() => {
+    if (running && seconds > 0) {
+      intervalRef.current = setInterval(() => setSeconds(s => s - 1), 1000)
+    } else {
+      if (intervalRef.current) clearInterval(intervalRef.current)
+      if (seconds === 0) { setRunning(false); setTimerDone(true) }
+    }
+    return () => { if (intervalRef.current) clearInterval(intervalRef.current) }
+  }, [running, seconds])
+
+  const progress = 1 - seconds / 1200
+
+  return (
+    <div className="fixed inset-0 z-[100] bg-stone-950 flex flex-col select-none">
+      {/* Header */}
+      <div className="flex items-start justify-between px-5 shrink-0" style={{ paddingTop: 'calc(env(safe-area-inset-top) + 16px)', paddingBottom: 12 }}>
+        <div>
+          <p className="text-sm font-medium text-stone-500 mb-1">Zirkelintervalle</p>
+          <p className="text-2xl font-bold text-stone-100">So viele Runden wie möglich</p>
+        </div>
+        <button onClick={onClose} className="shrink-0 text-stone-500 hover:text-stone-300 text-sm font-semibold transition-colors mt-1">
+          Quit
+        </button>
+      </div>
+
+      {/* Timer hero */}
+      <div className="flex flex-col items-center justify-center pt-6 pb-4 shrink-0">
+        {!ready ? (
+          <BigTime>{countdown}s</BigTime>
+        ) : (
+          <BigTime dim={timerDone}>{fmtFlat(seconds)}</BigTime>
+        )}
+      </div>
+
+      {/* Exercise list — scrollable */}
+      <div className="flex-1 overflow-y-auto px-5 pb-2">
+        <div className="space-y-2">
+          {exercises.map(item => (
+            <div key={item.id} className="flex items-center gap-3 bg-stone-900 rounded-2xl px-4 py-3 border border-stone-800">
+              <span className="w-1.5 h-1.5 rounded-full bg-stone-600 shrink-0" />
+              <p className="text-sm text-stone-300">{item.exerciseName}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Bottom */}
+      <div className="shrink-0 px-5 space-y-3" style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 28px)', paddingTop: 12 }}>
+        {!ready && <p className="text-center text-stone-500 text-sm font-medium">Get ready!</p>}
+        {ready && !timerDone && (
+          <div className="flex items-center">
+            <PauseBtn running={running} onToggle={() => setRunning(r => !r)} />
+          </div>
+        )}
+        {ready && <ProgressStrip progress={progress} />}
+        {timerDone && (
+          <button
+            onClick={onComplete}
             className="w-full py-4 rounded-2xl bg-stone-100 hover:bg-white active:scale-[0.98] text-stone-900 font-bold text-base transition-all"
           >
             Finish ✓
@@ -411,6 +594,8 @@ export function NewSession() {
   const [chipCounts, setChipCounts] = useState<Record<string, number>>({})
   const [activeIdx, setActiveIdx] = useState<number | null>(null)
   const [showMethodInfo, setShowMethodInfo] = useState(false)
+  const [showZirkelPanel, setShowZirkelPanel] = useState(false)
+  const [showSuperPanel, setShowSuperPanel] = useState(false)
   const startedAt = useRef(new Date().toISOString())
   const bottomRef = useRef<HTMLDivElement>(null)
 
@@ -462,7 +647,7 @@ export function NewSession() {
 
   const finish = async () => {
     const derivedName = sessionName.trim() || (sessionTags.length > 0 ? sessionTags.join(' · ') : undefined)
-    const exercisesToSave = isZirkel
+    const exercisesToSave = (isZirkel || isSuper)
       ? exercises.map(e => ({ ...e, sets: e.sets.map(s => ({ ...s, completed: true })) }))
       : exercises
     await saveSession({
@@ -486,7 +671,8 @@ export function NewSession() {
   const totalCompleted = exercises.reduce((n, e) => n + e.sets.filter(s => s.completed).length, 0)
   const totalSets = exercises.reduce((n, e) => n + e.sets.length, 0)
   const isZirkel = state?.method === 'Zirkelintervalle'
-  const allExercisesDone = isZirkel
+  const isSuper = state?.method === 'Supersätze'
+  const allExercisesDone = (isZirkel || isSuper)
     ? exercises.length > 0
     : exercises.length > 0 && exercises.every(e => e.sets.length > 0 && e.sets.every(s => s.completed))
 
@@ -609,17 +795,29 @@ export function NewSession() {
           </div>
         )}
 
-        {isZirkel ? (
+        {(isZirkel || isSuper) ? (
           <>
-            <ZirkelTimer />
-            <div className="space-y-1.5">
-              {exercises.map(item => (
+            <div className="space-y-1.5 mb-2">
+              {exercises.map((item, i) => (
                 <div key={item.id} className="bg-white dark:bg-stone-800 border border-stone-100 dark:border-stone-700 rounded-2xl px-4 py-2.5 flex items-center gap-3">
                   <span className="w-1.5 h-1.5 rounded-full bg-stone-300 dark:bg-stone-600 shrink-0" />
-                  <p className="text-sm text-stone-700 dark:text-stone-300">{item.exerciseName}</p>
+                  <p className="text-sm text-stone-700 dark:text-stone-300">
+                    {isSuper ? `${i + 1}. ` : ''}{item.exerciseName}
+                  </p>
                 </div>
               ))}
             </div>
+            {isSuper && exercises.length > 0 && (
+              <p className="text-xs text-stone-400 dark:text-stone-500 text-center pb-1">
+                4 min pro Übung · 2 Runden · {exercises.length * 2} Blöcke
+              </p>
+            )}
+            <button
+              onClick={() => isSuper ? setShowSuperPanel(true) : setShowZirkelPanel(true)}
+              className="w-full py-3 rounded-2xl bg-stone-900 dark:bg-stone-100 text-white dark:text-stone-900 font-semibold text-sm hover:bg-stone-800 dark:hover:bg-white active:scale-[0.98] transition-all"
+            >
+              Start Circuit
+            </button>
           </>
         ) : null}
 
@@ -629,7 +827,7 @@ export function NewSession() {
           </div>
         )}
 
-        {isClassSession && !isZirkel ? exercises.map((item, i) => (
+        {isClassSession && !isZirkel && !isSuper ? exercises.map((item, i) => (
           <ClassExerciseRow
             key={item.id}
             item={item}
@@ -681,26 +879,30 @@ export function NewSession() {
         />
       )}
 
+      {showZirkelPanel && (
+        <ZirkelPanel
+          exercises={exercises}
+          onClose={() => setShowZirkelPanel(false)}
+          onComplete={() => { setShowZirkelPanel(false); finish() }}
+        />
+      )}
+
+      {showSuperPanel && (
+        <SuperPanel
+          exercises={exercises}
+          onClose={() => setShowSuperPanel(false)}
+          onComplete={() => { setShowSuperPanel(false); finish() }}
+        />
+      )}
+
       {showMethodInfo && trainingMethod && (
-        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4" onClick={() => setShowMethodInfo(false)}>
-          <div className="absolute inset-0 bg-black/50" />
-          <div
-            className="relative bg-white dark:bg-stone-800 rounded-2xl w-full max-w-lg h-[80vh] overflow-hidden flex flex-col shadow-xl"
-            onClick={e => e.stopPropagation()}
-          >
-            <div className="flex items-center justify-between px-5 py-4 border-b border-stone-100 dark:border-stone-700 shrink-0">
-              <h2 className="text-base font-bold text-stone-900 dark:text-stone-100">{trainingMethod.name}</h2>
-              <button onClick={() => setShowMethodInfo(false)} className="text-stone-400 hover:text-stone-700 dark:hover:text-stone-200 transition-colors">
-                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
-            </div>
-            <div className="overflow-y-auto flex-1 px-5 py-4">
-              <p className="text-sm text-stone-600 dark:text-stone-300 leading-relaxed">{trainingMethod.description}</p>
-            </div>
+        <InfoPanel title={trainingMethod.name} onClose={() => setShowMethodInfo(false)}>
+          <div className="space-y-3">
+            {trainingMethod.description.split('\n\n').map((para, i) => (
+              <p key={i} className="text-sm text-stone-600 dark:text-stone-300 leading-relaxed">{para}</p>
+            ))}
           </div>
-        </div>
+        </InfoPanel>
       )}
     </div>
   )
