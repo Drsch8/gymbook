@@ -1,11 +1,18 @@
 import { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { exportToCSV, resetFogProgram, getPreferences } from '../db'
 import { usePreferences } from '../hooks/usePreferences'
+import { useAuth } from '../hooks/useAuth'
 import { FOG_PROGRAMS, flattenFogProgram } from '../data/fogPrograms'
+import { signOut } from 'firebase/auth'
+import { auth } from '../lib/firebase'
 
 export function Settings() {
   const { prefs, update } = usePreferences()
   const [programProgress, setProgramProgress] = useState<Record<string, number>>({})
+  const [confirmReset, setConfirmReset] = useState<string | null>(null)
+  const { user } = useAuth()
+  const navigate = useNavigate()
 
   useEffect(() => {
     getPreferences().then(p => setProgramProgress(p.programProgress ?? {}))
@@ -103,20 +110,66 @@ export function Settings() {
                     <p className="text-xs font-medium text-stone-700 dark:text-stone-300">{program.name}</p>
                     <p className="text-xs text-stone-400 dark:text-stone-500">{progress}/{total} Einheiten</p>
                   </div>
-                  <button
-                    disabled={progress === 0}
-                    onClick={async () => {
-                      await resetFogProgram(program.id)
-                      setProgramProgress(p => ({ ...p, [program.id]: 0 }))
-                    }}
-                    className="px-3 py-1.5 rounded-lg text-xs font-medium bg-stone-100 dark:bg-stone-700 text-stone-600 dark:text-stone-300 hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-900/20 dark:hover:text-red-400 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
-                  >
-                    Reset
-                  </button>
+                  {confirmReset === program.id ? (
+                    <div className="flex items-center gap-1.5">
+                      <button
+                        onClick={async () => {
+                          await resetFogProgram(program.id)
+                          setProgramProgress(p => ({ ...p, [program.id]: 0 }))
+                          setConfirmReset(null)
+                        }}
+                        className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-red-500 text-white hover:bg-red-600 transition-colors"
+                      >
+                        Ja, reset
+                      </button>
+                      <button
+                        onClick={() => setConfirmReset(null)}
+                        className="px-3 py-1.5 rounded-lg text-xs font-medium bg-stone-100 dark:bg-stone-700 text-stone-600 dark:text-stone-300 hover:bg-stone-200 dark:hover:bg-stone-600 transition-colors"
+                      >
+                        Abbrechen
+                      </button>
+                    </div>
+                  ) : (
+                    <button
+                      disabled={progress === 0}
+                      onClick={() => setConfirmReset(program.id)}
+                      className="px-3 py-1.5 rounded-lg text-xs font-medium bg-stone-100 dark:bg-stone-700 text-stone-600 dark:text-stone-300 hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-900/20 dark:hover:text-red-400 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                    >
+                      Reset
+                    </button>
+                  )}
                 </div>
               )
             })}
           </div>
+        </div>
+        <div className="bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-2xl px-4 py-4 flex items-center justify-between">
+          <div>
+            {user ? (
+              <>
+                <p className="text-stone-900 dark:text-stone-100 text-sm font-medium">Konto</p>
+                <p className="text-stone-400 dark:text-stone-500 text-xs mt-0.5 truncate max-w-[180px]">{user.email}</p>
+              </>
+            ) : (
+              <>
+                <p className="text-stone-900 dark:text-stone-100 text-sm font-medium">Konto</p>
+                <p className="text-stone-400 dark:text-stone-500 text-xs mt-0.5">Nicht angemeldet</p>
+              </>
+            )}
+          </div>
+          {user ? (
+            <button
+              onClick={async () => { await signOut(auth); navigate('/login') }}
+              className="px-4 py-2 rounded-xl bg-stone-100 dark:bg-stone-700 hover:bg-stone-200 dark:hover:bg-stone-600 text-stone-700 dark:text-stone-300 text-sm font-medium transition-colors">
+              Abmelden
+            </button>
+          ) : (
+            <button
+              onClick={() => navigate('/login')}
+              className="px-4 py-2 rounded-xl bg-stone-900 dark:bg-stone-100 text-white dark:text-stone-900 text-sm font-medium transition-colors">
+              Anmelden
+            </button>
+          )}
         </div>
       </div>
     </div>

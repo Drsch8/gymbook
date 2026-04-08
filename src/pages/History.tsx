@@ -1,4 +1,5 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
+import { useLiveQuery } from 'dexie-react-hooks'
 import { useNavigate } from 'react-router-dom'
 import { getSessions, getPlannedWorkouts, savePlannedWorkout, deletePlannedWorkout } from '../db'
 import { nanoid } from '../utils/nanoid'
@@ -65,11 +66,9 @@ function CalendarView({ sessions, navigate: navigateTo }: { sessions: Session[];
   const navigate = useNavigate()
   const [viewDate, setViewDate] = useState(() => { const d = new Date(); return { year: d.getFullYear(), month: d.getMonth() } })
   const [selected, setSelected] = useState<string | null>(null)
-  const [planned, setPlanned] = useState<PlannedWorkout[]>([])
+  const planned = useLiveQuery(() => getPlannedWorkouts(), []) ?? []
   const [planTitle, setPlanTitle] = useState('')
   const [planning, setPlanning] = useState(false)
-
-  useEffect(() => { getPlannedWorkouts().then(setPlanned) }, [])
 
   const sessionsByDate = useMemo(() => {
     const m: Record<string, Session[]> = {}
@@ -104,14 +103,12 @@ function CalendarView({ sessions, navigate: navigateTo }: { sessions: Session[];
     if (!selected) return
     const plan: PlannedWorkout = { id: nanoid(), date: selected, title: planTitle.trim() || undefined }
     await savePlannedWorkout(plan)
-    setPlanned(prev => [...prev.filter(p => p.date !== selected), plan])
     setPlanning(false)
     setPlanTitle('')
   }
 
   async function removePlan(id: string) {
     await deletePlannedWorkout(id)
-    setPlanned(prev => prev.filter(p => p.id !== id))
   }
 
   return (
@@ -450,15 +447,10 @@ function RecordsView({ sessions }: { sessions: Session[] }) {
 
 export function History() {
   const navigate = useNavigate()
-  const [sessions, setSessions] = useState<Session[]>([])
-  const [loading, setLoading] = useState(true)
+  const sessions = useLiveQuery(() => getSessions(500), [])
   const [view, setView] = useState<View>('calendar')
 
-  useEffect(() => {
-    getSessions(500).then(s => { setSessions(s); setLoading(false) })
-  }, [])
-
-  if (loading) {
+  if (!sessions) {
     return <div className="flex items-center justify-center h-64 text-stone-400 text-sm">Loading…</div>
   }
 

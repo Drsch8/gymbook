@@ -13,7 +13,10 @@
       "Bash(python3 -c ':*)",
       "Bash(python3:*)",
       "Bash(npx tsc:*)",
-      "Bash(node:*)"
+      "Bash(node:*)",
+      "Bash(ls /Users/david/GitHub/gymbook/.env*)",
+      "Bash(npm list:*)",
+      "Bash(npm uninstall:*)"
     ]
   }
 }

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useLiveQuery } from 'dexie-react-hooks'
 import { Link, useNavigate } from 'react-router-dom'
 import { getSessions } from '../db'
 import { nanoid } from '../utils/nanoid'
@@ -29,11 +29,7 @@ function buildRepeatExercises(session: Session): SessionExercise[] {
 
 export function Recent() {
   const navigate = useNavigate()
-  const [sessions, setSessions] = useState<Session[]>([])
-
-  useEffect(() => {
-    getSessions(100).then(setSessions)
-  }, [])
+  const sessions = useLiveQuery(() => getSessions(100), []) ?? []
 
   return (
     <div className="px-4 pt-safe">

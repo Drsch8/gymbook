@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react'
-import { getPreferences, savePreferences } from '../db'
+import { useLiveQuery } from 'dexie-react-hooks'
+import { db, savePreferences } from '../db'
 import type { UserPreferences } from '../types'
 
 const DEFAULT: UserPreferences = {
@@ -11,16 +11,11 @@ const DEFAULT: UserPreferences = {
 }
 
 export function usePreferences() {
-  const [prefs, setPrefs] = useState<UserPreferences>(DEFAULT)
-
-  useEffect(() => {
-    getPreferences().then(setPrefs)
-  }, [])
+  const row = useLiveQuery(() => db.preferences.get(1), [])
+  const prefs: UserPreferences = row ?? DEFAULT
 
   const update = async (partial: Partial<UserPreferences>) => {
-    const next = { ...prefs, ...partial }
-    setPrefs(next)
-    await savePreferences(next)
+    await savePreferences(partial)
   }
 
   return { prefs, update }

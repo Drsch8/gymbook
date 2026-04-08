@@ -1,0 +1,48 @@
+# Dependencies
+node_modules/
+venv/
+.env/
+
+# Build outputs
+.next/
+.git/
+.vite/
+dist/
+build/
+out/
+coverage/
+
+# Lock files (large, low value)
+package-lock.json
+pnpm-lock.yaml
+yarn.lock
+
+# Logs
+*.log
+
+# Cache
+.cache/
+.tmp/
+
+#files
+# Generated / compiled
+*.min.js
+*.map
+*.pyc
+*.class
+
+# Large assets
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.mp4
+*.zip
+*.pdf
+*.ppt
+*.pptx
+.DS_Store
+
+# Fonts
+*.woff
+*.woff2
