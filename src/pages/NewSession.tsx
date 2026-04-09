@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { ExerciseSearch } from '../components/ExerciseSearch'
 import { ExerciseCard } from '../components/ExerciseCard'
@@ -8,6 +8,7 @@ import { nanoid } from '../utils/nanoid'
 import { getPreset } from '../data/presets'
 import { TRAINING_METHODS } from '../data/fogPrograms'
 import { InfoPanel } from '../components/InfoPanel'
+import { saveDraft, loadDraft, clearDraft } from '../utils/draft'
 import type { Exercise, ExerciseSet, SessionExercise, WeightUnit } from '../types'
 import type { PresetVariant } from '../data/presets'
 
@@ -602,15 +603,21 @@ export function NewSession() {
   const trainingMethod = state?.method
     ? TRAINING_METHODS.find(m => m.shortName === state.method || m.name === state.method) ?? null
     : null
-  const [exercises, setExercises] = useState<SessionExercise[]>(repeated)
+  // Load draft once on mount if it matches this session context
+  const initialDraft = useMemo(() => {
+    const d = loadDraft()
+    return (d && d.fogProgramId === fogProgramId) ? d : null
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
+
+  const [exercises, setExercises] = useState<SessionExercise[]>(initialDraft?.exercises ?? repeated)
   const [sessionName] = useState(isClassSession ? (state?.name ?? '') : '')
-  const [sessionTags, setSessionTags] = useState<string[]>(state?.tags ?? [])
+  const [sessionTags, setSessionTags] = useState<string[]>(initialDraft?.sessionTags ?? state?.tags ?? [])
   const [previousSets, setPreviousSets] = useState<Record<string, ExerciseSet[]>>({})
   const [weightUnit, setWeightUnit] = useState<WeightUnit>('kg')
   const [restSeconds, setRestSeconds] = useState(90)
-  const [showSearch, setShowSearch] = useState(repeated.length === 0)
+  const [showSearch, setShowSearch] = useState((initialDraft?.exercises ?? repeated).length === 0)
   const [lastCompleted, setLastCompleted] = useState(0)
-  const [expandedId, setExpandedId] = useState<string | null>(repeated[0]?.id ?? null)
+  const [expandedId, setExpandedId] = useState<string | null>((initialDraft?.exercises ?? repeated)[0]?.id ?? null)
   const [variantOptions, setVariantOptions] = useState<PresetVariant[] | null>(null)
   const [chipCounts, setChipCounts] = useState<Record<string, number>>({})
   const [activeIdx, setActiveIdx] = useState<number | null>(null)
@@ -619,8 +626,15 @@ export function NewSession() {
   const [showSuperPanel, setShowSuperPanel] = useState(false)
   const [circuitDone, setCircuitDone] = useState(false)
   const [finishing, setFinishing] = useState(false)
-  const startedAt = useRef(new Date().toISOString())
+  const startedAt = useRef(initialDraft?.startedAt ?? new Date().toISOString())
   const bottomRef = useRef<HTMLDivElement>(null)
+  // Refs for reliable draft saving (always hold latest values)
+  const exercisesRef = useRef(exercises)
+  exercisesRef.current = exercises
+  const sessionTagsRef = useRef(sessionTags)
+  sessionTagsRef.current = sessionTags
+  const finishingRef = useRef(finishing)
+  finishingRef.current = finishing
 
   useEffect(() => {
     getPreferences().then(p => { setWeightUnit(p.weightUnit); setRestSeconds(p.restTimerDefault) })
@@ -637,6 +651,38 @@ export function NewSession() {
       setChipCounts(counts)
     })
   }, [])
+
+  // Auto-save draft whenever exercises or tags change (not while finishing)
+  useEffect(() => {
+    if (exercises.length === 0 || finishing) return
+    saveDraft({
+      id: startedAt.current,
+      exercises,
+      sessionTags,
+      startedAt: startedAt.current,
+      fogProgramId,
+      method: state?.method,
+      displayName: (state?.name ?? sessionTags.join(' · ')) || undefined,
+      locationState: state,
+    })
+  }, [exercises, sessionTags, finishing]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Also save on unmount in case the last change didn't flush
+  useEffect(() => {
+    return () => {
+      if (exercisesRef.current.length === 0 || finishingRef.current) return
+      saveDraft({
+        id: startedAt.current,
+        exercises: exercisesRef.current,
+        sessionTags: sessionTagsRef.current,
+        startedAt: startedAt.current,
+        fogProgramId,
+        method: state?.method,
+        displayName: (state?.name ?? sessionTagsRef.current.join(' · ')) || undefined,
+        locationState: state,
+      })
+    }
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   const addExercise = async (exercise: Exercise) => {
     setShowSearch(false)
@@ -707,6 +753,7 @@ export function NewSession() {
     } catch (e) {
       console.error('Failed to save session', e)
     }
+    clearDraft()
     window.dispatchEvent(new CustomEvent('wellDone'))
     navigate(fogProgramId ? '/classes' : '/', { replace: true })
   }

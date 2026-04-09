@@ -4,6 +4,7 @@ import { InfoPanel } from '../components/InfoPanel'
 import { usePreferences } from '../hooks/usePreferences'
 import { nanoid } from '../utils/nanoid'
 import { resetFogProgram } from '../db'
+import { loadDraft } from '../utils/draft'
 import { FOG_PROGRAMS, flattenFogProgram, TRAINING_METHODS } from '../data/fogPrograms'
 import type { FogProgram, FogFlatSession } from '../data/fogPrograms'
 import type { SessionExercise } from '../types'
@@ -213,11 +214,13 @@ function ProgramCard({
   sessionIndex,
   onStart,
   onRedo,
+  blocked,
 }: {
   program: FogProgram
   sessionIndex: number
   onStart: () => void
   onRedo: () => void
+  blocked?: boolean
 }) {
   const [showInfo, setShowInfo] = useState(false)
   const flat = flattenFogProgram(program)
@@ -279,8 +282,13 @@ function ProgramCard({
               />
             </div>
             <button
-              onClick={onStart}
-              className="w-full py-3 rounded-xl bg-stone-900 dark:bg-stone-100 hover:bg-stone-800 dark:hover:bg-white active:scale-[0.98] transition text-white dark:text-stone-900 font-semibold text-sm"
+              onClick={blocked ? undefined : onStart}
+              disabled={blocked}
+              className={`w-full py-3 rounded-xl font-semibold text-sm transition ${
+                blocked
+                  ? 'bg-stone-100 dark:bg-stone-700 text-stone-400 dark:text-stone-500 cursor-not-allowed'
+                  : 'bg-stone-900 dark:bg-stone-100 hover:bg-stone-800 dark:hover:bg-white active:scale-[0.98] text-white dark:text-stone-900'
+              }`}
             >
               {started ? 'Weiter' : 'Starten'}
             </button>
@@ -353,6 +361,14 @@ export function Classes() {
   const programProgress = prefs.programProgress ?? {}
   const [showMethods, setShowMethods] = useState(false)
 
+  // Determine if a class session is in progress (has at least one completed set)
+  const activeDraftProgramId = (() => {
+    const d = loadDraft()
+    if (!d?.fogProgramId) return null
+    const hasProgress = d.exercises.some(e => e.sets.some(s => s.completed))
+    return hasProgress ? d.fogProgramId : null
+  })()
+
   function getIndex(programId: string) {
     return programProgress[programId] ?? 0
   }
@@ -398,6 +414,7 @@ export function Classes() {
           sessionIndex={getIndex(program.id)}
           onStart={() => handleStart(program)}
           onRedo={() => resetFogProgram(program.id)}
+          blocked={activeDraftProgramId !== null && activeDraftProgramId !== program.id}
         />
       ))}
 
