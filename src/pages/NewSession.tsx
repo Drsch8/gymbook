@@ -212,9 +212,8 @@ function FlatIntervall({ running, onResume, onDone, onProgress }: { running: boo
   useEffect(() => {
     if (seconds !== 0 || done) return
     if (satz < 3) playDing(1)
-    const t = setTimeout(() => {
-      if (satz >= 3) { setSatz(4) } else { setSatz(s => s + 1); setSeconds(180); onResumeRef.current() }
-    }, 800)
+    if (satz >= 3) { setSatz(4); return }
+    const t = setTimeout(() => { setSatz(s => s + 1); setSeconds(180); onResumeRef.current() }, 800)
     return () => clearTimeout(t)
   }, [seconds]) // eslint-disable-line
 
@@ -279,16 +278,9 @@ function SuperPanel({ exercises, onClose, onComplete }: {
   useEffect(() => {
     if (seconds !== 0 || !ready || timerDone) return
     setRunning(false)
-    if (block < totalBlocks - 1) playDing(1)
-    const t = setTimeout(() => {
-      if (block >= totalBlocks - 1) {
-        setTimerDone(true)
-      } else {
-        setBlock(b => b + 1)
-        setSeconds(BLOCK)
-        setRunning(true)
-      }
-    }, 800)
+    if (block >= totalBlocks - 1) { setTimerDone(true); return }
+    playDing(1)
+    const t = setTimeout(() => { setBlock(b => b + 1); setSeconds(BLOCK); setRunning(true) }, 800)
     return () => clearTimeout(t)
   }, [seconds]) // eslint-disable-line
 
