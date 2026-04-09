@@ -8,20 +8,11 @@ import { nanoid } from '../utils/nanoid'
 import { getPreset } from '../data/presets'
 import { TRAINING_METHODS } from '../data/fogPrograms'
 import { InfoPanel } from '../components/InfoPanel'
-import type { Exercise, ExerciseSet, SessionExercise, WeightUnit } from '../types'
+import type { ExerciseSet, SessionExercise, WeightUnit } from '../types'
 import type { PresetVariant } from '../data/presets'
 
 const TITLE_CHIPS = ['Legs', 'Upper', 'Push', 'Pull', 'Core', 'Cardio', 'Full Body']
 
-function newSessionExercise(exercise: Exercise): SessionExercise {
-  return {
-    id: nanoid(),
-    exerciseId: exercise.id,
-    exerciseName: exercise.name,
-    trackingType: exercise.trackingType,
-    sets: [{ id: nanoid(), completed: false }],
-  }
-}
 
 // ── Class session helpers ─────────────────────────────────────────────────────
 
