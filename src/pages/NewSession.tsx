@@ -596,6 +596,7 @@ export function NewSession() {
   const [showMethodInfo, setShowMethodInfo] = useState(false)
   const [showZirkelPanel, setShowZirkelPanel] = useState(false)
   const [showSuperPanel, setShowSuperPanel] = useState(false)
+  const [finishing, setFinishing] = useState(false)
   const startedAt = useRef(new Date().toISOString())
   const bottomRef = useRef<HTMLDivElement>(null)
 
@@ -646,10 +647,13 @@ export function NewSession() {
   }
 
   const finish = async () => {
+    if (finishing) return
+    setFinishing(true)
     const derivedName = sessionName.trim() || (sessionTags.length > 0 ? sessionTags.join(' · ') : undefined)
-    const exercisesToSave = (isZirkel || isSuper)
-      ? exercises.map(e => ({ ...e, sets: e.sets.map(s => ({ ...s, completed: true })) }))
-      : exercises
+    const exercisesToSave = exercises.map(e => ({
+      ...e,
+      sets: e.sets.map(s => ({ ...s, completed: true })),
+    }))
     await saveSession({
       id: nanoid(),
       name: derivedName,
@@ -665,7 +669,7 @@ export function NewSession() {
     if (fogProgramId) {
       await advanceFogProgram(fogProgramId)
     }
-    navigate('/', { replace: true })
+    setTimeout(() => navigate('/', { replace: true }), 1600)
   }
 
   const totalCompleted = exercises.reduce((n, e) => n + e.sets.filter(s => s.completed).length, 0)
@@ -685,7 +689,7 @@ export function NewSession() {
         <span className="text-sm text-stone-400 dark:text-stone-500 font-mono">{totalCompleted}/{totalSets} sets</span>
         <button
           onClick={finish}
-          disabled={exercises.length === 0 || (isClassSession && !allExercisesDone)}
+          disabled={finishing || exercises.length === 0 || (isClassSession && !allExercisesDone)}
           className="px-4 py-1.5 rounded-xl bg-stone-900 dark:bg-stone-100 hover:bg-stone-800 dark:hover:bg-white disabled:opacity-30 disabled:cursor-not-allowed text-white dark:text-stone-900 text-sm font-semibold transition-colors"
         >
           Finish
@@ -718,14 +722,11 @@ export function NewSession() {
             </>
           ) : (
             <>
-              <input
-                type="text"
-                value={sessionName}
-                onChange={e => setSessionName(e.target.value)}
-                placeholder="Session title (optional)"
-                style={{ fontSize: '16px' }}
-                className="w-full bg-transparent text-stone-900 dark:text-stone-100 placeholder-stone-400 dark:placeholder-stone-500 font-semibold focus:outline-none"
-              />
+              {sessionTags.length > 0 && (
+                <p className="text-lg font-bold text-stone-900 dark:text-stone-100 pb-0.5 leading-tight">
+                  {sessionTags.join(' · ')}
+                </p>
+              )}
               <div className="flex flex-wrap gap-1.5">
                 {TITLE_CHIPS.map(chip => {
                   const active = sessionTags.includes(chip)
@@ -903,6 +904,15 @@ export function NewSession() {
             ))}
           </div>
         </InfoPanel>
+      )}
+
+      {finishing && (
+        <div className="fixed inset-0 z-[200] flex items-center justify-center bg-stone-950 animate-fadeIn">
+          <div className="text-center animate-scaleIn">
+            <p className="text-5xl font-black text-stone-100 mb-2">Well done!</p>
+            <p className="text-stone-500 text-base">Saving your session…</p>
+          </div>
+        </div>
       )}
     </div>
   )

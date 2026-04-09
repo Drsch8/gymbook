@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import type { ExerciseSet, TrackingType, WeightUnit } from '../types'
 
 interface Props {
@@ -34,6 +34,14 @@ function NumCell({
 
   const clamp = (v: number) => Math.max(0, +(v).toFixed(2))
 
+  // Prevent page scroll while dragging a number cell
+  useEffect(() => {
+    if (!dragging) return
+    const prevent = (e: TouchEvent) => e.preventDefault()
+    document.addEventListener('touchmove', prevent, { passive: false })
+    return () => document.removeEventListener('touchmove', prevent)
+  }, [dragging])
+
   const handleTouchStart = (e: React.TouchEvent) => {
     if (disabled) return
     dragStart.current = e.touches[0].clientY
@@ -59,6 +67,9 @@ function NumCell({
     setDragging(false)
   }
 
+  const ghostPrev = (dragging && value != null) ? clamp(value - step) : null
+  const ghostNext = (dragging && value != null) ? clamp(value + step) : null
+
   return (
     <div
       className={`relative flex-1 min-w-0 ${disabled ? 'cursor-default' : 'cursor-text'}`}
@@ -67,6 +78,11 @@ function NumCell({
       onTouchEnd={handleTouchEnd}
       onClick={() => !disabled && !dragging && inputRef.current?.focus()}
     >
+      {ghostPrev != null && (
+        <div className="absolute inset-x-0 bottom-full pb-0.5 flex items-center justify-center pointer-events-none z-40">
+          <span className="font-mono text-xs tabular-nums text-stone-500 opacity-50">{ghostPrev}</span>
+        </div>
+      )}
       <input
         ref={inputRef}
         type="number"
@@ -88,6 +104,11 @@ function NumCell({
               : 'bg-stone-100 border-stone-200 text-stone-900 focus:bg-white focus:border-stone-400 focus:ring-2 focus:ring-stone-900/10',
         ].join(' ')}
       />
+      {ghostNext != null && (
+        <div className="absolute inset-x-0 top-full pt-0.5 flex items-center justify-center pointer-events-none z-40">
+          <span className="font-mono text-xs tabular-nums text-stone-500 opacity-50">{ghostNext}</span>
+        </div>
+      )}
     </div>
   )
 }
