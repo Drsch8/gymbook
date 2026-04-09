@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { InfoPanel } from '../components/InfoPanel'
 import { usePreferences } from '../hooks/usePreferences'
 import { nanoid } from '../utils/nanoid'
+import { resetFogProgram } from '../db'
 import { FOG_PROGRAMS, flattenFogProgram, TRAINING_METHODS } from '../data/fogPrograms'
 import type { FogProgram, FogFlatSession } from '../data/fogPrograms'
 import type { SessionExercise } from '../types'
@@ -211,10 +212,12 @@ function ProgramCard({
   program,
   sessionIndex,
   onStart,
+  onRedo,
 }: {
   program: FogProgram
   sessionIndex: number
   onStart: () => void
+  onRedo: () => void
 }) {
   const [showInfo, setShowInfo] = useState(false)
   const flat = flattenFogProgram(program)
@@ -239,9 +242,17 @@ function ProgramCard({
         </div>
 
         {done ? (
-          <div className="px-4 py-5 text-center">
-            <p className="text-lg font-bold text-stone-900 dark:text-stone-100">{program.name} ✓</p>
-            <p className="text-xs text-stone-400 dark:text-stone-500 mt-1">Alle {total} Einheiten abgeschlossen!</p>
+          <div className="px-4 py-4 text-center space-y-3">
+            <div>
+              <p className="text-lg font-bold text-stone-900 dark:text-stone-100">{program.name} ✓</p>
+              <p className="text-xs text-stone-400 dark:text-stone-500 mt-1">Alle {total} Einheiten abgeschlossen!</p>
+            </div>
+            <button
+              onClick={onRedo}
+              className="w-full py-2.5 rounded-xl border border-stone-200 dark:border-stone-600 text-stone-500 dark:text-stone-400 text-sm font-medium hover:bg-stone-50 dark:hover:bg-stone-700 transition-colors"
+            >
+              Nochmal von vorne
+            </button>
           </div>
         ) : (
           <div className="px-4 py-3">
@@ -386,6 +397,7 @@ export function Classes() {
           program={program}
           sessionIndex={getIndex(program.id)}
           onStart={() => handleStart(program)}
+          onRedo={() => resetFogProgram(program.id)}
         />
       ))}
 

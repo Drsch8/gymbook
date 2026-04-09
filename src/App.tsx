@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { Route, Routes, useLocation, useNavigate } from 'react-router-dom'
-import { onAuthStateChanged } from 'firebase/auth'
+import { onAuthStateChanged, signOut } from 'firebase/auth'
 import { BottomNav } from './components/BottomNav'
 import { Home } from './pages/Home'
 import { Classes } from './pages/Classes'
@@ -15,6 +15,7 @@ import { auth } from './lib/firebase'
 import { syncFromFirebase, clearLocalData } from './db'
 
 const SHELL_ROUTES = ['/', '/classes', '/recent', '/history', '/statistics', '/settings']
+const INACTIVITY_MS = 60 * 60 * 1000 // 60 minutes
 
 export function App() {
   const { pathname } = useLocation()
@@ -23,6 +24,19 @@ export function App() {
   const syncedRef = useRef(false)
   const [authReady, setAuthReady] = useState(false)
   const [authed, setAuthed] = useState(false)
+  const [wellDone, setWellDone] = useState(false)
+  const [wellDoneFade, setWellDoneFade] = useState(false)
+
+  useEffect(() => {
+    const handler = () => {
+      setWellDone(true)
+      setWellDoneFade(false)
+      setTimeout(() => setWellDoneFade(true), 900)
+      setTimeout(() => setWellDone(false), 1700)
+    }
+    window.addEventListener('wellDone', handler)
+    return () => window.removeEventListener('wellDone', handler)
+  }, [])
 
   useEffect(() => {
     window.scrollTo(0, 0)
@@ -48,6 +62,22 @@ export function App() {
   }, [navigate, pathname])
 
   useEffect(() => {
+    if (!authed) return
+    let timeout: ReturnType<typeof setTimeout>
+    const reset = () => {
+      clearTimeout(timeout)
+      timeout = setTimeout(() => signOut(auth).catch(console.error), INACTIVITY_MS)
+    }
+    const events = ['touchstart', 'mousedown', 'keydown'] as const
+    events.forEach(ev => document.addEventListener(ev, reset, { passive: true }))
+    reset()
+    return () => {
+      clearTimeout(timeout)
+      events.forEach(ev => document.removeEventListener(ev, reset))
+    }
+  }, [authed])
+
+  useEffect(() => {
     const handleVisibility = () => {
       if (document.visibilityState === 'visible') {
         const user = auth.currentUser
@@ -63,8 +93,8 @@ export function App() {
   }
 
   return (
-    <div className="min-h-screen bg-stone-50 dark:bg-stone-900">
-      <main className={showNav ? 'pb-20' : ''}>
+    <div className="h-screen overflow-hidden bg-stone-50 dark:bg-stone-900">
+      <main className={`h-full overflow-y-auto${showNav ? ' pb-20' : ''}`}>
         <Routes>
           <Route path="/login" element={<Login />} />
           {authed && <>
@@ -80,6 +110,13 @@ export function App() {
         </Routes>
       </main>
       {showNav && authed && <BottomNav />}
+      {wellDone && (
+        <div className={`fixed inset-0 z-[300] flex items-center justify-center bg-stone-950 transition-opacity duration-700 pointer-events-none ${wellDoneFade ? 'opacity-0' : 'opacity-100'}`}>
+          <div className="text-center animate-scaleIn">
+            <p className="text-5xl font-black text-stone-100 mb-2">Well done!</p>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

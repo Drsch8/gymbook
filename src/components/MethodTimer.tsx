@@ -54,8 +54,7 @@ function StufenintervallTimer({ autoStart, onDone }: { autoStart?: boolean; onDo
   useEffect(() => {
     if (!done) return
     setRunning(false)
-    const t = setTimeout(() => onDoneRef.current?.(), 1500)
-    return () => clearTimeout(t)
+    onDoneRef.current?.()
   }, [done])
 
   return (
@@ -128,8 +127,7 @@ function IntervallsätzeTimer({ autoStart, onDone }: { autoStart?: boolean; onDo
 
   useEffect(() => {
     if (!done) return
-    const t = setTimeout(() => onDoneRef.current?.(), 1500)
-    return () => clearTimeout(t)
+    onDoneRef.current?.()
   }, [done])
 
   const nextSatz = () => {
@@ -223,8 +221,7 @@ function SupersatzTimer({ autoStart, onDone }: { autoStart?: boolean; onDone?: (
 
   useEffect(() => {
     if (!done) return
-    const t = setTimeout(() => onDoneRef.current?.(), 1500)
-    return () => clearTimeout(t)
+    onDoneRef.current?.()
   }, [done])
 
   return (
@@ -297,8 +294,7 @@ function HochintensitaetsTimer({ autoStart, onDone }: { autoStart?: boolean; onD
 
   useEffect(() => {
     if (!done) return
-    const t = setTimeout(() => onDoneRef.current?.(), 1500)
-    return () => clearTimeout(t)
+    onDoneRef.current?.()
   }, [done])
 
   const reset = () => { setRound(1); setPhase('work'); setSeconds(20); setRunning(false); setDone(false) }

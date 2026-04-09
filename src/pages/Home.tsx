@@ -4,7 +4,7 @@ export function Home() {
   const navigate = useNavigate()
 
   return (
-    <div className="min-h-screen flex flex-col px-4 pt-safe">
+    <div className="min-h-full flex flex-col px-4 pt-safe">
       <div className="pt-14 pb-8">
         <h1 className="text-4xl font-bold text-stone-900 dark:text-stone-100 tracking-tight">GymBook</h1>
         <p className="text-stone-500 dark:text-stone-400 mt-1 text-sm">Track your training. Own your progress.</p>
