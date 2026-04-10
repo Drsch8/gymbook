@@ -4,10 +4,12 @@ import {
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
   sendPasswordResetEmail,
+  sendEmailVerification,
+  signOut,
 } from 'firebase/auth'
 import { auth } from '../lib/firebase'
 
-type Mode = 'signin' | 'signup' | 'reset'
+type Mode = 'signin' | 'signup' | 'reset' | 'verify'
 
 function errorMessage(code: string): string {
   switch (code) {
@@ -18,6 +20,7 @@ function errorMessage(code: string): string {
     case 'auth/weak-password':     return 'Passwort muss mindestens 6 Zeichen haben.'
     case 'auth/invalid-email':     return 'Ungültige E-Mail-Adresse.'
     case 'auth/too-many-requests': return 'Zu viele Versuche. Kurz warten und erneut versuchen.'
+    case 'auth/unverified-email':  return 'E-Mail noch nicht bestätigt. Bitte prüfe dein Postfach.'
     default:                       return `Fehler: ${code}`
   }
 }
@@ -44,11 +47,18 @@ export function Login() {
         await sendPasswordResetEmail(auth, email)
         setResetSent(true)
       } else if (mode === 'signin') {
-        await signInWithEmailAndPassword(auth, email.trim(), password)
+        const { user } = await signInWithEmailAndPassword(auth, email.trim(), password)
+        if (!user.emailVerified) {
+          await signOut(auth)
+          setError(errorMessage('auth/unverified-email'))
+          return
+        }
         navigate('/')
       } else {
-        await createUserWithEmailAndPassword(auth, email.trim(), password)
-        navigate('/')
+        const { user } = await createUserWithEmailAndPassword(auth, email.trim(), password)
+        await sendEmailVerification(user)
+        await signOut(auth)
+        switchMode('verify')
       }
     } catch (err) {
       const code = (err as { code?: string }).code ?? ''
@@ -64,7 +74,17 @@ export function Login() {
         <h1 className="text-3xl font-bold text-stone-100 mb-2">GymBook</h1>
         <p className="text-stone-400 text-sm mb-10">Dein persönliches Trainingsbuch</p>
 
-        {resetSent ? (
+        {mode === 'verify' ? (
+          <div className="bg-stone-800 rounded-2xl p-6 text-center">
+            <p className="text-stone-100 font-medium mb-2">Bestätigungslink gesendet</p>
+            <p className="text-stone-400 text-sm mb-4">
+              Prüfe dein Postfach für <span className="text-stone-200">{email}</span> und klicke auf den Bestätigungslink. Danach kannst du dich anmelden.
+            </p>
+            <button onClick={() => switchMode('signin')} className="text-stone-400 text-sm underline">
+              Zur Anmeldung
+            </button>
+          </div>
+        ) : resetSent ? (
           <div className="bg-stone-800 rounded-2xl p-6 text-center">
             <p className="text-stone-100 font-medium mb-2">E-Mail gesendet</p>
             <p className="text-stone-400 text-sm mb-4">
@@ -134,7 +154,7 @@ export function Login() {
           </form>
         )}
 
-        {!resetSent && (
+        {!resetSent && mode !== 'verify' && (
           <div className="mt-4 flex flex-col items-center gap-1">
             {mode === 'signin' && <>
               <button onClick={() => switchMode('signup')} className="text-stone-500 text-sm py-1">

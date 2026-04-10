@@ -44,15 +44,16 @@ export function App() {
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, user => {
-      setAuthed(!!user)
+      const verified = !!user && user.emailVerified
+      setAuthed(verified)
       setAuthReady(true)
 
-      if (user && !syncedRef.current) {
+      if (verified && !syncedRef.current) {
         syncedRef.current = true
-        syncFromFirebase(user.uid, true).catch(console.error)
+        syncFromFirebase(user!.uid, true).catch(console.error)
         if (pathname === '/login') navigate('/')
       }
-      if (!user) {
+      if (!verified) {
         syncedRef.current = false
         clearLocalData().catch(console.error)
         if (pathname !== '/login') navigate('/login')
