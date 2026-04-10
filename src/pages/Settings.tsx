@@ -57,7 +57,7 @@ export function Settings() {
           <p className="text-stone-900 dark:text-stone-100 text-sm font-medium mb-0.5">Default rest time</p>
           <p className="text-stone-400 dark:text-stone-500 text-xs mb-3">{prefs.restTimerDefault}s between sets</p>
           <div className="flex gap-2">
-            {[60, 90, 120, 180, 240].map(s => (
+            {[30, 60, 90, 120, 180].map(s => (
               <button key={s} onClick={() => update({ restTimerDefault: s })}
                 className={`flex-1 py-1.5 rounded-lg text-xs font-medium transition-colors ${
                   prefs.restTimerDefault === s

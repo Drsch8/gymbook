@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { ExerciseSearch } from '../components/ExerciseSearch'
 import { ExerciseCard } from '../components/ExerciseCard'
@@ -686,6 +686,8 @@ export function NewSession() {
 
   const addExercise = async (exercise: Exercise) => {
     setShowSearch(false)
+    const allDone = exercises.length > 0 && exercises.every(e => e.sets.length > 0 && e.sets.every(s => s.completed))
+    if (allDone) setLastCompleted(0)
     const prev = await getLastSessionForExercise(exercise.id)
     const prevSets = prev?.exercises.find(e => e.exerciseId === exercise.id)?.sets ?? []
 
@@ -705,7 +707,7 @@ export function NewSession() {
       exerciseId: exercise.id,
       exerciseName: exercise.name,
       trackingType: exercise.trackingType,
-      sets: makeSets(3),
+      sets: makeSets(prevSets.length > 0 ? 3 : 1),
     }
 
     setExercises(prev => [...prev, item])
@@ -900,12 +902,6 @@ export function NewSession() {
           </>
         ) : null}
 
-        {lastCompleted > 0 && !isClassSession && (
-          <div className="flex justify-center py-1">
-            <RestTimer key={lastCompleted} defaultSeconds={restSeconds} />
-          </div>
-        )}
-
         {isClassSession && !isZirkel && !isSuper ? exercises.map((item, i) => (
           <ClassExerciseRow
             key={item.id}
@@ -913,25 +909,51 @@ export function NewSession() {
             method={state?.method ?? ''}
             onStart={() => setActiveIdx(i)}
           />
-        )) : !isClassSession ? exercises.map((item, i) => (
-          <ExerciseCard
-            key={item.id}
-            item={item}
-            weightUnit={weightUnit}
-            previousSets={previousSets[item.id]}
-            collapsed={item.id !== expandedId}
-            onToggle={() => setExpandedId(prev => prev === item.id ? null : item.id)}
-            onChange={updated => updateExercise(i, updated)}
-            onRemove={() => removeExercise(i)}
-            onSetCompleted={() => setLastCompleted(Date.now())}
-          />
-        )) : null}
+        )) : !isClassSession ? (() => {
+          const firstActive = exercises.findIndex(e => !(e.sets.length > 0 && e.sets.every(s => s.completed)))
+          return exercises.map((item, i) => (
+            <React.Fragment key={item.id}>
+              {i === firstActive && (
+                <RestTimer key={lastCompleted} defaultSeconds={restSeconds} lastCompleted={lastCompleted} />
+              )}
+              <ExerciseCard
+                item={item}
+                weightUnit={weightUnit}
+                previousSets={previousSets[item.id]}
+                collapsed={item.id !== expandedId}
+                onToggle={() => setExpandedId(prev => prev === item.id ? null : item.id)}
+                onChange={updated => {
+                  const wasAllDone = exercises[i].sets.length > 0 && exercises[i].sets.every(s => s.completed)
+                  const isAllDone  = updated.sets.length > 0 && updated.sets.every(s => s.completed)
+                  updateExercise(i, updated)
+                  if (!wasAllDone && isAllDone && exercises[i].id === expandedId) {
+                    const next = exercises[i + 1]
+                    setTimeout(() => setExpandedId(next?.id ?? null), 300)
+                  }
+                }}
+                onRemove={() => removeExercise(i)}
+                onSetCompleted={() => setLastCompleted(Date.now())}
+              />
+            </React.Fragment>
+          ))
+        })() : null}
 
         {!isClassSession && (showSearch ? (
-          <div ref={bottomRef} className="bg-white border border-stone-200 rounded-2xl p-4">
-            <p className="text-xs font-medium text-stone-400 uppercase tracking-wider mb-3">
-              {exercises.length === 0 ? 'Choose your first exercise' : 'Add exercise'}
-            </p>
+          <div ref={bottomRef} className="bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-2xl p-4">
+            <div className="flex items-center justify-between mb-3">
+              <p className="text-xs font-medium text-stone-400 dark:text-stone-500 uppercase tracking-wider">
+                {exercises.length === 0 ? 'Choose your first exercise' : 'Add exercise'}
+              </p>
+              {exercises.length > 0 && (
+                <button
+                  onClick={() => setShowSearch(false)}
+                  className="w-6 h-6 flex items-center justify-center rounded-full bg-stone-100 dark:bg-stone-700 text-stone-400 dark:text-stone-500 hover:bg-stone-200 dark:hover:bg-stone-600 hover:text-stone-600 dark:hover:text-stone-300 transition-colors text-xs"
+                  aria-label="Close"
+                >
+                  ✕
+                </button>
+              )}
+            </div>
             <ExerciseSearch onSelect={addExercise} autoFocus />
           </div>
         ) : (
@@ -946,7 +968,7 @@ export function NewSession() {
           </button>
         ))}
 
-        {allExercisesDone && (
+        {allExercisesDone && !showSearch && (
           <button
             onClick={finish}
             disabled={finishing}

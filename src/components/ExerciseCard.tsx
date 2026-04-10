@@ -113,7 +113,14 @@ export function ExerciseCard({ item, weightUnit, previousSets, collapsed, onTogg
         </div>
       </button>
 
-      {!collapsed && (
+      <div
+        style={{
+          display: 'grid',
+          gridTemplateRows: collapsed ? '0fr' : '1fr',
+          transition: 'grid-template-rows 0.28s ease',
+        }}
+      >
+      <div className="overflow-hidden">
         <div className="px-4 pb-4 pt-2 space-y-2">
           {/* Locked state: timerOnly exercise already completed */}
           {timerOnly && allDone ? (
@@ -131,7 +138,7 @@ export function ExerciseCard({ item, weightUnit, previousSets, collapsed, onTogg
               {method && <MethodTimer method={method} />}
 
               {!timerOnly && (
-                <div className="space-y-1">
+                <div className="sets-list space-y-1">
                   <div className="flex items-center gap-2 pb-1 text-xs text-stone-400 dark:text-stone-500 px-1">
                     <span className="w-5 text-center shrink-0">#</span>
                     <span className="w-14 text-center shrink-0 hidden sm:block">Prev</span>
@@ -176,7 +183,8 @@ export function ExerciseCard({ item, weightUnit, previousSets, collapsed, onTogg
             </>
           )}
         </div>
-      )}
+      </div>
+      </div>
     </div>
   )
 }
