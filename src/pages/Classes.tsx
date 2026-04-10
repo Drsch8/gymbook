@@ -215,12 +215,14 @@ function ProgramCard({
   onStart,
   onRedo,
   blocked,
+  hasDraft,
 }: {
   program: FogProgram
   sessionIndex: number
   onStart: () => void
   onRedo: () => void
   blocked?: boolean
+  hasDraft?: boolean
 }) {
   const [showInfo, setShowInfo] = useState(false)
   const flat = flattenFogProgram(program)
@@ -290,7 +292,7 @@ function ProgramCard({
                   : 'bg-stone-900 dark:bg-stone-100 hover:bg-stone-800 dark:hover:bg-white active:scale-[0.98] text-white dark:text-stone-900'
               }`}
             >
-              {started ? 'Weiter' : 'Starten'}
+              {hasDraft ? 'Weiter' : 'Starten'}
             </button>
           </div>
         )}
@@ -313,7 +315,8 @@ const DEV_METHOD_SESSIONS: { method: string; exercises: string[] }[] = [
   { method: 'Hochintensitätssätze', exercises: ['Kniebeuge', 'Liegestütz'] },
 ]
 
-function DevMethodCards() {
+// DEV: remove export + rename to DevMethodCards and uncomment usage below to re-enable
+export function DevMethodCards() {
   const navigate = useNavigate()
 
   function start(method: string, exerciseNames: string[]) {
@@ -415,12 +418,13 @@ export function Classes() {
           onStart={() => handleStart(program)}
           onRedo={() => resetFogProgram(program.id)}
           blocked={activeDraftProgramId !== null && activeDraftProgramId !== program.id}
+          hasDraft={activeDraftProgramId === program.id}
         />
       ))}
 
-      {/* DEV — remove before release */}
+      {/* DEV — uncomment to test training methods
       <DevMethodCards />
-      {/* END DEV */}
+      */}
 
       {showMethods && <TrainingMethodsPanel onClose={() => setShowMethods(false)} />}
     </div>

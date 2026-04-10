@@ -7,7 +7,7 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['favicon.ico', 'icons/*.png'],
+      includeAssets: ['icons/favicon.ico', 'icons/favicon.svg', 'icons/*.png'],
       manifest: {
         name: 'GymBook',
         short_name: 'GymBook',
@@ -18,9 +18,9 @@ export default defineConfig({
         orientation: 'portrait',
         start_url: '/',
         icons: [
-          { src: 'icons/icon-192.png', sizes: '192x192', type: 'image/png' },
-          { src: 'icons/icon-512.png', sizes: '512x512', type: 'image/png' },
-          { src: 'icons/icon-512.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' },
+          { src: 'icons/web-app-manifest-192x192.png', sizes: '192x192', type: 'image/png' },
+          { src: 'icons/web-app-manifest-512x512.png', sizes: '512x512', type: 'image/png' },
+          { src: 'icons/web-app-manifest-512x512.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' },
         ],
       },
       workbox: {

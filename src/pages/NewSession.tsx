@@ -150,7 +150,7 @@ function FlatStufen({ running, onDone, onProgress }: { running: boolean; onDone:
 
   useEffect(() => {
     if (running && seconds > 0) {
-      intervalRef.current = setInterval(() => setSeconds(s => s - 1), 10)
+      intervalRef.current = setInterval(() => setSeconds(s => s - 1), 1000)
     } else {
       if (intervalRef.current) clearInterval(intervalRef.current)
     }
@@ -194,7 +194,7 @@ function FlatIntervall({ running, onResume, onDone, onProgress }: { running: boo
 
   useEffect(() => {
     if (running && seconds > 0 && !done) {
-      intervalRef.current = setInterval(() => setSeconds(s => s - 1), 10)
+      intervalRef.current = setInterval(() => setSeconds(s => s - 1), 1000)
     } else {
       if (intervalRef.current) clearInterval(intervalRef.current)
     }
@@ -245,7 +245,7 @@ function SuperPanel({ exercises, onClose, onComplete }: {
 
   useEffect(() => {
     if (countdown <= 0) return
-    const t = setTimeout(() => setCountdown(c => c - 1), 10)
+    const t = setTimeout(() => setCountdown(c => c - 1), 1000)
     return () => clearTimeout(t)
   }, [countdown])
 
@@ -260,7 +260,7 @@ function SuperPanel({ exercises, onClose, onComplete }: {
 
   useEffect(() => {
     if (running && seconds > 0) {
-      intervalRef.current = setInterval(() => setSeconds(s => s - 1), 10)
+      intervalRef.current = setInterval(() => setSeconds(s => s - 1), 1000)
     } else {
       if (intervalRef.current) clearInterval(intervalRef.current)
     }
@@ -415,7 +415,7 @@ function ClassExercisePanel({ exercise, method, onClose, onComplete }: {
 
   useEffect(() => {
     if (countdown <= 0) return
-    const t = setTimeout(() => setCountdown(c => c - 1), 10)
+    const t = setTimeout(() => setCountdown(c => c - 1), 1000)
     return () => clearTimeout(t)
   }, [countdown])
 
@@ -514,7 +514,7 @@ function ZirkelPanel({ exercises, onClose, onComplete }: {
 
   useEffect(() => {
     if (countdown <= 0) return
-    const t = setTimeout(() => setCountdown(c => c - 1), 10)
+    const t = setTimeout(() => setCountdown(c => c - 1), 1000)
     return () => clearTimeout(t)
   }, [countdown])
 
@@ -529,7 +529,7 @@ function ZirkelPanel({ exercises, onClose, onComplete }: {
 
   useEffect(() => {
     if (running && seconds > 0) {
-      intervalRef.current = setInterval(() => setSeconds(s => s - 1), 10)
+      intervalRef.current = setInterval(() => setSeconds(s => s - 1), 1000)
     } else {
       if (intervalRef.current) clearInterval(intervalRef.current)
       if (seconds === 0) { setRunning(false); setTimerDone(true) }

@@ -16,7 +16,9 @@
       "Bash(node:*)",
       "Bash(ls /Users/david/GitHub/gymbook/.env*)",
       "Bash(npm list:*)",
-      "Bash(npm uninstall:*)"
+      "Bash(npm uninstall:*)",
+      "Bash(file:*)",
+      "Bash(grep:*)"
     ]
   }
 }
