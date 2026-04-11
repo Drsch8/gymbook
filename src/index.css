@@ -25,12 +25,4 @@
     to   { opacity: 1; transform: translateY(0); }
   }
 
-  .sets-list:has(.num-dragging) .set-row:not(:has(.num-dragging)) {
-    filter: blur(2px);
-    opacity: 0.35;
-    transition: filter 0.12s ease, opacity 0.12s ease;
-  }
-  .sets-list .set-row {
-    transition: filter 0.15s ease, opacity 0.15s ease;
-  }
 }

@@ -1,5 +1,6 @@
-import { useEffect, useRef, useState } from 'react'
+import { useRef, useState } from 'react'
 import type { ExerciseSet, TrackingType, WeightUnit } from '../types'
+import { dragState } from '../utils/dragState'
 
 interface Props {
   set: ExerciseSet
@@ -17,11 +18,7 @@ function fmt(n: number | undefined, unit = '') {
 }
 
 const SLOT_H = 28
-const GHOST_OFFSETS = [-2, -1, 1, 2]
-const GHOST_FONT    = [11, 15, 15, 11]
-const GHOST_OPACITY = [0.15, 0.38, 0.38, 0.15]
-const GHOST_BLUR    = [3.5, 1.5, 1.5, 3.5]
-const REVEAL        = 72
+const REVEAL  = 72
 
 function NumCell({
   value, onChange, step = 1, inputMode = 'numeric', disabled,
@@ -32,27 +29,30 @@ function NumCell({
   inputMode?: 'numeric' | 'decimal'
   disabled: boolean
 }) {
-  const inputRef  = useRef<HTMLInputElement>(null)
-  const dragStart = useRef<number | null>(null)
-  const dragBase  = useRef<number>(0)
-  const lastStep  = useRef<number>(0)
+  const cellRef    = useRef<HTMLDivElement>(null)
+  const inputRef   = useRef<HTMLInputElement>(null)
+  const dragStart  = useRef<number | null>(null)
+  const dragBase   = useRef<number>(0)
+  const lastStep   = useRef<number>(0)
+  const rectRef    = useRef<DOMRect | null>(null)
+  const preventRef = useRef<((e: TouchEvent) => void) | null>(null)
   const [dragging, setDragging] = useState(false)
 
   const clamp = (v: number) => Math.max(0, +(v).toFixed(2))
 
-  useEffect(() => {
-    if (!dragging) return
-    const prevent = (e: TouchEvent) => e.preventDefault()
-    document.addEventListener('touchmove', prevent, { passive: false })
-    return () => document.removeEventListener('touchmove', prevent)
-  }, [dragging])
-
   const handleTouchStart = (e: React.TouchEvent) => {
     if (disabled) return
+    const rect = cellRef.current!.getBoundingClientRect()
+    rectRef.current   = rect
     dragStart.current = e.touches[0].clientY
     dragBase.current  = value ?? 0
     lastStep.current  = 0
     setDragging(true)
+    dragState.set({ rect, value: value ?? 0, step })
+
+    const prevent = (ev: TouchEvent) => ev.preventDefault()
+    preventRef.current = prevent
+    document.addEventListener('touchmove', prevent, { passive: false })
   }
 
   const handleTouchMove = (e: React.TouchEvent) => {
@@ -62,7 +62,9 @@ function NumCell({
     const steps = Math.round(dy / 20)
     if (steps !== lastStep.current) {
       lastStep.current = steps
-      onChange(clamp(dragBase.current + steps * step))
+      const next = clamp(dragBase.current + steps * step)
+      onChange(next)
+      dragState.set({ rect: rectRef.current!, value: next, step })
       if ('vibrate' in navigator) navigator.vibrate(4)
     }
   }
@@ -70,48 +72,30 @@ function NumCell({
   const handleTouchEnd = () => {
     dragStart.current = null
     setDragging(false)
+    dragState.set(null)
+    if (preventRef.current) {
+      document.removeEventListener('touchmove', preventRef.current)
+      preventRef.current = null
+    }
   }
 
   const centerLabel = value == null ? '—' : String(+value.toFixed(2))
 
   return (
     <div
-      className={`relative flex-1 min-w-0 ${dragging ? 'num-dragging' : ''} ${disabled ? 'cursor-default' : 'cursor-ns-resize'}`}
+      ref={cellRef}
+      className={`relative flex-1 min-w-0 ${disabled ? 'cursor-default' : 'cursor-ns-resize'}`}
       style={{ height: SLOT_H }}
       onTouchStart={handleTouchStart}
       onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
       onClick={() => { if (!disabled && lastStep.current === 0) inputRef.current?.focus() }}
     >
-      {dragging && GHOST_OFFSETS.map((offset, i) => {
-        const raw = (value ?? 0) + offset * step
-        if (raw < 0) return null
-        return (
-          <div
-            key={offset}
-            className="absolute inset-x-0 flex items-center justify-center font-mono tabular-nums pointer-events-none select-none text-stone-500 dark:text-stone-400"
-            style={{
-              height: SLOT_H,
-              top: offset < 0 ? Math.abs(offset) * -SLOT_H : Math.abs(offset) * SLOT_H,
-              fontSize: GHOST_FONT[i],
-              opacity: GHOST_OPACITY[i],
-              filter: `blur(${GHOST_BLUR[i]}px)`,
-            }}
-          >
-            {String(+clamp(raw).toFixed(2))}
-          </div>
-        )
-      })}
-
-      {dragging && !disabled && (
-        <div className="absolute inset-x-0 inset-y-0 pointer-events-none border-t border-b border-stone-300 dark:border-stone-600" />
-      )}
-
       <div
         className={`absolute inset-0 flex items-center justify-center font-mono tabular-nums pointer-events-none select-none ${
-          disabled ? 'text-stone-400 dark:text-stone-500' : 'text-stone-900 dark:text-stone-100'
+          disabled ? 'text-stone-400 dark:text-stone-500' : dragging ? 'opacity-0' : 'text-stone-900 dark:text-stone-100'
         }`}
-        style={{ fontSize: 30, fontWeight: 600, opacity: disabled ? 0.4 : 1 }}
+        style={{ fontSize: 30, fontWeight: 600, opacity: disabled ? 0.4 : undefined }}
       >
         {centerLabel}
       </div>

@@ -11,6 +11,7 @@ import { Recent } from './pages/Recent'
 import { Statistics } from './pages/Statistics'
 import { Settings } from './pages/Settings'
 import { Login } from './pages/Login'
+import { GhostPicker } from './components/GhostPicker'
 import { auth } from './lib/firebase'
 import { syncFromFirebase, clearLocalData } from './db'
 
@@ -111,6 +112,7 @@ export function App() {
         </Routes>
       </main>
       {showNav && authed && <BottomNav />}
+      <GhostPicker />
       {wellDone && (
         <div className={`fixed inset-0 z-[300] flex items-center justify-center bg-stone-950 transition-opacity duration-700 pointer-events-none ${wellDoneFade ? 'opacity-0' : 'opacity-100'}`}>
           <div className="text-center animate-scaleIn">
