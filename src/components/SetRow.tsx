@@ -17,7 +17,7 @@ function fmt(n: number | undefined, unit = '') {
   return n != null ? `${n}${unit}` : '—'
 }
 
-const SLOT_H = 28
+const SLOT_H = 52
 const REVEAL  = 72
 
 function NumCell({
@@ -92,6 +92,22 @@ function NumCell({
       onTouchEnd={handleTouchEnd}
       onClick={() => { if (!disabled && lastStep.current === 0) inputRef.current?.focus() }}
     >
+      {!disabled && !dragging && (
+        <>
+          <div className="absolute inset-x-0 top-0 h-5 pointer-events-none flex items-start justify-center pt-1.5
+            bg-gradient-to-b from-white dark:from-stone-800 to-transparent">
+            <svg width="12" height="7" viewBox="0 0 12 7" className="text-stone-400 dark:text-stone-500">
+              <path d="M6 0L12 7H0L6 0Z" fill="currentColor" />
+            </svg>
+          </div>
+          <div className="absolute inset-x-0 bottom-0 h-5 pointer-events-none flex items-end justify-center pb-1.5
+            bg-gradient-to-t from-white dark:from-stone-800 to-transparent">
+            <svg width="12" height="7" viewBox="0 0 12 7" className="text-stone-400 dark:text-stone-500">
+              <path d="M6 7L0 0H12L6 7Z" fill="currentColor" />
+            </svg>
+          </div>
+        </>
+      )}
       <div
         className={`absolute inset-0 flex items-center justify-center font-mono tabular-nums pointer-events-none select-none ${
           disabled ? 'text-stone-400 dark:text-stone-500' : dragging ? 'opacity-0' : 'text-stone-900 dark:text-stone-100'

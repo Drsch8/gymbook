@@ -32,7 +32,6 @@ export function GhostPicker() {
   const decimalPlaces = (step.toString().split('.')[1] ?? '').length
 
   const bandColor = dark ? '#57534e' : '#d6d3d1'
-  const arrowColor = dark ? '#a8a29e' : '#78716c'
 
   return createPortal(
     <>
@@ -51,28 +50,6 @@ export function GhostPicker() {
         borderTop:    `1px solid ${bandColor}`,
         borderBottom: `1px solid ${bandColor}`,
       }} />
-
-      {/* Up arrow (above band) */}
-      <div style={{
-        position: 'fixed', left: 0, right: 0, zIndex: 43, pointerEvents: 'none',
-        top: cy - GAP / 2 - 14, height: 12,
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-      }}>
-        <svg width="14" height="8" viewBox="0 0 14 8" fill="none">
-          <path d="M1 7L7 1L13 7" stroke={arrowColor} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-        </svg>
-      </div>
-
-      {/* Down arrow (below band) */}
-      <div style={{
-        position: 'fixed', left: 0, right: 0, zIndex: 43, pointerEvents: 'none',
-        top: cy + GAP / 2 + 2, height: 12,
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-      }}>
-        <svg width="14" height="8" viewBox="0 0 14 8" fill="none">
-          <path d="M1 1L7 7L13 1" stroke={arrowColor} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-        </svg>
-      </div>
 
       {/* Ghost numbers */}
       {OFFSETS.map((offset, i) => {
