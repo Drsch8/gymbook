@@ -18,7 +18,9 @@
       "Bash(npm list:*)",
       "Bash(npm uninstall:*)",
       "Bash(file:*)",
-      "Bash(grep:*)"
+      "Bash(grep:*)",
+      "Bash(git fetch:*)",
+      "Bash(git pull:*)"
     ]
   }
 }

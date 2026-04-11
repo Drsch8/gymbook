@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import type { ExerciseSet, TrackingType, WeightUnit } from '../types'
 import { dragState } from '../utils/dragState'
 
