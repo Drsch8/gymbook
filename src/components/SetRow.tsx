@@ -17,7 +17,7 @@ function fmt(n: number | undefined, unit = '') {
   return n != null ? `${n}${unit}` : '—'
 }
 
-const SLOT_H = 52
+const SLOT_H = 62
 const REVEAL  = 72
 
 function NumCell({
@@ -94,13 +94,13 @@ function NumCell({
     >
       {!disabled && !dragging && (
         <>
-          <div className="absolute inset-x-0 top-0 h-5 pointer-events-none flex items-start justify-center pt-1.5
+          <div className="absolute inset-x-0 top-0 h-6 pointer-events-none flex items-start justify-center pt-1.5
             bg-gradient-to-b from-white dark:from-stone-800 to-transparent">
             <svg width="12" height="7" viewBox="0 0 12 7" className="text-stone-400 dark:text-stone-500">
               <path d="M6 0L12 7H0L6 0Z" fill="currentColor" />
             </svg>
           </div>
-          <div className="absolute inset-x-0 bottom-0 h-5 pointer-events-none flex items-end justify-center pb-1.5
+          <div className="absolute inset-x-0 bottom-0 h-6 pointer-events-none flex items-end justify-center pb-1.5
             bg-gradient-to-t from-white dark:from-stone-800 to-transparent">
             <svg width="12" height="7" viewBox="0 0 12 7" className="text-stone-400 dark:text-stone-500">
               <path d="M6 7L0 0H12L6 7Z" fill="currentColor" />
@@ -181,6 +181,7 @@ export function SetRow({ set, index, trackingType, weightUnit, onChange, onRemov
     }
 
     const onMove = (e: TouchEvent) => {
+      if (dragState.get() !== null) return  // NumCell vertical drag active — lock swipe
       const dx = e.touches[0].clientX - startX.v
       const dy = e.touches[0].clientY - startY.v
       if (!dir.v) {
