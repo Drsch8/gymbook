@@ -48,7 +48,7 @@ function NumCell({
     dragBase.current  = value ?? 0
     lastStep.current  = 0
     setDragging(true)
-    dragState.set({ rect, value: value ?? 0, step })
+    dragState.set({ rect, value: value ?? 0, step, rawSteps: 0 })
 
     const prevent = (ev: TouchEvent) => ev.preventDefault()
     preventRef.current = prevent
@@ -58,15 +58,16 @@ function NumCell({
   const handleTouchMove = (e: React.TouchEvent) => {
     if (disabled || dragStart.current === null) return
     e.preventDefault()
-    const dy    = dragStart.current - e.touches[0].clientY
-    const steps = Math.round(dy / 20)
+    const dy       = dragStart.current - e.touches[0].clientY
+    const rawSteps = dy / 20
+    const steps    = Math.round(rawSteps)
+    const next     = clamp(dragBase.current + steps * step)
     if (steps !== lastStep.current) {
       lastStep.current = steps
-      const next = clamp(dragBase.current + steps * step)
       onChange(next)
-      dragState.set({ rect: rectRef.current!, value: next, step })
       if ('vibrate' in navigator) navigator.vibrate(4)
     }
+    dragState.set({ rect: rectRef.current!, value: next, step, rawSteps })
   }
 
   const handleTouchEnd = () => {

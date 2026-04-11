@@ -1,4 +1,4 @@
-export type DragInfo = { rect: DOMRect; value: number; step: number } | null
+export type DragInfo = { rect: DOMRect; value: number; step: number; rawSteps: number } | null
 
 let _state: DragInfo = null
 const _listeners = new Set<() => void>()

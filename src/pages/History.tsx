@@ -245,7 +245,7 @@ function CalendarView({ sessions, navigate: navigateTo }: { sessions: Session[];
                   <p className="text-sm font-semibold text-stone-900">
                     {selectedPlan.title ?? 'Planned workout'}
                   </p>
-                  <p className="text-xs text-stone-400 mt-0.5">Scheduled</p>
+                  <p className="text-xs text-stone-400 mt-0.5">{selected! < today ? 'Missed' : 'Scheduled'}</p>
                 </div>
                 <button onClick={() => removePlan(selectedPlan.id)}
                   className="text-xs text-stone-400 hover:text-red-500 transition-colors">
@@ -256,7 +256,7 @@ function CalendarView({ sessions, navigate: navigateTo }: { sessions: Session[];
                 onClick={() => navigate('/session/new', { state: { name: selectedPlan.title } })}
                 className="w-full py-2.5 rounded-xl bg-stone-900 text-white text-sm font-semibold hover:bg-stone-800 transition-colors"
               >
-                Start this workout
+                {selected! < today ? 'Log this workout' : 'Start this workout'}
               </button>
             </div>
           )}
@@ -458,17 +458,15 @@ export function History() {
     <div className="px-4 py-6 max-w-lg mx-auto space-y-4">
       <h1 className="text-2xl font-bold text-stone-900">Calendar</h1>
 
-      {sessions.length === 0 ? (
-        <p className="text-center text-stone-400 text-sm mt-16">No sessions logged yet.</p>
-      ) : (
-        <>
-          <SegmentedControl value={view} onChange={setView} />
+      <SegmentedControl value={view} onChange={setView} />
 
-          {view === 'calendar' && <CalendarView sessions={sessions} navigate={id => navigate(`/session/${id}`)} />}
-          {view === 'feed'     && <FeedView     sessions={sessions} navigate={id => navigate(`/session/${id}`)} />}
-          {view === 'records'  && <RecordsView  sessions={sessions} />}
-        </>
-      )}
+      {view === 'calendar' && <CalendarView sessions={sessions} navigate={id => navigate(`/session/${id}`)} />}
+      {view === 'feed'     && (sessions.length === 0
+        ? <p className="text-center text-stone-400 text-sm py-16">No sessions logged yet.</p>
+        : <FeedView sessions={sessions} navigate={id => navigate(`/session/${id}`)} />)}
+      {view === 'records'  && (sessions.length === 0
+        ? <p className="text-center text-stone-400 text-sm py-16">No records yet.</p>
+        : <RecordsView sessions={sessions} />)}
     </div>
   )
 }
