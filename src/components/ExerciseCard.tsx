@@ -1,7 +1,10 @@
+import { useEffect, useRef } from 'react'
 import { nanoid } from '../utils/nanoid'
 import type { ExerciseSet, SessionExercise, WeightUnit } from '../types'
 import { SetRow } from './SetRow'
 import { MethodTimer } from './MethodTimer'
+
+const REVEAL_EX = 88
 
 interface Props {
   item: SessionExercise
@@ -71,11 +74,77 @@ export function ExerciseCard({ item, weightUnit, previousSets, collapsed, onTogg
   const allDone = completedCount === item.sets.length && item.sets.length > 0
   const machineAlt = getMachineAlt(item.exerciseId, item.exerciseName)
 
+  const slideRef  = useRef<HTMLDivElement>(null)
+  const headerRef = useRef<HTMLButtonElement>(null)
+  const swipeXRef = useRef(0)
+
+  const setSlideX = (x: number, animated: boolean) => {
+    swipeXRef.current = x
+    const el = slideRef.current
+    if (!el) return
+    el.style.transition = animated ? 'transform 0.22s ease' : 'none'
+    el.style.transform  = `translateX(${x}px)`
+  }
+
+  useEffect(() => {
+    const header = headerRef.current
+    if (!header || isClassSession) return
+
+    const s = { startX: 0, startY: 0, dir: null as 'h' | 'v' | null, baseX: 0, active: false }
+
+    const onStart = (e: TouchEvent) => {
+      s.startX = e.touches[0].clientX
+      s.startY = e.touches[0].clientY
+      s.dir    = null
+      s.baseX  = swipeXRef.current
+      s.active = true
+      document.addEventListener('touchmove', onMove, { passive: false })
+      document.addEventListener('touchend',  onEnd,  { passive: true  })
+    }
+    const onMove = (e: TouchEvent) => {
+      if (!s.active) return
+      const dx = e.touches[0].clientX - s.startX
+      const dy = e.touches[0].clientY - s.startY
+      if (!s.dir) {
+        if (Math.abs(dx) > 6 || Math.abs(dy) > 6)
+          s.dir = Math.abs(dx) > Math.abs(dy) ? 'h' : 'v'
+        return
+      }
+      if (s.dir === 'v') return
+      e.preventDefault()
+      setSlideX(Math.max(-REVEAL_EX, Math.min(0, s.baseX + dx)), false)
+    }
+    const onEnd = () => {
+      if (!s.active) return
+      s.active = false
+      if (s.dir === 'h')
+        setSlideX(swipeXRef.current < -REVEAL_EX / 2 ? -REVEAL_EX : 0, true)
+      document.removeEventListener('touchmove', onMove)
+      document.removeEventListener('touchend',  onEnd)
+    }
+
+    header.addEventListener('touchstart', onStart, { passive: true })
+    return () => {
+      header.removeEventListener('touchstart', onStart)
+      document.removeEventListener('touchmove', onMove)
+      document.removeEventListener('touchend',  onEnd)
+    }
+  }, [isClassSession])
+
   return (
-    <div className="bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-2xl overflow-hidden transition-colors">
+    <div className="overflow-hidden rounded-2xl border border-stone-200 dark:border-stone-700 transition-colors">
+      {/* Flex row: card content + delete zone side-by-side. Row is REVEAL_EX wider than
+          the container so the delete zone is naturally hidden by overflow-hidden at rest. */}
+      <div
+        ref={slideRef}
+        className="flex"
+        style={{ transform: 'translateX(0)', width: isClassSession ? undefined : `calc(100% + ${REVEAL_EX}px)` }}
+      >
+      <div className="flex-1 min-w-0 bg-white dark:bg-stone-800">
       <button
+        ref={headerRef}
         className="w-full flex items-center justify-between px-4 py-3 border-b border-stone-100 dark:border-stone-700 text-left"
-        onClick={onToggle}
+        onClick={() => { if (swipeXRef.current !== 0) { setSlideX(0, true); return } onToggle() }}
       >
         <div className="flex items-center gap-2 min-w-0">
           {allDone && (
@@ -98,14 +167,6 @@ export function ExerciseCard({ item, weightUnit, previousSets, collapsed, onTogg
         </div>
         <div className="flex items-center gap-3 shrink-0 ml-2">
           <span className="text-xs text-stone-400 dark:text-stone-500 shrink-0">{completedCount}/{item.sets.length}</span>
-          {!isClassSession && (
-            <button
-              onClick={e => { e.stopPropagation(); onRemove() }}
-              className="text-stone-300 dark:text-stone-600 hover:text-red-500 transition-colors text-xs"
-            >
-              Remove
-            </button>
-          )}
           <svg className={`w-4 h-4 text-stone-300 dark:text-stone-600 transition-transform ${collapsed ? '-rotate-90' : ''}`}
             fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
@@ -147,7 +208,7 @@ export function ExerciseCard({ item, weightUnit, previousSets, collapsed, onTogg
                     )}
                     {item.trackingType === 'reps_only' && <span className="flex-1 text-center">Reps</span>}
                     {item.trackingType === 'time' && <span className="flex-1 text-center">Seconds</span>}
-                    <span className="w-8 shrink-0" /><span className="w-8 shrink-0" />
+                    <span className="w-8 shrink-0" />
                   </div>
 
                   {item.sets.map((set, i) => (
@@ -185,6 +246,20 @@ export function ExerciseCard({ item, weightUnit, previousSets, collapsed, onTogg
         </div>
       </div>
       </div>
+      </div>{/* end inner content div */}
+
+      {/* Delete zone — naturally to the right, revealed by sliding left */}
+      {!isClassSession && (
+        <button
+          className="flex-shrink-0 flex items-center justify-center bg-red-500 text-white text-sm font-semibold"
+          style={{ width: REVEAL_EX }}
+          onClick={() => { setSlideX(0, true); onRemove() }}
+          aria-label="Remove exercise"
+        >
+          Delete
+        </button>
+      )}
+      </div>{/* end flex row (slideRef) */}
     </div>
   )
 }

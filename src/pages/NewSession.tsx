@@ -626,6 +626,8 @@ export function NewSession() {
   const [showSuperPanel, setShowSuperPanel] = useState(false)
   const [circuitDone, setCircuitDone] = useState(false)
   const [finishing, setFinishing] = useState(false)
+  const [undoItem, setUndoItem] = useState<{ exercise: SessionExercise; index: number } | null>(null)
+  const undoTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const startedAt = useRef(initialDraft?.startedAt ?? new Date().toISOString())
   const bottomRef = useRef<HTMLDivElement>(null)
   // Refs for reliable draft saving (always hold latest values)
@@ -730,6 +732,20 @@ export function NewSession() {
     setExercises(prev => prev.filter((_, i) => i !== index))
     if (removed.id === expandedId) setExpandedId(null)
     if (exercises.length <= 1) setShowSearch(true)
+    if (undoTimerRef.current) clearTimeout(undoTimerRef.current)
+    setUndoItem({ exercise: removed, index })
+    undoTimerRef.current = setTimeout(() => setUndoItem(null), 5000)
+  }
+
+  const undoRemove = () => {
+    if (!undoItem) return
+    if (undoTimerRef.current) clearTimeout(undoTimerRef.current)
+    setExercises(prev => {
+      const next = [...prev]
+      next.splice(undoItem.index, 0, undoItem.exercise)
+      return next
+    })
+    setUndoItem(null)
   }
 
   const finish = async () => {
@@ -775,7 +791,13 @@ export function NewSession() {
           ← Back
         </button>
         <span className="text-sm text-stone-400 dark:text-stone-500 font-mono">{totalCompleted}/{totalSets} sets</span>
-        <div className="w-16" />
+        <div className="w-16 flex justify-end">
+          {undoItem && (
+            <button onClick={undoRemove} className="text-sm text-stone-500 dark:text-stone-400 hover:text-stone-700 dark:hover:text-stone-200 transition-colors">
+              Undo
+            </button>
+          )}
+        </div>
       </header>
 
       <div className="flex-1 px-4 py-5 space-y-3 max-w-lg mx-auto w-full">
