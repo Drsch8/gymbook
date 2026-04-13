@@ -244,7 +244,7 @@ export function SetRow({ set, index, trackingType, weightUnit, onChange, onRemov
   }, [locked])
 
   return (
-    <div className={`set-row overflow-hidden rounded-xl transition-opacity duration-200 ${locked ? 'opacity-40' : ''}`} style={{ border: '3px solid red' }}>
+    <div className={`set-row overflow-hidden rounded-xl transition-opacity duration-200 ${locked ? 'opacity-40' : ''}`}>
       {/* Flex row wider than container: row content + delete zone. Delete zone is naturally
           clipped by overflow-hidden at rest — no z-index, no bleed. */}
       <div
