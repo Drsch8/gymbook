@@ -84,8 +84,11 @@ function NumCell({
         d.dragValue = next           // remember final value; parent notified on touchend only
         if ('vibrate' in navigator) navigator.vibrate(4)
       }
+      // Refresh rect each frame so the ghost stays aligned even if layout shifts
+      // (e.g. soft keyboard opening pushes the cell's position)
+      d.rect = el.getBoundingClientRect()
       // Update ghost picker every frame (no parent re-renders during drag)
-      dragState.set({ rect: d.rect!, value: next, step: stepRef.current, rawSteps })
+      dragState.set({ rect: d.rect, value: next, step: stepRef.current, rawSteps })
     }
 
     const onEnd = () => {
@@ -139,27 +142,29 @@ function NumCell({
       className={`relative flex-1 min-w-0 ${disabled ? 'cursor-default' : 'cursor-ns-resize'}`}
       style={{ height: SLOT_H }}
     >
-      {!dragging && (
-        <>
-          <div className="absolute inset-x-0 top-0 h-6 pointer-events-none flex items-start justify-center pt-1.5
-            bg-gradient-to-b from-white dark:from-stone-800 to-transparent">
-            <svg width="12" height="7" viewBox="0 0 12 7" className={disabled ? 'text-stone-200 dark:text-stone-700' : 'text-stone-400 dark:text-stone-500'}>
-              <path d="M6 0L12 7H0L6 0Z" fill="currentColor" />
-            </svg>
-          </div>
-          <div className="absolute inset-x-0 bottom-0 h-6 pointer-events-none flex items-end justify-center pb-1.5
-            bg-gradient-to-t from-white dark:from-stone-800 to-transparent">
-            <svg width="12" height="7" viewBox="0 0 12 7" className={disabled ? 'text-stone-200 dark:text-stone-700' : 'text-stone-400 dark:text-stone-500'}>
-              <path d="M6 7L0 0H12L6 7Z" fill="currentColor" />
-            </svg>
-          </div>
-        </>
-      )}
       <div
-        className={`absolute inset-0 flex items-center font-mono tabular-nums pointer-events-none select-none ${
-          disabled ? 'text-stone-400 dark:text-stone-500' : dragging ? 'opacity-0' : 'text-stone-900 dark:text-stone-100'
+        className="absolute inset-x-0 top-0 h-6 pointer-events-none flex items-start justify-center pt-1.5
+          bg-gradient-to-b from-white dark:from-stone-800 to-transparent transition-opacity duration-150"
+        style={{ opacity: dragging ? 0 : 1 }}
+      >
+        <svg width="12" height="7" viewBox="0 0 12 7" className={disabled ? 'text-stone-200 dark:text-stone-700' : 'text-stone-400 dark:text-stone-500'}>
+          <path d="M6 0L12 7H0L6 0Z" fill="currentColor" />
+        </svg>
+      </div>
+      <div
+        className="absolute inset-x-0 bottom-0 h-6 pointer-events-none flex items-end justify-center pb-1.5
+          bg-gradient-to-t from-white dark:from-stone-800 to-transparent transition-opacity duration-150"
+        style={{ opacity: dragging ? 0 : 1 }}
+      >
+        <svg width="12" height="7" viewBox="0 0 12 7" className={disabled ? 'text-stone-200 dark:text-stone-700' : 'text-stone-400 dark:text-stone-500'}>
+          <path d="M6 7L0 0H12L6 7Z" fill="currentColor" />
+        </svg>
+      </div>
+      <div
+        className={`absolute inset-0 flex items-center font-mono tabular-nums pointer-events-none select-none transition-opacity duration-150 ${
+          disabled ? 'text-stone-400 dark:text-stone-500' : 'text-stone-900 dark:text-stone-100'
         }`}
-        style={{ fontSize: 30, fontWeight: 600, opacity: disabled ? 0.4 : undefined }}
+        style={{ fontSize: 30, fontWeight: 600, opacity: disabled ? 0.4 : dragging ? 0 : 1 }}
       >
         <div style={{ flex: '0 0 50%', textAlign: 'right' }}>{intLabel}</div>
         <div style={{ flex: '0 0 50%', textAlign: 'left' }}>{decLabel}</div>

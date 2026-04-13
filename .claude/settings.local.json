@@ -20,7 +20,8 @@
       "Bash(file:*)",
       "Bash(grep:*)",
       "Bash(git fetch:*)",
-      "Bash(git pull:*)"
+      "Bash(git pull:*)",
+      "Bash(node_modules/.bin/tsc --noEmit)"
     ]
   }
 }
