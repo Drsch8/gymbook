@@ -20,12 +20,6 @@ function distOpacity(d: number)  { return d <= 1 ? lerp(1, 0.32, d)  : lerp(0.32
 function distFontSize(d: number) { return d <= 1 ? lerp(44, 20, d)   : lerp(20, 13, d - 1) }
 function distBlur(d: number)     { return d <= 1 ? lerp(0, 1.2, d)   : lerp(1.2, 2.5, d - 1) }
 
-function formatParts(v: number, decimalPlaces: number): { int: string; dec: string } {
-  const fixed = v.toFixed(decimalPlaces)
-  const dot   = fixed.indexOf('.')
-  if (dot === -1) return { int: fixed, dec: '' }
-  return { int: fixed.slice(0, dot), dec: fixed.slice(dot) }
-}
 
 export function GhostPicker() {
   const [, tick]            = useReducer(n => n + 1, 0)
@@ -108,14 +102,15 @@ export function GhostPicker() {
         {OFFSETS.map(offset => {
           const raw = value + offset * step
           if (raw < 0) return null
-          const { int: intPart, dec: decPart } = formatParts(raw, decimalPlaces)
+          const formatted = raw.toFixed(decimalPlaces)
           const yPos = cy + (offset - fraction) * GAP
           const dist = Math.abs(offset - fraction)
           const blur = distBlur(dist)
           return (
             <div key={offset} style={{
               position: 'absolute',
-              left: 0, right: 0,
+              left: cx,
+              transform: 'translateX(-50%)',
               top: yPos - ITEM_H / 2, height: ITEM_H,
               display: 'flex', alignItems: 'center',
               fontFamily: 'ui-monospace, monospace',
@@ -128,10 +123,9 @@ export function GhostPicker() {
               color: textColor,
               userSelect: 'none',
               fontVariantNumeric: 'tabular-nums',
+              whiteSpace: 'nowrap',
             }}>
-              {/* Decimal point aligned at cx — matches NumCell's 50%-split layout */}
-              <div style={{ width: cx, flexShrink: 0, textAlign: 'right' }}>{intPart}</div>
-              <div style={{ flex: 1, textAlign: 'left' }}>{decPart}</div>
+              {formatted}
             </div>
           )
         })}
