@@ -42,7 +42,7 @@ const tabs = [
 
 export function BottomNav() {
   return (
-    <nav className="fixed bottom-0 inset-x-0 z-50 bg-white dark:bg-stone-900 border-t border-stone-200 dark:border-stone-700 pb-safe">
+    <nav className="shrink-0 bg-white dark:bg-stone-900 border-t border-stone-200 dark:border-stone-700 pb-safe">
       <div className="flex">
         {tabs.map(tab => (
           <NavLink
