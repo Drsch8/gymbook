@@ -95,7 +95,7 @@ export function App() {
   }
 
   return (
-    <div className="h-screen flex flex-col bg-stone-50 dark:bg-stone-900">
+    <div className="h-dvh flex flex-col bg-stone-50 dark:bg-stone-900">
       <main className="flex-1 min-h-0 overflow-y-auto">
         <Routes>
           <Route path="/login" element={<Login />} />
