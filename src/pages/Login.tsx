@@ -15,13 +15,13 @@ function errorMessage(code: string): string {
   switch (code) {
     case 'auth/invalid-credential':
     case 'auth/wrong-password':
-    case 'auth/user-not-found':    return 'E-Mail oder Passwort falsch.'
-    case 'auth/email-already-in-use': return 'Diese E-Mail ist bereits registriert.'
-    case 'auth/weak-password':     return 'Passwort muss mindestens 6 Zeichen haben.'
-    case 'auth/invalid-email':     return 'Ungültige E-Mail-Adresse.'
-    case 'auth/too-many-requests': return 'Zu viele Versuche. Kurz warten und erneut versuchen.'
-    case 'auth/unverified-email':  return 'E-Mail noch nicht bestätigt. Bitte prüfe dein Postfach.'
-    default:                       return `Fehler: ${code}`
+    case 'auth/user-not-found':    return 'Incorrect email or password.'
+    case 'auth/email-already-in-use': return 'This email is already registered.'
+    case 'auth/weak-password':     return 'Password must be at least 6 characters.'
+    case 'auth/invalid-email':     return 'Invalid email address.'
+    case 'auth/too-many-requests': return 'Too many attempts. Please wait and try again.'
+    case 'auth/unverified-email':  return 'Email not yet verified. Please check your inbox.'
+    default:                       return `Error: ${code}`
   }
 }
 
@@ -72,37 +72,37 @@ export function Login() {
     <div className="min-h-screen bg-stone-950 flex flex-col items-center justify-center px-6">
       <div className="w-full max-w-sm">
         <h1 className="text-3xl font-bold text-stone-100 mb-2">GymBook</h1>
-        <p className="text-stone-400 text-sm mb-10">Dein persönliches Trainingsbuch</p>
+        <p className="text-stone-400 text-sm mb-10">Your personal training journal</p>
 
         {mode === 'verify' ? (
           <div className="bg-stone-800 rounded-2xl p-6 text-center">
-            <p className="text-stone-100 font-medium mb-2">Bestätigungslink gesendet</p>
+            <p className="text-stone-100 font-medium mb-2">Confirmation link sent</p>
             <p className="text-stone-400 text-sm mb-4">
-              Prüfe dein Postfach für <span className="text-stone-200">{email}</span> und klicke auf den Bestätigungslink. Danach kannst du dich anmelden.
+              Check your inbox for <span className="text-stone-200">{email}</span> and click the confirmation link. Then you can sign in.
             </p>
             <button onClick={() => switchMode('signin')} className="text-stone-400 text-sm underline">
-              Zur Anmeldung
+              Go to sign in
             </button>
           </div>
         ) : resetSent ? (
           <div className="bg-stone-800 rounded-2xl p-6 text-center">
-            <p className="text-stone-100 font-medium mb-2">E-Mail gesendet</p>
+            <p className="text-stone-100 font-medium mb-2">Email sent</p>
             <p className="text-stone-400 text-sm mb-4">
-              Prüfe dein Postfach für <span className="text-stone-200">{email}</span> und folge dem Link zum Zurücksetzen.
+              Check your inbox for <span className="text-stone-200">{email}</span> and follow the reset link.
             </p>
             <button onClick={() => switchMode('signin')} className="text-stone-400 text-sm underline">
-              Zurück zur Anmeldung
+              Back to sign in
             </button>
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="block text-stone-400 text-xs mb-1.5 uppercase tracking-wide">E-Mail</label>
+              <label className="block text-stone-400 text-xs mb-1.5 uppercase tracking-wide">Email</label>
               <input
                 type="email"
                 value={email}
                 onChange={e => setEmail(e.target.value)}
-                placeholder="du@beispiel.de"
+                placeholder="you@example.com"
                 required
                 autoCapitalize="none"
                 autoCorrect="off"
@@ -112,7 +112,7 @@ export function Login() {
 
             {mode !== 'reset' && (
               <div>
-                <label className="block text-stone-400 text-xs mb-1.5 uppercase tracking-wide">Passwort</label>
+                <label className="block text-stone-400 text-xs mb-1.5 uppercase tracking-wide">Password</label>
                 <div className="relative">
                   <input
                     type={showPassword ? 'text' : 'password'}
@@ -126,7 +126,7 @@ export function Login() {
                     type="button"
                     onClick={() => setShowPassword(v => !v)}
                     className="absolute right-3 top-1/2 -translate-y-1/2 text-stone-500 hover:text-stone-300 transition-colors p-1"
-                    aria-label={showPassword ? 'Passwort verbergen' : 'Passwort anzeigen'}
+                    aria-label={showPassword ? 'Hide password' : 'Show password'}
                   >
                     {showPassword ? (
                       <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -149,7 +149,7 @@ export function Login() {
               type="submit"
               disabled={loading}
               className="w-full bg-stone-100 text-stone-900 font-semibold rounded-xl py-3 text-sm disabled:opacity-50">
-              {loading ? '…' : mode === 'signin' ? 'Anmelden' : mode === 'signup' ? 'Registrieren' : 'Link senden'}
+              {loading ? '…' : mode === 'signin' ? 'Sign in' : mode === 'signup' ? 'Sign up' : 'Send link'}
             </button>
           </form>
         )}
@@ -158,20 +158,20 @@ export function Login() {
           <div className="mt-4 flex flex-col items-center gap-1">
             {mode === 'signin' && <>
               <button onClick={() => switchMode('signup')} className="text-stone-500 text-sm py-1">
-                Noch kein Konto? Registrieren
+                No account? Sign up
               </button>
               <button onClick={() => switchMode('reset')} className="text-stone-600 text-xs py-1">
-                Passwort vergessen
+                Forgot password
               </button>
             </>}
             {mode === 'signup' && (
               <button onClick={() => switchMode('signin')} className="text-stone-500 text-sm py-1">
-                Bereits registriert? Anmelden
+                Already registered? Sign in
               </button>
             )}
             {mode === 'reset' && (
               <button onClick={() => switchMode('signin')} className="text-stone-500 text-sm py-1">
-                Zurück zur Anmeldung
+                Back to sign in
               </button>
             )}
           </div>

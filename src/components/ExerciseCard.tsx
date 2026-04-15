@@ -20,18 +20,18 @@ interface Props {
 
 // Machine alternatives for fog (bodyweight) exercises
 const MACHINE_ALTS: [RegExp, string][] = [
-  [/liegestütz/i, 'Brust-Press-Maschine / Bankdrücken'],
-  [/military press|überkopfpresse/i, 'Schulterdrücken-Maschine'],
-  [/trizepsdip|trizepsstrecker/i, 'Trizeps-Pushdown'],
-  [/türklimmzug/i, 'Latzug-Maschine'],
-  [/türziehen/i, 'Rudermaschine / Kabelzug'],
-  [/klimmzug/i, 'Latzug-Maschine'],
-  [/curl mit handtuch/i, 'Bizeps-Curl / Kabelzug'],
-  [/umgekehrtes bankdrücken/i, 'Kabelrudern / Rudermaschine'],
-  [/kniebeuge|ausfallschritt/i, 'Beinpresse'],
-  [/rumänisches kreuzheben/i, 'Beinbeuger-Maschine'],
-  [/beinheber/i, 'Beinhebestation'],
-  [/schwimmer|rückenheber/i, 'Rückenstrecker-Maschine'],
+  [/push-up/i, 'Chest Press Machine / Bench Press'],
+  [/military press|overhead press/i, 'Shoulder Press Machine'],
+  [/tricep dip|table tricep/i, 'Tricep Pushdown'],
+  [/door pull-up/i, 'Lat Pulldown Machine'],
+  [/door row/i, 'Cable Row / Rowing Machine'],
+  [/pull-up/i, 'Lat Pulldown Machine'],
+  [/towel bicep curl/i, 'Bicep Curl / Cable Machine'],
+  [/inverted row/i, 'Cable Row / Rowing Machine'],
+  [/squat|lunge/i, 'Leg Press'],
+  [/romanian deadlift/i, 'Leg Curl Machine'],
+  [/leg raise/i, 'Leg Raise Station'],
+  [/swimmer|back extension/i, 'Back Extension Machine'],
 ]
 
 function getMachineAlt(exerciseId: string, exerciseName: string): string | null {
@@ -49,7 +49,7 @@ function newSet(): ExerciseSet {
 export function ExerciseCard({ item, weightUnit, previousSets, collapsed, onToggle, onChange, onRemove, onSetCompleted, method }: Props) {
   const isClassSession = !!method
   // Methods that replace standard set rows with a dedicated timer UI
-  const timerOnly = method === 'Stufenintervalle' || method === 'Intervallsätze' || method === 'Hochintensitätssätze'
+  const timerOnly = method === 'Step Intervals' || method === 'Interval Sets' || method === 'High Intensity Sets'
   const updateSet = (index: number, updated: ExerciseSet) =>
     onChange({ ...item, sets: item.sets.map((s, i) => (i === index ? updated : s)) })
 
@@ -186,7 +186,7 @@ export function ExerciseCard({ item, weightUnit, previousSets, collapsed, onTogg
           {/* Locked state: timerOnly exercise already completed */}
           {timerOnly && allDone ? (
             <div className="flex items-center justify-between py-2 px-1">
-              <span className="text-sm text-stone-500 dark:text-stone-400">Übung abgeschlossen</span>
+              <span className="text-sm text-stone-500 dark:text-stone-400">Exercise completed</span>
               <button
                 onClick={() => completeSet(0)}
                 className="px-3 py-1.5 rounded-lg text-xs font-medium bg-stone-100 dark:bg-stone-700 text-stone-600 dark:text-stone-300 hover:bg-stone-200 dark:hover:bg-stone-600 transition-colors"
@@ -238,7 +238,7 @@ export function ExerciseCard({ item, weightUnit, previousSets, collapsed, onTogg
                   onClick={() => completeSet(0)}
                   className="w-full py-2.5 rounded-xl text-sm font-semibold bg-stone-100 dark:bg-stone-700 text-stone-700 dark:text-stone-300 hover:bg-stone-200 dark:hover:bg-stone-600 transition-colors"
                 >
-                  Übung abschließen
+                  Complete exercise
                 </button>
               )}
             </>

@@ -59,10 +59,10 @@ function StufenintervallTimer({ autoStart, onDone }: { autoStart?: boolean; onDo
 
   return (
     <div className="bg-stone-50 dark:bg-stone-900 rounded-xl p-4 space-y-3">
-      <span className="text-xs font-semibold text-stone-400 dark:text-stone-500 uppercase tracking-wider">Stufenintervall</span>
+      <span className="text-xs font-semibold text-stone-400 dark:text-stone-500 uppercase tracking-wider">Step Interval</span>
 
       <div className="flex items-start justify-center py-1">
-        <DisplayBox label="Zeit" colorClass={done ? 'text-red-500' : 'text-stone-900 dark:text-stone-100'}>
+        <DisplayBox label="Time" colorClass={done ? 'text-red-500' : 'text-stone-900 dark:text-stone-100'}>
           {done ? '0:00' : fmt(seconds)}
         </DisplayBox>
       </div>
@@ -80,14 +80,14 @@ function StufenintervallTimer({ autoStart, onDone }: { autoStart?: boolean; onDo
           onClick={() => { setSeconds(450); setRunning(false) }}
           className="w-full py-1.5 rounded-xl text-xs text-stone-400 dark:text-stone-500 border border-dashed border-stone-200 dark:border-stone-700 hover:border-stone-400 transition-colors"
         >
-          Neu starten
+          Restart
         </button>
       )}
     </div>
   )
 }
 
-// ── Intervallsatz (3 × 3 min, auto-advance) ───────────────────────────────────
+// ── Interval Sets (3 × 3 min, auto-advance) ───────────────────────────────────
 
 function IntervallsätzeTimer({ autoStart, onDone }: { autoStart?: boolean; onDone?: () => void }) {
   const [satz, setSatz] = useState(1)
@@ -137,16 +137,16 @@ function IntervallsätzeTimer({ autoStart, onDone }: { autoStart?: boolean; onDo
   return (
     <div className="bg-stone-50 dark:bg-stone-900 rounded-xl p-4 space-y-3">
       <span className="text-xs font-semibold text-stone-400 dark:text-stone-500 uppercase tracking-wider">
-        {done ? 'Intervallsätze fertig ✓' : `Intervallsatz ${satz}/3`}
+        {done ? 'Interval Sets done ✓' : `Interval Set ${satz}/3`}
       </span>
 
       {!done && (
         <>
           <div className="flex items-start justify-center gap-3 py-1">
-            <DisplayBox label="Zeit" colorClass={seconds === 0 ? 'text-red-500' : 'text-stone-900 dark:text-stone-100'}>
+            <DisplayBox label="Time" colorClass={seconds === 0 ? 'text-red-500' : 'text-stone-900 dark:text-stone-100'}>
               {fmt(seconds)}
             </DisplayBox>
-            <DisplayBox label="Satz">{satz}</DisplayBox>
+            <DisplayBox label="Set">{satz}</DisplayBox>
           </div>
           <div className="flex gap-2">
             <button
@@ -160,7 +160,7 @@ function IntervallsätzeTimer({ autoStart, onDone }: { autoStart?: boolean; onDo
               onClick={nextSatz}
               className="flex-1 py-2.5 rounded-xl text-sm font-semibold bg-stone-100 dark:bg-stone-700 text-stone-700 dark:text-stone-300 hover:bg-stone-200 dark:hover:bg-stone-600 transition-colors"
             >
-              {satz < 3 ? 'Nächster →' : 'Fertig ✓'}
+              {satz < 3 ? 'Next →' : 'Done ✓'}
             </button>
           </div>
         </>
@@ -171,14 +171,14 @@ function IntervallsätzeTimer({ autoStart, onDone }: { autoStart?: boolean; onDo
           onClick={() => { setSatz(1); setSeconds(180); setRunning(false) }}
           className="w-full py-1.5 rounded-xl text-xs text-stone-400 dark:text-stone-500 border border-dashed border-stone-200 dark:border-stone-700 hover:border-stone-400 transition-colors"
         >
-          Neu starten
+          Restart
         </button>
       )}
     </div>
   )
 }
 
-// ── Supersatz (3 pairs × 2 sets = 6 × 4 min, auto-advance) ───────────────────
+// ── Supersets (3 pairs × 2 sets = 6 × 4 min, auto-advance) ───────────────────
 
 function SupersatzTimer({ autoStart, onDone }: { autoStart?: boolean; onDone?: () => void }) {
   const [seconds, setSeconds] = useState(240)
@@ -228,7 +228,7 @@ function SupersatzTimer({ autoStart, onDone }: { autoStart?: boolean; onDone?: (
     <div className="bg-stone-50 dark:bg-stone-900 rounded-xl p-3 space-y-2.5">
       <div className="flex items-center justify-between">
         <span className="text-xs font-semibold text-stone-400 dark:text-stone-500 uppercase tracking-wider">
-          {done ? 'Supersätze fertig ✓' : `Paar ${pair}/3 · Satz ${setInPair}/2`}
+          {done ? 'Supersets done ✓' : `Pair ${pair}/3 · Set ${setInPair}/2`}
         </span>
         <span className={`font-mono text-lg font-bold ${seconds === 0 && !done ? 'text-red-500' : 'text-stone-900 dark:text-stone-100'}`}>
           {done ? '—' : fmt(seconds)}
@@ -248,7 +248,7 @@ function SupersatzTimer({ autoStart, onDone }: { autoStart?: boolean; onDone?: (
             onClick={() => { if (count >= 6) { setCount(7) } else { setCount(c => c + 1); setSeconds(240); setRunning(true) } }}
             className="flex-1 py-2 rounded-xl text-xs font-semibold bg-stone-100 dark:bg-stone-700 text-stone-700 dark:text-stone-300 hover:bg-stone-200 dark:hover:bg-stone-600 transition-colors"
           >
-            {count < 6 ? 'Nächster →' : 'Fertig ✓'}
+            {count < 6 ? 'Next →' : 'Done ✓'}
           </button>
         </div>
       )}
@@ -258,14 +258,14 @@ function SupersatzTimer({ autoStart, onDone }: { autoStart?: boolean; onDone?: (
           onClick={() => { setCount(1); setSeconds(240); setRunning(false) }}
           className="w-full py-1.5 rounded-xl text-xs text-stone-400 dark:text-stone-500 border border-dashed border-stone-200 dark:border-stone-700 hover:border-stone-400 transition-colors"
         >
-          Neu starten
+          Restart
         </button>
       )}
     </div>
   )
 }
 
-// ── Hochintensitätssatz (Tabata 8 × 20s+10s, auto-advances) ──────────────────
+// ── High Intensity Sets (Tabata 8 × 20s+10s, auto-advances) ──────────────────
 
 function HochintensitaetsTimer({ autoStart, onDone }: { autoStart?: boolean; onDone?: () => void }) {
   const [round, setRound] = useState(1)
@@ -303,13 +303,13 @@ function HochintensitaetsTimer({ autoStart, onDone }: { autoStart?: boolean; onD
 
   return (
     <div className="bg-stone-50 dark:bg-stone-900 rounded-xl p-4 space-y-3">
-      <span className="text-xs font-semibold text-stone-400 dark:text-stone-500 uppercase tracking-wider">Hochintensität</span>
+      <span className="text-xs font-semibold text-stone-400 dark:text-stone-500 uppercase tracking-wider">High Intensity</span>
 
       <div className="flex items-start justify-center gap-3 py-1">
         <DisplayBox label="Zeit" colorClass={timerColor}>
           {done ? '—' : `0:${String(seconds).padStart(2, '0')}`}
         </DisplayBox>
-        <DisplayBox label={`Runde ${round}/8`}>{round}</DisplayBox>
+        <DisplayBox label={`Round ${round}/8`}>{round}</DisplayBox>
       </div>
 
       <div className="w-full bg-stone-200 dark:bg-stone-700 rounded-full h-1.5">
@@ -321,7 +321,7 @@ function HochintensitaetsTimer({ autoStart, onDone }: { autoStart?: boolean; onD
 
       {!done && (
         <p className="text-center text-xs font-semibold text-stone-400 dark:text-stone-500 uppercase tracking-wider">
-          {phase === 'work' ? 'Arbeit' : 'Pause'}
+          {phase === 'work' ? 'Work' : 'Rest'}
         </p>
       )}
 
@@ -344,7 +344,7 @@ function HochintensitaetsTimer({ autoStart, onDone }: { autoStart?: boolean; onD
   )
 }
 
-// ── Zirkelintervall (20 min session timer) ────────────────────────────────────
+// ── Circuit (20 min session timer) ───────────────────────────────────────────
 
 export function ZirkelTimer({ autoStart }: { autoStart?: boolean } = {}) {
   const [seconds, setSeconds] = useState(1200)
@@ -369,8 +369,8 @@ export function ZirkelTimer({ autoStart }: { autoStart?: boolean } = {}) {
     <div className="bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-2xl px-4 py-3">
       <div className="flex items-center justify-between mb-2">
         <div>
-          <p className="text-xs font-semibold text-stone-500 dark:text-stone-400">Zirkelintervall</p>
-          <p className="text-xs text-stone-400 dark:text-stone-500">So viele Runden wie möglich in 20 min</p>
+          <p className="text-xs font-semibold text-stone-500 dark:text-stone-400">Circuit</p>
+          <p className="text-xs text-stone-400 dark:text-stone-500">As many rounds as possible in 20 min</p>
         </div>
         <span className={`font-mono text-xl font-bold ${done ? 'text-red-500' : 'text-stone-900 dark:text-stone-100'}`}>
           {fmt(seconds)}
@@ -389,7 +389,7 @@ export function ZirkelTimer({ autoStart }: { autoStart?: boolean } = {}) {
             onClick={() => { setSeconds(1200); setRunning(false) }}
             className="flex-1 py-2 rounded-xl text-xs font-medium border border-stone-200 dark:border-stone-600 text-stone-500 dark:text-stone-400 hover:border-stone-400 transition-colors"
           >
-            Neu starten
+            Restart
           </button>
         )}
       </div>
@@ -400,9 +400,9 @@ export function ZirkelTimer({ autoStart }: { autoStart?: boolean } = {}) {
 // ── Dispatcher ────────────────────────────────────────────────────────────────
 
 export function MethodTimer({ method, autoStart, onDone }: Props) {
-  if (method === 'Stufenintervalle')    return <StufenintervallTimer autoStart={autoStart} onDone={onDone} />
-  if (method === 'Intervallsätze')      return <IntervallsätzeTimer  autoStart={autoStart} onDone={onDone} />
-  if (method === 'Supersätze')          return <SupersatzTimer        autoStart={autoStart} onDone={onDone} />
-  if (method === 'Hochintensitätssätze') return <HochintensitaetsTimer autoStart={autoStart} onDone={onDone} />
+  if (method === 'Step Intervals')    return <StufenintervallTimer autoStart={autoStart} onDone={onDone} />
+  if (method === 'Interval Sets')     return <IntervallsätzeTimer  autoStart={autoStart} onDone={onDone} />
+  if (method === 'Supersets')         return <SupersatzTimer        autoStart={autoStart} onDone={onDone} />
+  if (method === 'High Intensity Sets') return <HochintensitaetsTimer autoStart={autoStart} onDone={onDone} />
   return null
 }

@@ -98,8 +98,8 @@ export function Settings() {
         </div>
 
         <div className="bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-2xl px-4 py-4">
-          <p className="text-stone-900 dark:text-stone-100 text-sm font-medium mb-0.5">Programme zurücksetzen</p>
-          <p className="text-stone-400 dark:text-stone-500 text-xs mb-3">Fortschritt eines Programms auf Einheit 1 zurücksetzen</p>
+          <p className="text-stone-900 dark:text-stone-100 text-sm font-medium mb-0.5">Reset programs</p>
+          <p className="text-stone-400 dark:text-stone-500 text-xs mb-3">Reset a program's progress to session 1</p>
           <div className="space-y-2">
             {FOG_PROGRAMS.map(program => {
               const progress = programProgress[program.id] ?? 0
@@ -108,7 +108,7 @@ export function Settings() {
                 <div key={program.id} className="flex items-center justify-between">
                   <div>
                     <p className="text-xs font-medium text-stone-700 dark:text-stone-300">{program.name}</p>
-                    <p className="text-xs text-stone-400 dark:text-stone-500">{progress}/{total} Einheiten</p>
+                    <p className="text-xs text-stone-400 dark:text-stone-500">{progress}/{total} sessions</p>
                   </div>
                   {confirmReset === program.id ? (
                     <div className="flex items-center gap-1.5">
@@ -120,13 +120,13 @@ export function Settings() {
                         }}
                         className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-red-500 text-white hover:bg-red-600 transition-colors"
                       >
-                        Ja, reset
+                        Yes, reset
                       </button>
                       <button
                         onClick={() => setConfirmReset(null)}
                         className="px-3 py-1.5 rounded-lg text-xs font-medium bg-stone-100 dark:bg-stone-700 text-stone-600 dark:text-stone-300 hover:bg-stone-200 dark:hover:bg-stone-600 transition-colors"
                       >
-                        Abbrechen
+                        Cancel
                       </button>
                     </div>
                   ) : (
@@ -147,13 +147,13 @@ export function Settings() {
           <div>
             {user ? (
               <>
-                <p className="text-stone-900 dark:text-stone-100 text-sm font-medium">Konto</p>
+                <p className="text-stone-900 dark:text-stone-100 text-sm font-medium">Account</p>
                 <p className="text-stone-400 dark:text-stone-500 text-xs mt-0.5 truncate max-w-[180px]">{user.email}</p>
               </>
             ) : (
               <>
-                <p className="text-stone-900 dark:text-stone-100 text-sm font-medium">Konto</p>
-                <p className="text-stone-400 dark:text-stone-500 text-xs mt-0.5">Nicht angemeldet</p>
+                <p className="text-stone-900 dark:text-stone-100 text-sm font-medium">Account</p>
+                <p className="text-stone-400 dark:text-stone-500 text-xs mt-0.5">Not signed in</p>
               </>
             )}
           </div>
@@ -161,13 +161,13 @@ export function Settings() {
             <button
               onClick={async () => { await signOut(auth); navigate('/login') }}
               className="px-4 py-2 rounded-xl bg-stone-100 dark:bg-stone-700 hover:bg-stone-200 dark:hover:bg-stone-600 text-stone-700 dark:text-stone-300 text-sm font-medium transition-colors">
-              Abmelden
+              Sign out
             </button>
           ) : (
             <button
               onClick={() => navigate('/login')}
               className="px-4 py-2 rounded-xl bg-stone-900 dark:bg-stone-100 text-white dark:text-stone-900 text-sm font-medium transition-colors">
-              Anmelden
+              Sign in
             </button>
           )}
         </div>

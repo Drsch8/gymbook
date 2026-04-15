@@ -29,7 +29,7 @@ function ClassExerciseRow({ item, method, onStart }: {
   onStart: () => void
 }) {
   const done = item.sets.every(s => s.completed)
-  const pair = method === 'Supersätze' ? parsePair(item.exerciseName) : null
+  const pair = method === 'Supersets' ? parsePair(item.exerciseName) : null
 
   return (
     <div className={`bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-2xl px-4 py-3 flex items-center justify-between gap-3 ${done ? 'opacity-60' : ''}`}>
@@ -51,7 +51,7 @@ function ClassExerciseRow({ item, method, onStart }: {
             : 'bg-stone-900 dark:bg-stone-100 text-white dark:text-stone-900 hover:bg-stone-800 dark:hover:bg-white'
         }`}
       >
-        {done ? 'Bearbeiten' : 'Start'}
+        {done ? 'Edit' : 'Start'}
       </button>
     </div>
   )
@@ -217,7 +217,7 @@ function FlatIntervall({ running, onResume, onDone, onProgress }: { running: boo
   return (
     <>
       <BigTime dim={done}>{done ? '0:00' : fmtFlat(seconds)}</BigTime>
-      {!done && <p className="text-xl font-semibold text-stone-500 mt-2">{`Satz ${satz} / 3`}</p>}
+      {!done && <p className="text-xl font-semibold text-stone-500 mt-2">{`Set ${satz} / 3`}</p>}
     </>
   )
 }
@@ -291,7 +291,7 @@ function SuperPanel({ exercises, onClose, onComplete }: {
 
       {/* Method label + separator */}
       <div className="px-5 pb-3 shrink-0 border-b border-stone-800">
-        <p className="text-sm font-bold uppercase tracking-[0.14em] text-stone-500">Supersätze</p>
+        <p className="text-sm font-bold uppercase tracking-[0.14em] text-stone-500">Supersets</p>
       </div>
 
       {/* Exercise rows */}
@@ -310,7 +310,7 @@ function SuperPanel({ exercises, onClose, onComplete }: {
         })}
       </div>
       {ready && !timerDone && (
-        <p className="px-5 pt-2 text-sm font-medium text-stone-600 shrink-0">Runde {round} / 2</p>
+        <p className="px-5 pt-2 text-sm font-medium text-stone-600 shrink-0">Round {round} / 2</p>
       )}
 
       {/* Timer — centered in remaining space */}
@@ -325,7 +325,7 @@ function SuperPanel({ exercises, onClose, onComplete }: {
             onClick={() => onCompleteRef.current()}
             className="w-full py-4 rounded-2xl text-lg font-bold bg-white text-stone-900 hover:bg-stone-100 transition-colors"
           >
-            Fertig
+            Done
           </button>
         ) : (
           <>
@@ -387,11 +387,11 @@ function FlatHoch({ running, onPhaseChange, onDone, onProgress }: { running: boo
         {done ? '0:00' : `0:${String(seconds).padStart(2, '0')}`}
       </BigTime>
       <p className="text-xl font-semibold text-stone-500 mt-2">
-        {done ? 'Fertig ✓' : `Runde ${round} / 8`}
+        {done ? 'Done ✓' : `Round ${round} / 8`}
       </p>
       {!done && (
         <p className={`text-3xl font-black mt-1 ${isRest ? 'text-blue-400' : 'text-stone-200'}`}>
-          {phase === 'work' ? 'Work Out!' : 'Pause'}
+          {phase === 'work' ? 'Work Out!' : 'Rest'}
         </p>
       )}
     </>
@@ -436,7 +436,7 @@ function ClassExercisePanel({ exercise, method, onClose, onComplete }: {
   const onDoneStable = useRef(() => setTimerDone(true))
   const onProgressStable = useRef((p: number) => setProgress(p))
 
-  const accent = method === 'Hochintensitätssätze'
+  const accent = method === 'High Intensity Sets'
     ? (hochPhase === 'rest' ? 'bg-blue-500' : 'bg-stone-100')
     : undefined
 
@@ -463,11 +463,11 @@ function ClassExercisePanel({ exercise, method, onClose, onComplete }: {
       <div className="flex-1 flex flex-col items-center justify-center">
         {!ready ? (
           <BigTime>{countdown}s</BigTime>
-        ) : method === 'Stufenintervalle' ? (
+        ) : method === 'Step Intervals' ? (
           <FlatStufen running={running} onDone={onDoneStable.current} onProgress={onProgressStable.current} />
-        ) : method === 'Intervallsätze' ? (
+        ) : method === 'Interval Sets' ? (
           <FlatIntervall running={running} onResume={() => setRunning(true)} onDone={onDoneStable.current} onProgress={onProgressStable.current} />
-        ) : method === 'Hochintensitätssätze' ? (
+        ) : method === 'High Intensity Sets' ? (
           <FlatHoch running={running} onPhaseChange={setHochPhase} onDone={onDoneStable.current} onProgress={onProgressStable.current} />
         ) : null}
       </div>
@@ -479,7 +479,7 @@ function ClassExercisePanel({ exercise, method, onClose, onComplete }: {
             onClick={handleFinish}
             className="w-full py-4 rounded-2xl text-lg font-bold bg-white text-stone-900 hover:bg-stone-100 transition-colors"
           >
-            Fertig
+            Done
           </button>
         ) : (
           <>
@@ -550,7 +550,7 @@ function ZirkelPanel({ exercises, onClose, onComplete }: {
 
       {/* Method label + separator */}
       <div className="px-5 pb-3 shrink-0 border-b border-stone-800">
-        <p className="text-sm font-bold uppercase tracking-[0.14em] text-stone-500">Zirkelintervalle</p>
+        <p className="text-sm font-bold uppercase tracking-[0.14em] text-stone-500">Circuits</p>
       </div>
 
       {/* Exercise rows */}
@@ -575,7 +575,7 @@ function ZirkelPanel({ exercises, onClose, onComplete }: {
             onClick={() => onCompleteRef.current()}
             className="w-full py-4 rounded-2xl text-lg font-bold bg-white text-stone-900 hover:bg-stone-100 transition-colors"
           >
-            Fertig
+            Done
           </button>
         ) : (
           <>
@@ -778,8 +778,8 @@ export function NewSession() {
 
   const totalCompleted = exercises.reduce((n, e) => n + e.sets.filter(s => s.completed).length, 0)
   const totalSets = exercises.reduce((n, e) => n + e.sets.length, 0)
-  const isZirkel = state?.method === 'Zirkelintervalle'
-  const isSuper = state?.method === 'Supersätze'
+  const isZirkel = state?.method === 'Circuits'
+  const isSuper = state?.method === 'Supersets'
   const allExercisesDone = (isZirkel || isSuper)
     ? circuitDone
     : exercises.length > 0 && exercises.every(e => e.sets.length > 0 && e.sets.every(s => s.completed))
@@ -912,7 +912,7 @@ export function NewSession() {
             </div>
             {isSuper && exercises.length > 0 && (
               <p className="text-xs text-stone-400 dark:text-stone-500 text-center pb-1">
-                4 min pro Übung · 2 Runden · {exercises.length * 2} Blöcke
+                4 min per exercise · 2 rounds · {exercises.length * 2} blocks
               </p>
             )}
             <button
