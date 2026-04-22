@@ -1,7 +1,7 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { useNavigate } from 'react-router-dom'
-import { getSessions, getPlannedWorkouts, savePlannedWorkout, deletePlannedWorkout } from '../db'
+import { getSessions, getPlannedWorkouts, savePlannedWorkout, deletePlannedWorkout, deleteSession } from '../db'
 import { nanoid } from '../utils/nanoid'
 import type { Session, TrackingType, PlannedWorkout } from '../types'
 
@@ -193,7 +193,9 @@ function CalendarView({ sessions, navigate: navigateTo }: { sessions: Session[];
             {new Date(selected + 'T12:00:00').toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric' })}
           </p>
 
-          {selectedSessions.map(s => <SessionCard key={s.id} session={s} onClick={() => navigateTo(s.id)} />)}
+          {selectedSessions.map(s => (
+            <SwipeableSessionCard key={s.id} session={s} onOpen={() => navigateTo(s.id)} onDelete={() => deleteSession(s.id)} />
+          ))}
 
           {selectedSessions.length === 0 && !selectedPlan && !planning && (
             <button
@@ -315,6 +317,80 @@ function FeedView({ sessions, navigate }: { sessions: Session[]; navigate: (id: 
 }
 
 // ── Shared session card ───────────────────────────────────────────────────────
+
+const SWIPE_REVEAL = 80
+
+function SwipeableSessionCard({ session, onOpen, onDelete }: { session: Session; onOpen: () => void; onDelete: () => void }) {
+  const slideRef = useRef<HTMLDivElement>(null)
+  const swipeXRef = useRef(0)
+  const setSlideX = (x: number, animated: boolean) => {
+    swipeXRef.current = x
+    const el = slideRef.current
+    if (!el) return
+    el.style.transition = animated ? 'transform 0.22s ease' : 'none'
+    el.style.transform  = `translateX(${x}px)`
+  }
+
+  useEffect(() => {
+    const el = slideRef.current
+    if (!el) return
+    const s = { startX: 0, startY: 0, dir: null as 'h' | 'v' | null, baseX: 0 }
+
+    const onStart = (e: TouchEvent) => {
+      s.startX = e.touches[0].clientX
+      s.startY = e.touches[0].clientY
+      s.dir    = null
+      s.baseX  = swipeXRef.current
+    }
+    const onMove = (e: TouchEvent) => {
+      const dx = e.touches[0].clientX - s.startX
+      const dy = e.touches[0].clientY - s.startY
+      if (!s.dir) {
+        if (Math.abs(dx) > 5 || Math.abs(dy) > 5)
+          s.dir = Math.abs(dx) > Math.abs(dy) ? 'h' : 'v'
+        return
+      }
+      if (s.dir === 'v') return
+      e.preventDefault()
+      setSlideX(Math.max(-SWIPE_REVEAL, Math.min(0, s.baseX + dx)), false)
+    }
+    const onEnd = () => {
+      if (s.dir === 'h')
+        setSlideX(swipeXRef.current < -SWIPE_REVEAL / 2 ? -SWIPE_REVEAL : 0, true)
+    }
+
+    el.addEventListener('touchstart', onStart, { passive: true })
+    el.addEventListener('touchmove',  onMove,  { passive: false })
+    el.addEventListener('touchend',   onEnd,   { passive: true })
+    return () => {
+      el.removeEventListener('touchstart', onStart)
+      el.removeEventListener('touchmove',  onMove)
+      el.removeEventListener('touchend',   onEnd)
+    }
+  }, [])
+
+  return (
+    <div className="overflow-hidden rounded-2xl">
+      <div
+        ref={slideRef}
+        className="flex"
+        style={{ width: `calc(100% + ${SWIPE_REVEAL}px)` }}
+      >
+        <div className="flex-1 min-w-0">
+          <SessionCard session={session} onClick={onOpen} />
+        </div>
+        <button
+          className="flex-shrink-0 flex items-center justify-center bg-red-500 text-white text-xs font-semibold"
+          style={{ width: SWIPE_REVEAL }}
+          onClick={() => { setSlideX(0, true); onDelete() }}
+          aria-label="Delete session"
+        >
+          Delete
+        </button>
+      </div>
+    </div>
+  )
+}
 
 function SessionCard({ session, onClick }: { session: Session; onClick: () => void }) {
   const vol = sessionVolume(session)
