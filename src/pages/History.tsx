@@ -374,7 +374,7 @@ function SwipeableSessionCard({ session, onOpen, onDelete }: { session: Session;
       <div
         ref={slideRef}
         className="flex"
-        style={{ width: `calc(100% + ${SWIPE_REVEAL}px)` }}
+        style={{ width: `calc(100% + ${SWIPE_REVEAL}px)`, touchAction: 'pan-y' }}
       >
         <div className="flex-1 min-w-0">
           <SessionCard session={session} onClick={onOpen} />
