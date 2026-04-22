@@ -1,5 +1,4 @@
-// "Fit ohne Geräte" program data
-// Four classes: Basisprogramm, First Class, Master Class, Chief Class
+// Bodyweight training programs
 
 export interface FogDay {
   day: number
@@ -73,7 +72,7 @@ export function flattenFogProgram(p: FogProgram): FogFlatSession[] {
         day: d.day,
         focus: d.focus,
         method: d.method,
-        phase: 'Wechselblock',
+        phase: 'Alternating Block',
         sessionsPerWeek: 5,
         exercises: d.exercises,
       })
@@ -86,210 +85,204 @@ export function flattenFogProgram(p: FogProgram): FogFlatSession[] {
 
 export const TRAINING_METHODS = [
   {
-    name: 'Stufenintervall',
-    shortName: 'Stufenintervalle',
+    name: 'Step Interval',
+    shortName: 'Step Intervals',
     description:
-      'Das Stufenintervall ist eine Pyramide – du steigst hoch und dann wieder runter.\n\n' +
-      'Ablauf: 1 Wdh., Pause, 2 Wdh., Pause, 3 Wdh., Pause … so weiter, bis du kurz vor dem Muskelversagen bist. Dann rückwärts: eine Stufe weniger, Pause, eine Stufe weniger …\n\n' +
-      'Die Pause dauert genauso lang wie das vorige Intervall. Wer 10 Sekunden für 3 Wdh. gebraucht hat, pausiert 10 Sekunden.\n\n' +
-      'Ziel: Finde dein Maximum auf dem Weg nach oben – bleib bei der Stufenzahl, bei der du knapp ans Versagen kommst, ohne vollständig zu versagen. Die zweite Hälfte (Abstieg) ist dann Muskelausdauer pur.\n\n' +
-      'Dauer: 7,5 Minuten pro Übung. Der Pfeil im Timer zeigt an, ob du noch im Aufstieg (↑) oder schon im Abstieg (↓) bist.',
+      'Step Intervals use ascending sets: start with 1 rep, rest briefly, then 2, then 3 — and so on until you reach your limit.\n\n' +
+      'The rest between steps always equals the duration of the previous set. If 3 reps took 10 seconds, rest 10 seconds.\n\n' +
+      'Once you hit your maximum, work back down step by step. Goal: find the step that takes you right to the edge — without complete failure. The descent trains muscular endurance.\n\n' +
+      '7.5 minutes per exercise. The timer counts down from that point.',
   },
   {
-    name: 'Intervallsatz',
-    shortName: 'Intervallsätze',
+    name: 'Interval Set',
+    shortName: 'Interval Sets',
     description:
-      'Klassisches Krafttraining mit festem Takt: Du machst exakt 3 Sätze pro Übung, und jeder Satz beginnt auf die Sekunde.\n\n' +
-      'Ablauf: Minute 0 → Satz 1, Minute 3 → Satz 2, Minute 6 → Satz 3. Die verbleibende Zeit bis zum nächsten Start ist deine Pause – sie wird kürzer, je länger du für den Satz brauchst.\n\n' +
-      'Wiederholungen: 6–12 pro Satz, bis zum Muskelversagen oder bei 12 aufhören. Wähle ein Gewicht, bei dem du innerhalb dieser Spanne versagst.\n\n' +
-      'Ziel: Alle drei Sätze mit gleicher oder leicht abnehmender Wiederholungszahl absolvieren. Wenn du in jedem Satz 12 schaffst, ist das Gewicht zu leicht – nächstes Mal mehr.',
+      'Three sets on a fixed 3-minute clock: Set 1 starts at minute 0, Set 2 at minute 3, Set 3 at minute 6. The time remaining is your rest — the longer the set takes, the shorter the rest.\n\n' +
+      'Target range: 6–12 reps per set, to near-failure. Choose a difficulty level that brings you to your limit within that range.\n\n' +
+      'If you hit 12 reps in all three sets, it was too easy — go harder next time.',
   },
   {
-    name: 'Supersatz',
-    shortName: 'Supersätze',
+    name: 'Superset',
+    shortName: 'Supersets',
     description:
-      'Supersätze kombinieren je zwei Übungen zu einem Paar, das du ohne Pause hintereinander absolvierst – ein 4-Minuten-Block pro Übung.\n\n' +
-      'Ablauf: Der Timer läuft 4 Minuten für Übung 1, dann 4 Minuten für Übung 2, dann wieder Übung 1 usw. – zwei vollständige Runden durch alle Übungen (Reihenfolge: 1 → 2 → 3 → 1 → 2 → 3).\n\n' +
-      'Wiederholungen: Übung 1 (schwere Grundübung): 1–5 Wdh. mit viel Gewicht. Übung 2 (leichtere Assistenzübung): 6–12 Wdh.\n\n' +
-      'Ziel: Die kurzen Sätze mit langer Pause dazwischen ermöglichen maximale Kraft bei Übung 1, während Übung 2 den Muskel weiter ermüdet. Synergieeffekt = mehr Gesamtvolumen in weniger Zeit.',
+      'Two exercises alternated — 4 minutes per exercise, two complete rounds. Order: Exercise A → Exercise B → Exercise A → Exercise B.\n\n' +
+      'Exercise A is the heavy compound movement (1–5 reps); Exercise B is the lighter accessory (6–12 reps).\n\n' +
+      'Alternating allows partial recovery so Exercise A gets more strength, and you get more total volume in less time.',
   },
   {
-    name: 'Zirkelintervall',
-    shortName: 'Zirkelintervalle',
+    name: 'Circuit',
+    shortName: 'Circuits',
     description:
-      'Der Zirkel ist Ausdauer und Kraft in einem: Du absolvierst alle Übungen der Reihe nach – und fängst von vorn an, so oft es in 20 Minuten geht.\n\n' +
-      'Ablauf: Übung 1 → Übung 2 → Übung 3 → … → von vorn. Kein Pause-Timer, kein fester Satz-Beginn. Du entscheidest das Tempo selbst.\n\n' +
-      'Pause: Nur dann pausieren, wenn du wirklich am Muskelversagen bist – und so kurz wie möglich. Ziel ist kontinuierliche Belastung.\n\n' +
-      'Ziel: So viele Runden wie möglich in 20 Minuten. Notiere die Rundenanzahl – das ist dein Benchmark für das nächste Mal. Der Kreislauf wird dauerhaft belastet: Herzfrequenz bleibt hoch, Kalorienverbrauch ist hoch.',
+      'All exercises done back-to-back with no fixed rest. After the last exercise, immediately start over. Complete as many rounds as possible in 20 minutes.\n\n' +
+      'Rest only when truly at your limit, and keep it as short as possible. Heart rate stays consistently high.\n\n' +
+      'Your round count is the benchmark — beat it next time.',
   },
   {
-    name: 'Hochintensitätssatz',
-    shortName: 'Hochintensitätssätze',
+    name: 'High Intensity Set',
+    shortName: 'High Intensity Sets',
     description:
-      'Hochintensitätssätze sind HIIT im Tabata-Format: maximale Intensität, kurze Pause, wiederholen.\n\n' +
-      'Ablauf: 8 Runden à 20 Sekunden Training + 10 Sekunden Pause = 4 Minuten pro Übung. Der Timer wechselt automatisch.\n\n' +
-      'Intensität: Während der 20 Sekunden arbeitest du so schnell und sauber wie möglich – aber nicht so hart, dass du in Runde 3 zusammenbrichst. Ziel ist ein gleichmäßiges Tempo über alle 8 Runden.\n\n' +
-      'Fehler vermeiden: Nicht in der ersten Runde alles geben. Starte bei 80 % und halte das durch. Wenn du in späteren Runden massiv langsamer wirst, war die Intensität zu hoch.\n\n' +
-      'Wirkung: Erhöhter Nachbrenneffekt (EPOC) – der Stoffwechsel bleibt auch nach dem Training erhöht. Kombiniert Kraft und Ausdauer in minimaler Zeit.',
+      '8 rounds of 20 seconds work, 10 seconds rest — 4 minutes per exercise. The timer advances automatically.\n\n' +
+      'Start at about 80% of your maximum speed and hold that pace through all 8 rounds. Consistency is the goal — no all-out sprint in round 1 followed by a crash.\n\n' +
+      'The afterburn effect from this format is particularly high — metabolism stays elevated long after the session ends.',
   },
 ]
 
-// ── Basisprogramm ─────────────────────────────────────────────────────────────
+// ── Einsteigerprogramm ────────────────────────────────────────────────────────
 
 const BEGINNER: FogProgram = {
   id: 'beginner',
-  name: 'Basisprogramm',
-  subtitle: 'für Einsteiger',
+  name: 'Beginner Program',
+  subtitle: 'For beginners',
   requirements: [],
   blocks: [
     {
-      weekLabel: 'Woche 1 und 2',
+      weekLabel: 'Weeks 1–2',
       weeks: [1, 2],
-      phase: 'Muskuläre Ausdauer',
+      phase: 'Muscular Endurance',
       sessionsPerWeek: 4,
       days: [
         {
           day: 1,
-          focus: 'Drücken/Ziehen',
-          method: 'Stufenintervalle',
+          focus: 'Push/Pull',
+          method: 'Step Intervals',
           exercises: [
-            'Liegestütz (Hände erhöht)',
-            'Türziehen',
-            'Trizepsdip mit Stuhl (Füße auf dem Boden)',
-            'Umgekehrtes Bankdrücken mit gebeugten Knien',
+            'Push-Up (hands elevated)',
+            'Door Row',
+            'Tricep Dip with chair (feet on floor)',
+            'Inverted Row mit bent knees',
           ],
         },
         {
           day: 2,
-          focus: 'Beine/Core',
-          method: 'Stufenintervalle',
+          focus: 'Legs/Core',
+          method: 'Step Intervals',
           exercises: [
-            'Ausfallschritt nach hinten im Wechsel',
-            'Rumänisches Kreuzheben auf einem Bein im Wechsel',
-            'Kniebeuge',
-            'Schwimmer',
+            'Alternating Reverse Lunge',
+            'Alternating Single-Leg Romanian Deadlift',
+            'Squat',
+            'Swimmer',
           ],
         },
         {
           day: 3,
-          focus: 'Drücken/Ziehen',
-          method: 'Stufenintervalle',
+          focus: 'Push/Pull',
+          method: 'Step Intervals',
           exercises: [
-            'Liegestütz (Hände erhöht)',
-            'Türziehen',
-            'Trizepsdip mit Stuhl (Füße auf dem Boden)',
-            'Umgekehrtes Bankdrücken mit gebeugten Knien',
+            'Push-Up (hands elevated)',
+            'Door Row',
+            'Tricep Dip with chair (feet on floor)',
+            'Inverted Row mit bent knees',
           ],
         },
         {
           day: 4,
-          focus: 'Beine/Core',
-          method: 'Stufenintervalle',
+          focus: 'Legs/Core',
+          method: 'Step Intervals',
           exercises: [
-            'Seitlicher Ausfallschritt',
-            'Rumänisches Kreuzheben auf einem Bein im Wechsel',
-            'Kniebeuge mit 1–3 Sek. Haltezeit am tiefsten Punkt',
-            'Schräger Crunch',
+            'Side Lunge',
+            'Alternating Single-Leg Romanian Deadlift',
+            'Squat mit 1–3 Sek. hold at bottom',
+            'Oblique Crunch',
           ],
         },
       ],
     },
     {
-      weekLabel: 'Woche 3 und 4',
+      weekLabel: 'Weeks 3–4',
       weeks: [3, 4],
-      phase: 'Kraft',
+      phase: 'Strength',
       sessionsPerWeek: 4,
       days: [
         {
           day: 1,
-          focus: 'Drücken',
-          method: 'Intervallsätze',
+          focus: 'Push',
+          method: 'Interval Sets',
           exercises: [
-            'Liegestütz',
-            'Military Press (Hände erhöht)',
-            'Enger Liegestütz (Hände erhöht)',
-            'Trizepsdip mit Stuhl',
+            'Push-Up',
+            'Military Press (hands elevated)',
+            'Close-Grip Push-Up (hands elevated)',
+            'Tricep Dip with chair',
           ],
         },
         {
           day: 2,
-          focus: 'Beine',
-          method: 'Intervallsätze',
+          focus: 'Legs',
+          method: 'Interval Sets',
           exercises: [
-            'Kniebeuge im Ausfallschritt',
-            'Seitlicher Ausfallschritt',
-            'Kniebeuge mit 1–3 Sek. Haltezeit am tiefsten Punkt',
-            'Rumänisches Kreuzheben auf einem Bein auf einem Kissen',
+            'Split Squat',
+            'Side Lunge',
+            'Squat mit 1–3 Sek. hold at bottom',
+            'Single-Leg Romanian Deadlift on Cushion',
           ],
         },
         {
           day: 3,
-          focus: 'Ziehen',
-          method: 'Intervallsätze',
+          focus: 'Pull',
+          method: 'Interval Sets',
           exercises: [
-            'Türziehen',
-            'Umgekehrtes Bankdrücken mit gebeugten Knien',
-            'Türziehen im Untergriff',
-            'Curl mit Handtuch',
+            'Door Row',
+            'Inverted Row mit bent knees',
+            'Door Row (underhand)',
+            'Towel Bicep Curl',
           ],
         },
         {
           day: 4,
           focus: 'Core',
-          method: 'Intervallsätze',
+          method: 'Interval Sets',
           exercises: [
-            'Beinheber',
-            'Strecken (Hände unter dem Kinn, s. Superman)',
+            'Leg Raise',
+            'Prone Back Extension',
             'Russischer Twist',
-            'Schwimmer',
+            'Swimmer',
           ],
         },
       ],
     },
     {
-      weekLabel: 'Woche 5 und 6',
+      weekLabel: 'Weeks 5–6',
       weeks: [5, 6],
-      phase: 'Power-Block',
+      phase: 'Power Block',
       sessionsPerWeek: 4,
       days: [
         {
           day: 1,
-          focus: 'Drücken',
-          method: 'Supersätze',
+          focus: 'Push',
+          method: 'Supersets',
           exercises: [
-            'Liegestütz (Füße erhöht) / Liegestütz mit Abstoßen',
-            'Military Press / Daumen hoch',
-            'Enger Liegestütz / Trizepsdip mit Stuhl',
+            'Push-Up (feet elevated) / Explosive Push-Up',
+            'Military Press / Shoulder Rotation',
+            'Close-Grip Push-Up / Tricep Dip with chair',
           ],
         },
         {
           day: 2,
-          focus: 'Beine',
-          method: 'Supersätze',
+          focus: 'Legs',
+          method: 'Supersets',
           exercises: [
-            'Ausfallschritt nach hinten (4–6 Sek.) / Gesprungene Kniebeuge',
-            'Ausfallschritt nach vorn (4–6 Sek.) / Seitlicher Ausfallschritt',
-            'Rumänisches Kreuzheben auf einem Kissen / Kniebeuge mit 1–3 Sek.',
+            'Reverse Lunge (4–6 Sek.) / Jump Squat',
+            'Forward Lunge (4–6 Sek.) / Side Lunge',
+            'Romanian Deadlift on Cushion / Squat mit 1–3 Sek.',
           ],
         },
         {
           day: 3,
-          focus: 'Ziehen',
-          method: 'Supersätze',
+          focus: 'Pull',
+          method: 'Supersets',
           exercises: [
-            'Türklimmzug / Türziehen',
-            'Türziehen mit 4–6 Sek. / Curl mit Handtuch',
-            'Umgekehrtes Bankdrücken im Untergriff / Türziehen im Untergriff',
+            'Door Pull-Up / Door Row',
+            'Door Row mit 4–6 Sek. / Towel Bicep Curl',
+            'Inverted Row (underhand) / Door Row (underhand)',
           ],
         },
         {
           day: 4,
           focus: 'Core',
-          method: 'Supersätze',
+          method: 'Supersets',
           exercises: [
             'V-Up / Russischer Twist',
-            'Superman / Schwimmer',
-            'Hängendes Beinheben mit gebeugten Knien / Beinheber',
+            'Prone Back Extension / Swimmer',
+            'Hanging Leg Raise mit bent knees / Leg Raise',
           ],
         },
       ],
@@ -300,38 +293,38 @@ const BEGINNER: FogProgram = {
       week: 7,
       days: [
         {
-          day: 1, focus: 'Drücken', method: 'Stufenintervalle',
+          day: 1, focus: 'Push', method: 'Step Intervals',
           exercises: [
-            'Military Press (Hände erhöht)',
-            'Liegestütz (Hände erhöht)',
-            'Enger Liegestütz (Hände erhöht)',
-            'Trizepsdip mit Stuhl (gebeugten Knien)',
+            'Military Press (hands elevated)',
+            'Push-Up (hands elevated)',
+            'Close-Grip Push-Up (hands elevated)',
+            'Tricep Dip with chair (bent knees)',
           ],
         },
         {
-          day: 2, focus: 'Beine', method: 'Supersätze',
+          day: 2, focus: 'Legs', method: 'Supersets',
           exercises: [
-            'Ausfallschritt nach hinten (4–6 Sek.) / Gesprungene Kniebeuge',
-            'Ausfallschritt nach vorn (4–6 Sek.) / Seitlicher Ausfallschritt',
-            'Rumänisches Kreuzheben auf einem Kissen (1–3 Sek.) / Pogo-Sprünge',
+            'Reverse Lunge (4–6 Sek.) / Jump Squat',
+            'Forward Lunge (4–6 Sek.) / Side Lunge',
+            'Romanian Deadlift on Cushion (1–3 Sek.) / Jumping in Place',
           ],
         },
         {
-          day: 3, focus: 'Ziehen', method: 'Intervallsätze',
+          day: 3, focus: 'Pull', method: 'Interval Sets',
           exercises: [
-            'Türziehen',
-            'Umgekehrtes Bankdrücken mit gebeugten Knien',
-            'Türziehen im Untergriff',
-            'Curl mit Handtuch',
+            'Door Row',
+            'Inverted Row mit bent knees',
+            'Door Row (underhand)',
+            'Towel Bicep Curl',
           ],
         },
         {
-          day: 4, focus: 'Core', method: 'Hochintensitätssätze',
-          exercises: ['Russischer Twist', 'Strandschere', 'Knieheben im Stehen'],
+          day: 4, focus: 'Core', method: 'High Intensity Sets',
+          exercises: ['Russischer Twist', 'Lying Scissors', 'Standing Knee Raise'],
         },
         {
-          day: 5, focus: 'Ganzkörper', method: 'Zirkelintervalle',
-          exercises: ['10 Ausfallschritte nach hinten im Wechsel', '8 × Türziehen', '6 Liegestütze'],
+          day: 5, focus: 'Full Body', method: 'Circuits',
+          exercises: ['10 Lungee nach hinten im Wechsel', '8 × Door Row', '6 Push-Upe'],
         },
       ],
     },
@@ -339,37 +332,37 @@ const BEGINNER: FogProgram = {
       week: 8,
       days: [
         {
-          day: 1, focus: 'Drücken', method: 'Hochintensitätssätze',
+          day: 1, focus: 'Push', method: 'High Intensity Sets',
           exercises: [
-            'Liegestütz (Hände brusthoch abgestützt)',
-            'Schaukelstuhl',
-            'Doppelter Liegestützsprung (Burpee ohne Liegestütz)',
+            'Push-Up (hands at chest height)',
+            'Push-Up with Forward Lean',
+            'Alternating Jump Lunge',
           ],
         },
         {
-          day: 2, focus: 'Beine', method: 'Stufenintervalle',
+          day: 2, focus: 'Legs', method: 'Step Intervals',
           exercises: [
-            'Ausfallschritt nach hinten im Wechsel',
-            'Rumänisches Kreuzheben auf einem Bein',
-            'Kniebeuge mit 1–3 Sek.',
-            'Good Mornings mit 1–3 Sek.',
+            'Alternating Reverse Lunge',
+            'Single-Leg Romanian Deadlift',
+            'Squat mit 1–3 Sek.',
+            'Good Morning (1–3 Sek.)',
           ],
         },
         {
-          day: 3, focus: 'Ziehen', method: 'Supersätze',
+          day: 3, focus: 'Pull', method: 'Supersets',
           exercises: [
-            'Türklimmzug / Türziehen',
-            'Türziehen (4–6 Sek.) / Umgekehrtes Bankdrücken',
-            'Umgekehrtes Bankdrücken im Untergriff / Türziehen im Untergriff',
+            'Door Pull-Up / Door Row',
+            'Door Row (4–6 Sek.) / Inverted Row',
+            'Inverted Row (underhand) / Door Row (underhand)',
           ],
         },
         {
-          day: 4, focus: 'Core', method: 'Intervallsätze',
-          exercises: ['Beinheber', 'Strecken (s. Superman)', 'Russischer Twist', 'Schwimmer'],
+          day: 4, focus: 'Core', method: 'Interval Sets',
+          exercises: ['Leg Raise', 'Prone Back Extension', 'Russischer Twist', 'Swimmer'],
         },
         {
-          day: 5, focus: 'Ganzkörper', method: 'Zirkelintervalle',
-          exercises: ['10 Ausfallschritte nach hinten im Wechsel', '8 × Türziehen', '6 Liegestütze'],
+          day: 5, focus: 'Full Body', method: 'Circuits',
+          exercises: ['10 Lungee nach hinten im Wechsel', '8 × Door Row', '6 Push-Upe'],
         },
       ],
     },
@@ -377,29 +370,29 @@ const BEGINNER: FogProgram = {
       week: 9,
       days: [
         {
-          day: 1, focus: 'Drücken', method: 'Intervallsätze',
-          exercises: ['Liegestütz', 'Military Press (Hände erhöht)', 'Enger Liegestütz (Hände erhöht)'],
+          day: 1, focus: 'Push', method: 'Interval Sets',
+          exercises: ['Push-Up', 'Military Press (hands elevated)', 'Close-Grip Push-Up (hands elevated)'],
         },
         {
-          day: 2, focus: 'Beine', method: 'Hochintensitätssätze',
-          exercises: ['Beat Your Boots', 'Ausfallschritt', 'Good Mornings'],
+          day: 2, focus: 'Legs', method: 'High Intensity Sets',
+          exercises: ['High Knees', 'Lunge', 'Good Morning'],
         },
         {
-          day: 3, focus: 'Ziehen', method: 'Stufenintervalle',
+          day: 3, focus: 'Pull', method: 'Step Intervals',
           exercises: [
-            'Umgekehrtes Bankdrücken mit gebeugten Knien',
-            'Türziehen',
-            'Umgekehrtes Bankdrücken im Untergriff mit gebeugten Knien',
-            'Türziehen im Untergriff',
+            'Inverted Row mit bent knees',
+            'Door Row',
+            'Inverted Row (underhand) mit bent knees',
+            'Door Row (underhand)',
           ],
         },
         {
-          day: 4, focus: 'Core', method: 'Supersätze',
-          exercises: ['V-Up / Russischer Twist', 'Superman / Schwimmer', 'Fahrradfahren / Beinheber'],
+          day: 4, focus: 'Core', method: 'Supersets',
+          exercises: ['V-Up / Russischer Twist', 'Prone Back Extension / Swimmer', 'Bicycle Crunch / Leg Raise'],
         },
         {
-          day: 5, focus: 'Ganzkörper', method: 'Zirkelintervalle',
-          exercises: ['10 Ausfallschritte nach hinten im Wechsel', '8 × Türziehen', '6 Liegestütze'],
+          day: 5, focus: 'Full Body', method: 'Circuits',
+          exercises: ['10 Lungee nach hinten im Wechsel', '8 × Door Row', '6 Push-Upe'],
         },
       ],
     },
@@ -407,38 +400,38 @@ const BEGINNER: FogProgram = {
       week: 10,
       days: [
         {
-          day: 1, focus: 'Drücken', method: 'Supersätze',
+          day: 1, focus: 'Push', method: 'Supersets',
           exercises: [
-            'Liegestütz (Füße erhöht) / Liegestütz mit Abstoßen',
-            'Military Press / Daumen hoch',
-            'Enger Liegestütz / Trizepsdip mit Stuhl',
+            'Push-Up (feet elevated) / Explosive Push-Up',
+            'Military Press / Shoulder Rotation',
+            'Close-Grip Push-Up / Tricep Dip with chair',
           ],
         },
         {
-          day: 2, focus: 'Beine', method: 'Intervallsätze',
+          day: 2, focus: 'Legs', method: 'Interval Sets',
           exercises: [
-            'Kniebeuge im Ausfallschritt',
-            'Seitlicher Ausfallschritt',
-            'Kniebeuge mit 4–6 Sek.',
-            'Rumänisches Kreuzheben auf einem Bein auf einem Kissen',
+            'Split Squat',
+            'Side Lunge',
+            'Squat mit 4–6 Sek.',
+            'Single-Leg Romanian Deadlift on Cushion',
           ],
         },
         {
-          day: 3, focus: 'Ziehen', method: 'Hochintensitätssätze',
-          exercises: ['Türziehen (Füße hinter den Händen)', 'Fliegende Grätsche', 'Curl mit Handtuch'],
+          day: 3, focus: 'Pull', method: 'High Intensity Sets',
+          exercises: ['Door Row (feet behind hands)', 'Star Jump', 'Towel Bicep Curl'],
         },
         {
-          day: 4, focus: 'Core', method: 'Stufenintervalle',
+          day: 4, focus: 'Core', method: 'Step Intervals',
           exercises: [
-            'Crunch It Up',
-            'Strecken (Arme seitlich eng am Körper, s. Superman)',
-            'Beinheber',
-            'Strecken (nur Unterkörper anheben, s. Superman)',
+            'Reverse Crunch',
+            'Prone Back Extension (arms out)',
+            'Leg Raise',
+            'Prone Back Extension (lower body only)',
           ],
         },
         {
-          day: 5, focus: 'Ganzkörper', method: 'Zirkelintervalle',
-          exercises: ['10 Ausfallschritte nach hinten im Wechsel', '8 × Türziehen', '6 Liegestütze'],
+          day: 5, focus: 'Full Body', method: 'Circuits',
+          exercises: ['10 Lungee nach hinten im Wechsel', '8 × Door Row', '6 Push-Upe'],
         },
       ],
     },
@@ -446,122 +439,122 @@ const BEGINNER: FogProgram = {
   totalSessions: 44,
 }
 
-// ── First Class ───────────────────────────────────────────────────────────────
+// ── Grundprogramm ─────────────────────────────────────────────────────────────
 
 const FIRST: FogProgram = {
   id: 'first',
-  name: 'First Class',
-  subtitle: 'für Trainingserfahrene',
+  name: 'Foundation Program',
+  subtitle: 'For the trained',
   requirements: [
-    { category: 'Drücken', text: '10 Liegestütze mit je 2 Sek. Haltezeit in höchster und tiefster Position' },
-    { category: 'Ziehen', text: '10 × umgekehrtes Bankdrücken mit gestreckten Beinen, Fersen auf dem Boden' },
-    { category: 'Beine', text: '15 Ausfallschritte nach hinten auf jedem Bein mit 3 Sek. Haltezeit am tiefsten Punkt' },
-    { category: 'Core', text: 'Liegestützposition für 1 Minute halten' },
+    { category: 'Push', text: '10 push-ups, holding 2 sec at the top and bottom' },
+    { category: 'Pull', text: '10 inverted rows with legs extended' },
+    { category: 'Legs', text: '15 lunges per side, holding 3 sec at the bottom' },
+    { category: 'Core', text: '1 minute in the push-up position' },
   ],
   blocks: [
     {
-      weekLabel: 'Woche 1 und 2',
+      weekLabel: 'Weeks 1–2',
       weeks: [1, 2],
-      phase: 'Muskuläre Ausdauer',
+      phase: 'Muscular Endurance',
       sessionsPerWeek: 4,
       days: [
         {
-          day: 1, focus: 'Drücken/Ziehen', method: 'Stufenintervalle',
-          exercises: ['Liegestütz', 'Umgekehrtes Bankdrücken', 'Military Press', 'Türziehen'],
+          day: 1, focus: 'Push/Pull', method: 'Step Intervals',
+          exercises: ['Push-Up', 'Inverted Row', 'Military Press', 'Door Row'],
         },
         {
-          day: 2, focus: 'Beine/Core', method: 'Stufenintervalle',
+          day: 2, focus: 'Legs/Core', method: 'Step Intervals',
           exercises: [
-            'Ausfallschritt nach hinten im Wechsel (1–3 Sek.)',
-            'Rumänisches Kreuzheben auf einem Bein im Wechsel',
-            'Gesprungene Kniebeuge mit 1–3 Sek.',
-            'Strecken (Arme seitlich, s. Superman)',
+            'Alternating Reverse Lunge (1–3 Sek.)',
+            'Alternating Single-Leg Romanian Deadlift',
+            'Jump Squat mit 1–3 Sek.',
+            'Prone Back Extension (arms out)',
           ],
         },
         {
-          day: 3, focus: 'Drücken/Ziehen', method: 'Stufenintervalle',
-          exercises: ['Liegestütz', 'Umgekehrtes Bankdrücken', 'Military Press', 'Türziehen'],
+          day: 3, focus: 'Push/Pull', method: 'Step Intervals',
+          exercises: ['Push-Up', 'Inverted Row', 'Military Press', 'Door Row'],
         },
         {
-          day: 4, focus: 'Beine/Core', method: 'Stufenintervalle',
+          day: 4, focus: 'Legs/Core', method: 'Step Intervals',
           exercises: [
-            'Seitlicher Ausfallschritt im Wechsel (1–3 Sek.)',
-            'Rumänisches Kreuzheben auf einem Bein im Wechsel',
-            'Gesprungene Kniebeuge mit 1–3 Sek.',
+            'Alternating Side Lunge (1–3 Sek.)',
+            'Alternating Single-Leg Romanian Deadlift',
+            'Jump Squat mit 1–3 Sek.',
             'Russischer Twist',
           ],
         },
       ],
     },
     {
-      weekLabel: 'Woche 3 und 4',
+      weekLabel: 'Weeks 3–4',
       weeks: [3, 4],
-      phase: 'Kraft',
+      phase: 'Strength',
       sessionsPerWeek: 4,
       days: [
         {
-          day: 1, focus: 'Drücken', method: 'Intervallsätze',
+          day: 1, focus: 'Push', method: 'Interval Sets',
           exercises: [
-            'Liegestütz (Füße erhöht)',
+            'Push-Up (feet elevated)',
             'Military Press',
-            'Enger Liegestütz',
-            'Trizepsdip (Fußspitzen auf Stuhl)',
+            'Close-Grip Push-Up',
+            'Tricep Dip (toes on chair)',
           ],
         },
         {
-          day: 2, focus: 'Beine', method: 'Intervallsätze',
+          day: 2, focus: 'Legs', method: 'Interval Sets',
           exercises: [
-            'Kniebeuge im Ausfallschritt (1–3 Sek.)',
-            'Seitlicher Ausfallschritt (4–6 Sek.)',
-            'Gesprungene Kniebeuge (4–6 Sek.)',
-            'Rumänisches Kreuzheben auf einem Kissen',
+            'Split Squat (1–3 Sek.)',
+            'Side Lunge (4–6 Sek.)',
+            'Jump Squat (4–6 Sek.)',
+            'Romanian Deadlift on Cushion',
           ],
         },
         {
-          day: 3, focus: 'Ziehen', method: 'Intervallsätze',
-          exercises: ['Türklimmzug', 'Umgekehrtes Bankdrücken', 'Türziehen', 'Curl mit Handtuch'],
+          day: 3, focus: 'Pull', method: 'Interval Sets',
+          exercises: ['Door Pull-Up', 'Inverted Row', 'Door Row', 'Towel Bicep Curl'],
         },
         {
-          day: 4, focus: 'Core', method: 'Intervallsätze',
-          exercises: ['Beinheber mit gekreuzten Armen', 'Superman', 'Fahrradfahren', 'Strecken (Hände unter dem Kinn)'],
+          day: 4, focus: 'Core', method: 'Interval Sets',
+          exercises: ['Leg Raise (arms crossed)', 'Superman', 'Bicycle Crunch', 'Prone Back Extension (hands under chin)'],
         },
       ],
     },
     {
-      weekLabel: 'Woche 5 und 6',
+      weekLabel: 'Weeks 5–6',
       weeks: [5, 6],
-      phase: 'Power-Block',
+      phase: 'Power Block',
       sessionsPerWeek: 4,
       days: [
         {
-          day: 1, focus: 'Drücken', method: 'Supersätze',
+          day: 1, focus: 'Push', method: 'Supersets',
           exercises: [
-            'Liegestütz (Füße erhöht, 1–3 Sek.) / Liegestütz mit Abstoßen',
-            'Military Press (Füße erhöht) / Daumen hoch',
-            'Enger Liegestütz (Füße erhöht) / Trizepsdip',
+            'Push-Up (feet elevated, 1–3 Sek.) / Explosive Push-Up',
+            'Military Press (feet elevated) / Shoulder Rotation',
+            'Close-Grip Push-Up (feet elevated) / Tricep Dip',
           ],
         },
         {
-          day: 2, focus: 'Beine', method: 'Supersätze',
+          day: 2, focus: 'Legs', method: 'Supersets',
           exercises: [
-            'Einbeinige Kniebeuge im Wechsel (Stuhl) / Gesprungene Kniebeuge (4–6 Sek.)',
-            'Seitlicher Ausfallschritt (4–6 Sek.) / Ausfallschritt nach hinten (1–3 Sek.)',
-            'Rumänisches Kreuzheben auf Kissen (1–3 Sek.) / Kistensprung',
+            'Alternating Single-Leg Squat (Stuhl) / Jump Squat (4–6 Sek.)',
+            'Side Lunge (4–6 Sek.) / Reverse Lunge (1–3 Sek.)',
+            'Romanian Deadlift on Cushion (1–3 Sek.) / Box Jump',
           ],
         },
         {
-          day: 3, focus: 'Ziehen', method: 'Supersätze',
+          day: 3, focus: 'Pull', method: 'Supersets',
           exercises: [
-            'Türklimmzug / Türziehen',
-            'Türziehen (4–6 Sek.) / Umgekehrtes Bankdrücken',
-            'Umgekehrtes Bankdrücken im Untergriff (Füße erhöht) / Türziehen im Untergriff',
+            'Door Pull-Up / Door Row',
+            'Door Row (4–6 Sek.) / Inverted Row',
+            'Inverted Row (underhand) (feet elevated) / Door Row (underhand)',
           ],
         },
         {
-          day: 4, focus: 'Core', method: 'Supersätze',
+          day: 4, focus: 'Core', method: 'Supersets',
           exercises: [
-            'Hängendes Beinheben mit gebeugten Knien / Beintwist mit gebeugten Knien',
-            'Einbeiniger Hüftstrecker im Wechsel / Superman',
+            'Hanging Leg Raise mit bent knees / Leg Twist mit bent knees',
+            'Single-Leg Hip Extension im Wechsel / Superman',
             'V-Up / Russischer Twist',
           ],
         },
@@ -573,28 +566,28 @@ const FIRST: FogProgram = {
       week: 7,
       days: [
         {
-          day: 1, focus: 'Drücken', method: 'Stufenintervalle',
-          exercises: ['Chinesischer Liegestütz', 'Liegestütz', 'Enger Liegestütz', 'Trizepsdip mit Stuhl'],
+          day: 1, focus: 'Push', method: 'Step Intervals',
+          exercises: ['Pike Push-Up', 'Push-Up', 'Close-Grip Push-Up', 'Tricep Dip with chair'],
         },
         {
-          day: 2, focus: 'Beine', method: 'Supersätze',
+          day: 2, focus: 'Legs', method: 'Supersets',
           exercises: [
-            'Einbeinige Kniebeuge im Wechsel (2 Stühle) / Gesprungene Kniebeuge (4–6 Sek.)',
-            'Seitlicher Ausfallschritt (4–6 Sek.) / Ausfallschritt nach hinten (1–3 Sek.)',
-            'Rumänisches Kreuzheben auf Kissen (1–3 Sek.) / Kistensprung',
+            'Alternating Single-Leg Squat (2 chairs) / Jump Squat (4–6 Sek.)',
+            'Side Lunge (4–6 Sek.) / Reverse Lunge (1–3 Sek.)',
+            'Romanian Deadlift on Cushion (1–3 Sek.) / Box Jump',
           ],
         },
         {
-          day: 3, focus: 'Ziehen', method: 'Intervallsätze',
-          exercises: ['Türklimmzug', 'Umgekehrtes Bankdrücken', 'Türziehen', 'Curl mit Handtuch'],
+          day: 3, focus: 'Pull', method: 'Interval Sets',
+          exercises: ['Door Pull-Up', 'Inverted Row', 'Door Row', 'Towel Bicep Curl'],
         },
         {
-          day: 4, focus: 'Core', method: 'Hochintensitätssätze',
-          exercises: ['Russischer Twist', 'Beinscheren-Crunch', 'Kniebeuge'],
+          day: 4, focus: 'Core', method: 'High Intensity Sets',
+          exercises: ['Russischer Twist', 'Crunch with Scissors', 'Squat'],
         },
         {
-          day: 5, focus: 'Ganzkörper', method: 'Zirkelintervalle',
-          exercises: ['6 × Umgekehrtes Bankdrücken mit gebeugten Knien', '12 seitliche Ausfallschritte im Wechsel', '8 Liegestütze'],
+          day: 5, focus: 'Full Body', method: 'Circuits',
+          exercises: ['6 × Inverted Row mit bent knees', '12 seitliche Lungee im Wechsel', '8 Push-Upe'],
         },
       ],
     },
@@ -602,33 +595,33 @@ const FIRST: FogProgram = {
       week: 8,
       days: [
         {
-          day: 1, focus: 'Drücken', method: 'Hochintensitätssätze',
-          exercises: ['Liegestütz (Hände erhöht)', 'Trizepsdip mit Stuhl (Füße am Boden)', 'Kniebeuge'],
+          day: 1, focus: 'Push', method: 'High Intensity Sets',
+          exercises: ['Push-Up (hands elevated)', 'Tricep Dip with chair (feet on floor)', 'Squat'],
         },
         {
-          day: 2, focus: 'Beine', method: 'Stufenintervalle',
+          day: 2, focus: 'Legs', method: 'Step Intervals',
           exercises: [
-            'Ausfallschritt nach hinten im Wechsel (1–3 Sek.)',
-            'Seitlicher Ausfallschritt',
-            'Gesprungene Kniebeuge mit 1–3 Sek.',
-            'Rumänisches Kreuzheben auf einem Bein im Wechsel',
+            'Alternating Reverse Lunge (1–3 Sek.)',
+            'Side Lunge',
+            'Jump Squat mit 1–3 Sek.',
+            'Alternating Single-Leg Romanian Deadlift',
           ],
         },
         {
-          day: 3, focus: 'Ziehen', method: 'Supersätze',
+          day: 3, focus: 'Pull', method: 'Supersets',
           exercises: [
-            'Türklimmzug / Türziehen',
-            'Türziehen (4–6 Sek.) / Umgekehrtes Bankdrücken',
-            'Umgekehrtes Bankdrücken im Untergriff (Füße erhöht) / Türziehen im Untergriff',
+            'Door Pull-Up / Door Row',
+            'Door Row (4–6 Sek.) / Inverted Row',
+            'Inverted Row (underhand) (feet elevated) / Door Row (underhand)',
           ],
         },
         {
-          day: 4, focus: 'Core', method: 'Intervallsätze',
-          exercises: ['Beinheber mit gekreuzten Armen', 'Superman', 'Fahrradfahren', 'Strecken (Hände unter dem Kinn)'],
+          day: 4, focus: 'Core', method: 'Interval Sets',
+          exercises: ['Leg Raise (arms crossed)', 'Superman', 'Bicycle Crunch', 'Prone Back Extension (hands under chin)'],
         },
         {
-          day: 5, focus: 'Ganzkörper', method: 'Zirkelintervalle',
-          exercises: ['6 × Umgekehrtes Bankdrücken mit gebeugten Knien', '12 seitliche Ausfallschritte im Wechsel', '8 Liegestütze'],
+          day: 5, focus: 'Full Body', method: 'Circuits',
+          exercises: ['6 × Inverted Row mit bent knees', '12 seitliche Lungee im Wechsel', '8 Push-Upe'],
         },
       ],
     },
@@ -636,38 +629,38 @@ const FIRST: FogProgram = {
       week: 9,
       days: [
         {
-          day: 1, focus: 'Drücken', method: 'Intervallsätze',
+          day: 1, focus: 'Push', method: 'Interval Sets',
           exercises: [
-            'Liegestütz (Füße erhöht)',
-            'Chinesischer Liegestütz (Hände erhöht)',
-            'Enger Liegestütz (Hände erhöht)',
-            'Trizepsdip mit Stuhl',
+            'Push-Up (feet elevated)',
+            'Pike Push-Up (hands elevated)',
+            'Close-Grip Push-Up (hands elevated)',
+            'Tricep Dip with chair',
           ],
         },
         {
-          day: 2, focus: 'Beine', method: 'Hochintensitätssätze',
-          exercises: ['Iron Mike', 'Seitsprung', 'Kniebeuge'],
+          day: 2, focus: 'Legs', method: 'High Intensity Sets',
+          exercises: ['Alternating Jump Lunge', 'Side Jump', 'Squat'],
         },
         {
-          day: 3, focus: 'Ziehen', method: 'Stufenintervalle',
+          day: 3, focus: 'Pull', method: 'Step Intervals',
           exercises: [
-            'Umgekehrtes Bankdrücken',
-            'Türziehen',
-            'Umgekehrtes Bankdrücken im Untergriff',
-            'Türziehen im Untergriff',
+            'Inverted Row',
+            'Door Row',
+            'Inverted Row (underhand)',
+            'Door Row (underhand)',
           ],
         },
         {
-          day: 4, focus: 'Core', method: 'Supersätze',
+          day: 4, focus: 'Core', method: 'Supersets',
           exercises: [
-            'Hängendes Beinheben mit gebeugten Knien / Beintwist',
-            'Hüftstrecker mit einem Bein im Wechsel / Superman',
+            'Hanging Leg Raise mit bent knees / Leg Twist',
+            'Alternating Single-Leg Hip Extension / Superman',
             'V-Up / Russischer Twist',
           ],
         },
         {
-          day: 5, focus: 'Ganzkörper', method: 'Zirkelintervalle',
-          exercises: ['6 × Umgekehrtes Bankdrücken mit gebeugten Knien', '12 seitliche Ausfallschritte im Wechsel', '8 Liegestütze'],
+          day: 5, focus: 'Full Body', method: 'Circuits',
+          exercises: ['6 × Inverted Row mit bent knees', '12 seitliche Lungee im Wechsel', '8 Push-Upe'],
         },
       ],
     },
@@ -675,33 +668,33 @@ const FIRST: FogProgram = {
       week: 10,
       days: [
         {
-          day: 1, focus: 'Drücken', method: 'Supersätze',
+          day: 1, focus: 'Push', method: 'Supersets',
           exercises: [
-            'Liegestütz (Füße erhöht, 1–3 Sek.) / Liegestütz mit Abstoßen',
-            'Military Press (Füße erhöht) / Überkopfpresse',
-            'Enger Liegestütz (Füße erhöht) / Trizepsdip mit Stuhl',
+            'Push-Up (feet elevated, 1–3 Sek.) / Explosive Push-Up',
+            'Military Press (feet elevated) / Shoulder Press',
+            'Close-Grip Push-Up (feet elevated) / Tricep Dip with chair',
           ],
         },
         {
-          day: 2, focus: 'Beine', method: 'Intervallsätze',
+          day: 2, focus: 'Legs', method: 'Interval Sets',
           exercises: [
-            'Kniebeuge im Ausfallschritt (1–3 Sek.)',
-            'Seitlicher Ausfallschritt (4–6 Sek.)',
-            'Gesprungene Kniebeuge (4–6 Sek.)',
-            'Rumänisches Kreuzheben auf einem Kissen',
+            'Split Squat (1–3 Sek.)',
+            'Side Lunge (4–6 Sek.)',
+            'Jump Squat (4–6 Sek.)',
+            'Romanian Deadlift on Cushion',
           ],
         },
         {
-          day: 3, focus: 'Ziehen', method: 'Hochintensitätssätze',
-          exercises: ['Umgekehrtes Bankdrücken', 'Türziehen', 'Kniebeuge'],
+          day: 3, focus: 'Pull', method: 'High Intensity Sets',
+          exercises: ['Inverted Row', 'Door Row', 'Squat'],
         },
         {
-          day: 4, focus: 'Core', method: 'Stufenintervalle',
-          exercises: ['Fahrradfahren', 'Strecken (Hände unter dem Kinn)', 'Gegrätschter Beinscheren-Crunch', 'Schwimmer'],
+          day: 4, focus: 'Core', method: 'Step Intervals',
+          exercises: ['Bicycle Crunch', 'Prone Back Extension (hands under chin)', 'Wide-Leg Crunch with Scissors', 'Swimmer'],
         },
         {
-          day: 5, focus: 'Ganzkörper', method: 'Zirkelintervalle',
-          exercises: ['6 × Umgekehrtes Bankdrücken mit gebeugten Knien', '12 seitliche Ausfallschritte im Wechsel', '8 Liegestütze'],
+          day: 5, focus: 'Full Body', method: 'Circuits',
+          exercises: ['6 × Inverted Row mit bent knees', '12 seitliche Lungee im Wechsel', '8 Push-Upe'],
         },
       ],
     },
@@ -709,96 +702,96 @@ const FIRST: FogProgram = {
   totalSessions: 44,
 }
 
-// ── Master Class ──────────────────────────────────────────────────────────────
+// ── Aufbauprogramm ────────────────────────────────────────────────────────────
 
 const MASTER: FogProgram = {
   id: 'master',
-  name: 'Master Class',
-  subtitle: 'für Fortgeschrittene',
+  name: 'Intermediate Program',
+  subtitle: 'For the advanced',
   requirements: [
-    { category: 'Drücken', text: '16 einarmige Liegestütze im Wechsel (Hand erhöht) – 8 pro Seite' },
-    { category: 'Ziehen', text: '4 Klimmzüge mit je 2 Sek. Haltezeit in höchster und tiefster Position' },
-    { category: 'Beine', text: '24 einbeinige Kniebeugen im Wechsel (Gesäß leicht absetzen erlaubt) – 12 pro Seite' },
-    { category: 'Core', text: 'Liegestützposition für 3 Minuten halten' },
+    { category: 'Push', text: '16 alternating one-arm push-ups (hand elevated), 8 per side' },
+    { category: 'Pull', text: '4 pull-ups, holding 2 sec at top and bottom' },
+    { category: 'Legs', text: '24 alternating single-leg squats (brief touch-down allowed), 12 per side' },
+    { category: 'Core', text: '3 minutes in the push-up position' },
   ],
   blocks: [
     {
-      weekLabel: 'Woche 1 und 2',
+      weekLabel: 'Weeks 1–2',
       weeks: [1, 2],
-      phase: 'Muskuläre Ausdauer',
+      phase: 'Muscular Endurance',
       sessionsPerWeek: 4,
       days: [
         {
-          day: 1, focus: 'Drücken/Ziehen', method: 'Stufenintervalle',
+          day: 1, focus: 'Push/Pull', method: 'Step Intervals',
           exercises: [
-            'Einarmiger Liegestütz im Wechsel (Hand erhöht)',
-            'Türklimmzug (Füße auf Stuhl oder Hochspringen)',
-            'Military Press (Füße erhöht)',
-            'Umgekehrtes Bankdrücken',
+            'Alternating One-Arm Push-Up (hand elevated)',
+            'Door Pull-Up (feet on chair oder jump start)',
+            'Military Press (feet elevated)',
+            'Inverted Row',
           ],
         },
         {
-          day: 2, focus: 'Beine/Core', method: 'Stufenintervalle',
+          day: 2, focus: 'Legs/Core', method: 'Step Intervals',
           exercises: [
-            'Einbeinige Kniebeuge im Wechsel (Stuhllehne festhalten)',
-            'Ausfallschritt nach hinten mit 4–6 Sek.',
-            'Hüftstrecker',
+            'Alternating Single-Leg Squat (holding chair back)',
+            'Reverse Lunge mit 4–6 Sek.',
+            'Hip Extension',
             'Superman',
           ],
         },
         {
-          day: 3, focus: 'Drücken/Ziehen', method: 'Stufenintervalle',
+          day: 3, focus: 'Push/Pull', method: 'Step Intervals',
           exercises: [
-            'Einarmiger Liegestütz im Wechsel (Hand erhöht)',
-            'Türklimmzug (Füße auf Stuhl oder Hochspringen)',
+            'Alternating One-Arm Push-Up (hand elevated)',
+            'Door Pull-Up (feet on chair oder jump start)',
             'Military Press',
-            'Türziehen',
+            'Door Row',
           ],
         },
         {
-          day: 4, focus: 'Beine/Core', method: 'Stufenintervalle',
+          day: 4, focus: 'Legs/Core', method: 'Step Intervals',
           exercises: [
-            'Einbeinige Kniebeuge im Wechsel (Stuhllehne festhalten)',
-            'Seitlicher Ausfallschritt im Wechsel (1–3 Sek.)',
-            'Rumänisches Kreuzheben auf einem Bein auf einem Kissen',
-            'Beintwist mit gebeugten Knien',
+            'Alternating Single-Leg Squat (holding chair back)',
+            'Alternating Side Lunge (1–3 Sek.)',
+            'Single-Leg Romanian Deadlift on Cushion',
+            'Leg Twist mit bent knees',
           ],
         },
       ],
     },
     {
-      weekLabel: 'Woche 3 und 4',
+      weekLabel: 'Weeks 3–4',
       weeks: [3, 4],
-      phase: 'Kraft',
+      phase: 'Strength',
       sessionsPerWeek: 4,
       days: [
         {
-          day: 1, focus: 'Drücken', method: 'Intervallsätze',
-          exercises: ['Einarmiger Liegestütz (Hand erhöht)', 'Sturzflug', 'Military Press (Füße erhöht)', 'Trizepsdip'],
+          day: 1, focus: 'Push', method: 'Interval Sets',
+          exercises: ['One-Arm Push-Up (hand elevated)', 'Pike Push-Up', 'Military Press (feet elevated)', 'Tricep Dip'],
         },
         {
-          day: 2, focus: 'Beine', method: 'Intervallsätze',
+          day: 2, focus: 'Legs', method: 'Interval Sets',
           exercises: [
-            'Einbeinige Kniebeuge (Stuhllehne oder erhöhte Fläche)',
-            'Kniebeuge im Ausfallschritt (4–6 Sek.)',
-            'Seitlicher Ausfallschritt (4–6 Sek.)',
-            'Hüftstrecker mit einem Bein',
+            'Single-Leg Squat (chair back or elevated surface)',
+            'Split Squat (4–6 Sek.)',
+            'Side Lunge (4–6 Sek.)',
+            'Single-Leg Hip Extension',
           ],
         },
         {
-          day: 3, focus: 'Ziehen', method: 'Intervallsätze',
+          day: 3, focus: 'Pull', method: 'Interval Sets',
           exercises: [
-            'Türklimmzug',
-            'Türziehen mit 1–3 Sek. Haltezeit',
-            'Umgekehrtes Bankdrücken',
-            'Umgekehrtes Bankdrücken im Untergriff',
+            'Door Pull-Up',
+            'Door Row mit 1–3 Sek. hold',
+            'Inverted Row',
+            'Inverted Row (underhand)',
           ],
         },
         {
-          day: 4, focus: 'Core', method: 'Intervallsätze',
+          day: 4, focus: 'Core', method: 'Interval Sets',
           exercises: [
-            'Hängendes Beinheben (parallel zum Boden)',
-            'Rückenheber',
+            'Hanging Leg Raise (parallel zum Boden)',
+            'Back Extension',
             'V-Up',
             'Superman',
           ],
@@ -806,41 +799,41 @@ const MASTER: FogProgram = {
       ],
     },
     {
-      weekLabel: 'Woche 5 und 6',
+      weekLabel: 'Weeks 5–6',
       weeks: [5, 6],
-      phase: 'Power-Block',
+      phase: 'Power Block',
       sessionsPerWeek: 4,
       days: [
         {
-          day: 1, focus: 'Drücken', method: 'Supersätze',
+          day: 1, focus: 'Push', method: 'Supersets',
           exercises: [
-            'Einarmiger Liegestütz / Federnder Liegestütz',
-            'Military Press (Füße erhöht) / Sturzflug',
-            'Erhöhter Trizepsstrecker / Liegestütz mit Abstoßen',
+            'One-Arm Push-Up / Explosive Push-Up',
+            'Military Press (feet elevated) / Pike Push-Up',
+            'Table Tricep Extension / Explosive Push-Up',
           ],
         },
         {
-          day: 2, focus: 'Beine', method: 'Supersätze',
+          day: 2, focus: 'Legs', method: 'Supersets',
           exercises: [
-            'Pistole / Kistensprung',
-            'Sissy-Kniebeuge / Iron Mike',
-            'Fallender Liegestütz / Seitsprung',
+            'Single-Leg Squat / Box Jump',
+            'Tiptoe Squat / Alternating Jump Lunge',
+            'Drop Push-Up / Side Jump',
           ],
         },
         {
-          day: 3, focus: 'Ziehen', method: 'Supersätze',
+          day: 3, focus: 'Pull', method: 'Supersets',
           exercises: [
-            'Türklimmzug / Türziehen',
-            'Einarmiges Türziehen / Umgekehrtes Bankdrücken im Untergriff',
-            'Türziehen im Untergriff (4–6 Sek.) / Curl mit Handtuch',
+            'Door Pull-Up / Door Row',
+            'One-Arm Door Row / Inverted Row (underhand)',
+            'Door Row (underhand) (4–6 Sek.) / Towel Bicep Curl',
           ],
         },
         {
-          day: 4, focus: 'Core', method: 'Supersätze',
+          day: 4, focus: 'Core', method: 'Supersets',
           exercises: [
-            'Hängendes Beinheben / Fahrradfahren',
-            'Rückenheber / Superman',
-            'V-Up / Beintwist mit gebeugten Knien',
+            'Hanging Leg Raise / Bicycle Crunch',
+            'Back Extension / Superman',
+            'V-Up / Leg Twist mit bent knees',
           ],
         },
       ],
@@ -851,41 +844,41 @@ const MASTER: FogProgram = {
       week: 7,
       days: [
         {
-          day: 1, focus: 'Drücken', method: 'Stufenintervalle',
+          day: 1, focus: 'Push', method: 'Step Intervals',
           exercises: [
-            'Einarmiger Liegestütz (Hände kniehoch erhöht)',
-            'Sturzflug',
-            'Trizepsdip',
-            'Trizepsdip mit Stuhl',
+            'One-Arm Push-Up (hands knee-height elevated)',
+            'Pike Push-Up',
+            'Tricep Dip',
+            'Tricep Dip with chair',
           ],
         },
         {
-          day: 2, focus: 'Beine', method: 'Supersätze',
+          day: 2, focus: 'Legs', method: 'Supersets',
           exercises: [
-            'Pistole / Sissy-Kniebeuge',
-            'Kistensprung / Iron Mike',
-            'Fallender Liegestütz / Seitsprung',
+            'Single-Leg Squat / Tiptoe Squat',
+            'Box Jump / Alternating Jump Lunge',
+            'Drop Push-Up / Side Jump',
           ],
         },
         {
-          day: 3, focus: 'Ziehen', method: 'Intervallsätze',
+          day: 3, focus: 'Pull', method: 'Interval Sets',
           exercises: [
-            'Türklimmzug',
-            'Türziehen (1–3 Sek.)',
-            'Umgekehrtes Bankdrücken',
-            'Umgekehrtes Bankdrücken im Untergriff',
+            'Door Pull-Up',
+            'Door Row (1–3 Sek.)',
+            'Inverted Row',
+            'Inverted Row (underhand)',
           ],
         },
         {
-          day: 4, focus: 'Core', method: 'Hochintensitätssätze',
-          exercises: ['Schräger V-Up (4 Sätze pro Seite)', 'Beinscheren-Crunch mit gekreuzten Armen', 'Kniebeuge'],
+          day: 4, focus: 'Core', method: 'High Intensity Sets',
+          exercises: ['Oblique V-Up (4 sets per side)', 'Crunch with Scissors (arms crossed)', 'Squat'],
         },
         {
-          day: 5, focus: 'Ganzkörper', method: 'Zirkelintervalle',
+          day: 5, focus: 'Full Body', method: 'Circuits',
           exercises: [
-            '12 einbeinige Kniebeugen im Wechsel (Stuhl) oder Kistensprünge',
-            '6 Sturzflüge',
-            '8 × Umgekehrtes Bankdrücken',
+            '12 alternating Single-Leg Squats (chair) or Box Jumps',
+            '6 Pike Push-Upe',
+            '8 × Inverted Row',
           ],
         },
       ],
@@ -894,36 +887,36 @@ const MASTER: FogProgram = {
       week: 8,
       days: [
         {
-          day: 1, focus: 'Drücken', method: 'Hochintensitätssätze',
-          exercises: ['Liegestütz', 'Liegestütz mit Abstoßen', 'Kniebeuge'],
+          day: 1, focus: 'Push', method: 'High Intensity Sets',
+          exercises: ['Push-Up', 'Explosive Push-Up', 'Squat'],
         },
         {
-          day: 2, focus: 'Beine', method: 'Stufenintervalle',
+          day: 2, focus: 'Legs', method: 'Step Intervals',
           exercises: [
-            'Einbeinige Kniebeuge (mit Stuhl)',
-            'Sissy-Kniebeuge',
-            'Seitlicher Ausfallschritt (1–3 Sek.)',
-            'Hüftstrecker',
+            'Single-Leg Squat (with chair)',
+            'Tiptoe Squat',
+            'Side Lunge (1–3 Sek.)',
+            'Hip Extension',
           ],
         },
         {
-          day: 3, focus: 'Ziehen', method: 'Supersätze',
+          day: 3, focus: 'Pull', method: 'Supersets',
           exercises: [
-            'Türklimmzug / Umgekehrtes Bankdrücken',
-            'Einarmiges Türziehen / Umgekehrtes Bankdrücken im Untergriff (Füße erhöht)',
-            'Türziehen im Untergriff / Curl mit Handtuch',
+            'Door Pull-Up / Inverted Row',
+            'One-Arm Door Row / Inverted Row (underhand) (feet elevated)',
+            'Door Row (underhand) / Towel Bicep Curl',
           ],
         },
         {
-          day: 4, focus: 'Core', method: 'Intervallsätze',
-          exercises: ['Hängendes Beinheben', 'Rückenheber', 'V-Up', 'Superman'],
+          day: 4, focus: 'Core', method: 'Interval Sets',
+          exercises: ['Hanging Leg Raise', 'Back Extension', 'V-Up', 'Superman'],
         },
         {
-          day: 5, focus: 'Ganzkörper', method: 'Zirkelintervalle',
+          day: 5, focus: 'Full Body', method: 'Circuits',
           exercises: [
-            '12 einbeinige Kniebeugen im Wechsel (Stuhl) oder Kistensprünge',
-            '6 Sturzflüge',
-            '8 × Umgekehrtes Bankdrücken',
+            '12 alternating Single-Leg Squats (chair) or Box Jumps',
+            '6 Pike Push-Upe',
+            '8 × Inverted Row',
           ],
         },
       ],
@@ -932,41 +925,41 @@ const MASTER: FogProgram = {
       week: 9,
       days: [
         {
-          day: 1, focus: 'Drücken', method: 'Intervallsätze',
+          day: 1, focus: 'Push', method: 'Interval Sets',
           exercises: [
-            'Einarmiger Liegestütz (Hände erhöht)',
-            'Sturzflug',
-            'Military Press (Füße erhöht)',
-            'Trizepsdip',
+            'One-Arm Push-Up (hands elevated)',
+            'Pike Push-Up',
+            'Military Press (feet elevated)',
+            'Tricep Dip',
           ],
         },
         {
-          day: 2, focus: 'Beine', method: 'Hochintensitätssätze',
-          exercises: ['Iron Mike', 'Seitsprung', 'Kniebeuge'],
+          day: 2, focus: 'Legs', method: 'High Intensity Sets',
+          exercises: ['Alternating Jump Lunge', 'Side Jump', 'Squat'],
         },
         {
-          day: 3, focus: 'Ziehen', method: 'Stufenintervalle',
+          day: 3, focus: 'Pull', method: 'Step Intervals',
           exercises: [
-            'Türklimmzug mit Stuhl',
-            'Umgekehrtes Bankdrücken',
-            'Umgekehrtes Bankdrücken im Untergriff',
-            'Türziehen',
+            'Door Pull-Up with chair',
+            'Inverted Row',
+            'Inverted Row (underhand)',
+            'Door Row',
           ],
         },
         {
-          day: 4, focus: 'Core', method: 'Supersätze',
+          day: 4, focus: 'Core', method: 'Supersets',
           exercises: [
-            'Hängendes Beinheben / Fahrradfahren',
-            'Rückenheber / Superman',
-            'V-Up / Beintwist mit gebeugten Knien',
+            'Hanging Leg Raise / Bicycle Crunch',
+            'Back Extension / Superman',
+            'V-Up / Leg Twist mit bent knees',
           ],
         },
         {
-          day: 5, focus: 'Ganzkörper', method: 'Zirkelintervalle',
+          day: 5, focus: 'Full Body', method: 'Circuits',
           exercises: [
-            '12 einbeinige Kniebeugen im Wechsel (Stuhl) oder Kistensprünge',
-            '6 Sturzflüge',
-            '8 × Umgekehrtes Bankdrücken',
+            '12 alternating Single-Leg Squats (chair) or Box Jumps',
+            '6 Pike Push-Upe',
+            '8 × Inverted Row',
           ],
         },
       ],
@@ -975,41 +968,41 @@ const MASTER: FogProgram = {
       week: 10,
       days: [
         {
-          day: 1, focus: 'Drücken', method: 'Supersätze',
+          day: 1, focus: 'Push', method: 'Supersets',
           exercises: [
-            'Einarmiger Liegestütz / Federnder Liegestütz',
-            'Military Press (Füße erhöht) / Sturzflug',
-            'Erhöhter Trizepsstrecker / Liegestütz mit Abstoßen',
+            'One-Arm Push-Up / Explosive Push-Up',
+            'Military Press (feet elevated) / Pike Push-Up',
+            'Table Tricep Extension / Explosive Push-Up',
           ],
         },
         {
-          day: 2, focus: 'Beine', method: 'Intervallsätze',
+          day: 2, focus: 'Legs', method: 'Interval Sets',
           exercises: [
-            'Einbeinige Kniebeuge (Stuhllehne)',
-            'Kniebeuge im Ausfallschritt (4–6 Sek.)',
-            'Seitlicher Ausfallschritt (4–6 Sek.)',
-            'Hüftstrecker mit einem Bein',
+            'Single-Leg Squat (chair back)',
+            'Split Squat (4–6 Sek.)',
+            'Side Lunge (4–6 Sek.)',
+            'Single-Leg Hip Extension',
           ],
         },
         {
-          day: 3, focus: 'Ziehen', method: 'Hochintensitätssätze',
-          exercises: ['Umgekehrtes Bankdrücken', 'Türziehen', 'Kniebeuge'],
+          day: 3, focus: 'Pull', method: 'High Intensity Sets',
+          exercises: ['Inverted Row', 'Door Row', 'Squat'],
         },
         {
-          day: 4, focus: 'Core', method: 'Stufenintervalle',
+          day: 4, focus: 'Core', method: 'Step Intervals',
           exercises: [
-            'Schräger V-Up mit gebeugten Knien',
-            'Fliegende Grätsche',
-            'Beinheber mit gekreuzten Armen',
-            'Strecken (Hände unter dem Kinn)',
+            'Oblique V-Up mit bent knees',
+            'Star Jump',
+            'Leg Raise (arms crossed)',
+            'Prone Back Extension (hands under chin)',
           ],
         },
         {
-          day: 5, focus: 'Ganzkörper', method: 'Zirkelintervalle',
+          day: 5, focus: 'Full Body', method: 'Circuits',
           exercises: [
-            '12 einbeinige Kniebeugen im Wechsel (Stuhl) oder Kistensprünge',
-            '6 Sturzflüge',
-            '8 × Umgekehrtes Bankdrücken',
+            '12 alternating Single-Leg Squats (chair) or Box Jumps',
+            '6 Pike Push-Upe',
+            '8 × Inverted Row',
           ],
         },
       ],
@@ -1018,138 +1011,138 @@ const MASTER: FogProgram = {
   totalSessions: 44,
 }
 
-// ── Chief Class ───────────────────────────────────────────────────────────────
+// ── Eliteprogramm ─────────────────────────────────────────────────────────────
 
 const CHIEF: FogProgram = {
   id: 'chief',
-  name: 'Chief Class',
-  subtitle: 'für Spitzensportler',
+  name: 'Elite Program',
+  subtitle: 'For athletes',
   requirements: [
-    { category: 'Drücken', text: '16 einarmige Liegestütze – 8 pro Seite, Seitenwechsel nach jeder Wiederholung' },
-    { category: 'Ziehen', text: '12 Klimmzüge mit je 1 Sek. Haltezeit in höchster und tiefster Position' },
-    { category: 'Beine', text: '24 Pistolen im Wechsel – 12 pro Seite, Seitenwechsel nach jeder Wiederholung' },
-    { category: 'Core', text: 'Liegestützposition für 5 Minuten halten' },
+    { category: 'Push', text: '16 one-arm push-ups unassisted, 8 per side' },
+    { category: 'Pull', text: '12 pull-ups, holding 1 sec at top and bottom' },
+    { category: 'Legs', text: '24 alternating single-leg squats, 12 per side' },
+    { category: 'Core', text: '5 minutes in the push-up position' },
   ],
   blocks: [
     {
-      weekLabel: 'Woche 1 und 2',
+      weekLabel: 'Weeks 1–2',
       weeks: [1, 2],
-      phase: 'Muskuläre Ausdauer',
+      phase: 'Muscular Endurance',
       sessionsPerWeek: 4,
       days: [
         {
-          day: 1, focus: 'Drücken/Ziehen', method: 'Stufenintervalle',
+          day: 1, focus: 'Push/Pull', method: 'Step Intervals',
           exercises: [
-            'Einarmiger Liegestütz im Wechsel (Hand erhöht)',
-            'Türklimmzug',
-            'Sturzflug',
-            'Umgekehrtes Bankdrücken (Füße erhöht)',
+            'Alternating One-Arm Push-Up (hand elevated)',
+            'Door Pull-Up',
+            'Pike Push-Up',
+            'Inverted Row (feet elevated)',
           ],
         },
         {
-          day: 2, focus: 'Beine/Core', method: 'Stufenintervalle',
+          day: 2, focus: 'Legs/Core', method: 'Step Intervals',
           exercises: [
-            'Pistole im Wechsel',
-            'Iron Mike',
-            'Hüftstrecker mit einem Bein im Wechsel',
-            'Rückenheber',
+            'Alternating Single-Leg Squat',
+            'Alternating Jump Lunge',
+            'Alternating Single-Leg Hip Extension',
+            'Back Extension',
           ],
         },
         {
-          day: 3, focus: 'Drücken/Ziehen', method: 'Stufenintervalle',
+          day: 3, focus: 'Push/Pull', method: 'Step Intervals',
           exercises: [
-            'Einarmiger Liegestütz im Wechsel (Hand erhöht)',
-            'Türklimmzug',
-            'Military Press (Füße erhöht)',
-            'Einarmiges Türziehen im Wechsel',
+            'Alternating One-Arm Push-Up (hand elevated)',
+            'Door Pull-Up',
+            'Military Press (feet elevated)',
+            'One-Arm Door Row im Wechsel',
           ],
         },
         {
-          day: 4, focus: 'Beine/Core', method: 'Stufenintervalle',
-          exercises: ['Einbeinige Kniebeuge im Wechsel', 'Kistensprung', 'Sissy-Kniebeuge', 'Beintwist'],
+          day: 4, focus: 'Legs/Core', method: 'Step Intervals',
+          exercises: ['Alternating Single-Leg Squat', 'Box Jump', 'Tiptoe Squat', 'Leg Twist'],
         },
       ],
     },
     {
-      weekLabel: 'Woche 3 und 4',
+      weekLabel: 'Weeks 3–4',
       weeks: [3, 4],
-      phase: 'Kraft',
+      phase: 'Strength',
       sessionsPerWeek: 4,
       days: [
         {
-          day: 1, focus: 'Drücken', method: 'Intervallsätze',
+          day: 1, focus: 'Push', method: 'Interval Sets',
           exercises: [
-            'Einarmiger Liegestütz',
-            'Handstandliegestütz',
-            'Sturzflug',
-            'Erhöhter Trizepsstrecker (hüfthoch)',
+            'One-Arm Push-Up',
+            'Handstand Push-Up',
+            'Pike Push-Up',
+            'Table Tricep Extension (hip-height)',
           ],
         },
         {
-          day: 2, focus: 'Beine', method: 'Intervallsätze',
+          day: 2, focus: 'Legs', method: 'Interval Sets',
           exercises: [
-            'Pistole',
-            'Kniebeuge im Ausfallschritt (4–6 Sek.)',
-            'Sissy-Kniebeuge',
-            'Iron Mike',
+            'Single-Leg Squat',
+            'Split Squat (4–6 Sek.)',
+            'Tiptoe Squat',
+            'Alternating Jump Lunge',
           ],
         },
         {
-          day: 3, focus: 'Ziehen', method: 'Intervallsätze',
+          day: 3, focus: 'Pull', method: 'Interval Sets',
           exercises: [
-            'Türklimmzug (1–3 Sek. Haltezeit oben)',
-            'Einarmiges Türziehen',
-            'Umgekehrtes Bankdrücken im Untergriff (Füße erhöht)',
-            'Türziehen (4–6 Sek.)',
+            'Door Pull-Up (1–3 Sek. hold at top)',
+            'One-Arm Door Row',
+            'Inverted Row (underhand) (feet elevated)',
+            'Door Row (4–6 Sek.)',
           ],
         },
         {
-          day: 4, focus: 'Core', method: 'Intervallsätze',
+          day: 4, focus: 'Core', method: 'Interval Sets',
           exercises: [
-            'Hängendes Beinheben (bis ganz nach oben)',
-            'Rückenheber',
-            'Klappmesser',
+            'Hanging Leg Raise (bis ganz nach oben)',
+            'Back Extension',
+            'V-Up (Jackknife)',
             'Superman',
           ],
         },
       ],
     },
     {
-      weekLabel: 'Woche 5 und 6',
+      weekLabel: 'Weeks 5–6',
       weeks: [5, 6],
-      phase: 'Power-Block',
+      phase: 'Power Block',
       sessionsPerWeek: 4,
       days: [
         {
-          day: 1, focus: 'Drücken', method: 'Supersätze',
+          day: 1, focus: 'Push', method: 'Supersets',
           exercises: [
-            'Einarmiger Liegestütz (Füße erhöht) / Federnder Liegestütz',
-            'Handstandliegestütz (1–3 Sek.) / Sturzflug',
-            'Erhöhter Trizepsstrecker (hüfthoch) / Liegestütz mit Abstoßen',
+            'One-Arm Push-Up (feet elevated) / Explosive Push-Up',
+            'Handstand Push-Up (1–3 Sek.) / Pike Push-Up',
+            'Table Tricep Extension (hip-height) / Explosive Push-Up',
           ],
         },
         {
-          day: 2, focus: 'Beine', method: 'Supersätze',
+          day: 2, focus: 'Legs', method: 'Supersets',
           exercises: [
-            'Pistole im Wechsel (1–3 Sek.) / Kistensprung',
-            'Sissy-Kniebeuge (1–3 Sek.) / Iron Mike',
-            'Fallender Liegestütz / Seitsprung',
+            'Alternating Single-Leg Squat (1–3 Sek.) / Box Jump',
+            'Tiptoe Squat (1–3 Sek.) / Alternating Jump Lunge',
+            'Drop Push-Up / Side Jump',
           ],
         },
         {
-          day: 3, focus: 'Ziehen', method: 'Supersätze',
+          day: 3, focus: 'Pull', method: 'Supersets',
           exercises: [
-            'Türklimmzug (4–6 Sek.) / Umgekehrtes Bankdrücken (Füße erhöht)',
-            'Einarmiges Türziehen (1–3 Sek.) / Umgekehrtes Bankdrücken im Untergriff (Füße erhöht)',
-            'Klimmzug (bis zum Brustbein) / Türziehen im Untergriff (4–6 Sek.)',
+            'Door Pull-Up (4–6 Sek.) / Inverted Row (feet elevated)',
+            'One-Arm Door Row (1–3 Sek.) / Inverted Row (underhand) (feet elevated)',
+            'Pull-Up (to chest) / Door Row (underhand) (4–6 Sek.)',
           ],
         },
         {
-          day: 4, focus: 'Core', method: 'Supersätze',
+          day: 4, focus: 'Core', method: 'Supersets',
           exercises: [
-            'Hängendes Beinheben (4–6 Sek.) / Langsames Fahrradfahren',
-            'Rückenheber / Superman',
-            'Klappmesser / Beintwist',
+            'Hanging Leg Raise (4–6 Sek.) / Langsames Bicycle Crunch',
+            'Back Extension / Superman',
+            'V-Up (Jackknife) / Leg Twist',
           ],
         },
       ],
@@ -1160,41 +1153,41 @@ const CHIEF: FogProgram = {
       week: 7,
       days: [
         {
-          day: 1, focus: 'Drücken', method: 'Stufenintervalle',
+          day: 1, focus: 'Push', method: 'Step Intervals',
           exercises: [
-            'Einarmiger Liegestütz',
-            'Handstandliegestütz',
-            'Sturzflug',
-            'Trizepsdip (1–3 Sek.)',
+            'One-Arm Push-Up',
+            'Handstand Push-Up',
+            'Pike Push-Up',
+            'Tricep Dip (1–3 Sek.)',
           ],
         },
         {
-          day: 2, focus: 'Beine', method: 'Supersätze',
+          day: 2, focus: 'Legs', method: 'Supersets',
           exercises: [
-            'Pistole im Wechsel (1–3 Sek.) / Kistensprung',
-            'Sissy-Kniebeuge (1–3 Sek.) / Iron Mike',
-            'Fallender Liegestütz (ohne Hände) / Seitsprung',
+            'Alternating Single-Leg Squat (1–3 Sek.) / Box Jump',
+            'Tiptoe Squat (1–3 Sek.) / Alternating Jump Lunge',
+            'Drop Push-Up (no hands) / Side Jump',
           ],
         },
         {
-          day: 3, focus: 'Ziehen', method: 'Intervallsätze',
+          day: 3, focus: 'Pull', method: 'Interval Sets',
           exercises: [
-            'Türklimmzug (1–3 Sek.)',
-            'Einarmiges Türziehen',
-            'Umgekehrtes Bankdrücken im Untergriff (Füße erhöht)',
-            'Türziehen im Untergriff (4–6 Sek.)',
+            'Door Pull-Up (1–3 Sek.)',
+            'One-Arm Door Row',
+            'Inverted Row (underhand) (feet elevated)',
+            'Door Row (underhand) (4–6 Sek.)',
           ],
         },
         {
-          day: 4, focus: 'Core', method: 'Hochintensitätssätze',
-          exercises: ['V-Up', 'Schräger V-Up (4 Sätze, Seitenwechsel)', 'Bergsteiger', 'Kniebeuge'],
+          day: 4, focus: 'Core', method: 'High Intensity Sets',
+          exercises: ['V-Up', 'Oblique V-Up (4 sets, alternating sides)', 'Mountain Climber', 'Squat'],
         },
         {
-          day: 5, focus: 'Ganzkörper', method: 'Zirkelintervalle',
+          day: 5, focus: 'Full Body', method: 'Circuits',
           exercises: [
-            '12 Pistolen im Wechsel (6/Seite) oder 24 Iron Mikes',
-            '6 Handstandliegestütze',
-            '8 Türklimmzüge',
+            '12 alternating Single-Leg Squats (6/side) or 24 Jump Lunges',
+            '6 Handstand Push-Upe',
+            '8 Door Pull-Ups',
           ],
         },
       ],
@@ -1203,36 +1196,36 @@ const CHIEF: FogProgram = {
       week: 8,
       days: [
         {
-          day: 1, focus: 'Drücken', method: 'Hochintensitätssätze',
-          exercises: ['Liegestütz', 'Liegestütz mit Abstoßen', 'Bergsteiger', 'Doppelter Liegestützsprung (Burpee)'],
+          day: 1, focus: 'Push', method: 'High Intensity Sets',
+          exercises: ['Push-Up', 'Explosive Push-Up', 'Mountain Climber', 'Burpee'],
         },
         {
-          day: 2, focus: 'Beine', method: 'Stufenintervalle',
-          exercises: ['Einbeinige Kniebeuge', 'Sissy-Kniebeuge', 'Iron Mike', 'Einbeiniger Hüftstrecker'],
+          day: 2, focus: 'Legs', method: 'Step Intervals',
+          exercises: ['Single-Leg Squat', 'Tiptoe Squat', 'Alternating Jump Lunge', 'Single-Leg Hip Extension'],
         },
         {
-          day: 3, focus: 'Ziehen', method: 'Supersätze',
+          day: 3, focus: 'Pull', method: 'Supersets',
           exercises: [
-            'Türklimmzug (4–6 Sek.) / Umgekehrtes Bankdrücken (Füße erhöht)',
-            'Einarmiges Türziehen (1–3 Sek.) / Umgekehrtes Bankdrücken im Untergriff (Füße erhöht)',
-            'Klimmzug (bis Brustbein) / Türziehen im Untergriff (4–6 Sek.)',
+            'Door Pull-Up (4–6 Sek.) / Inverted Row (feet elevated)',
+            'One-Arm Door Row (1–3 Sek.) / Inverted Row (underhand) (feet elevated)',
+            'Pull-Up (to chest) / Door Row (underhand) (4–6 Sek.)',
           ],
         },
         {
-          day: 4, focus: 'Core', method: 'Intervallsätze',
+          day: 4, focus: 'Core', method: 'Interval Sets',
           exercises: [
-            'Hängendes Beinheben (bis ganz nach oben)',
-            'Rückenheber',
-            'Klappmesser',
+            'Hanging Leg Raise (bis ganz nach oben)',
+            'Back Extension',
+            'V-Up (Jackknife)',
             'Superman',
           ],
         },
         {
-          day: 5, focus: 'Ganzkörper', method: 'Zirkelintervalle',
+          day: 5, focus: 'Full Body', method: 'Circuits',
           exercises: [
-            '12 Pistolen im Wechsel (6/Seite) oder 24 Iron Mikes',
-            '6 Handstandliegestütze',
-            '8 Türklimmzüge',
+            '12 alternating Single-Leg Squats (6/side) or 24 Jump Lunges',
+            '6 Handstand Push-Upe',
+            '8 Door Pull-Ups',
           ],
         },
       ],
@@ -1241,41 +1234,41 @@ const CHIEF: FogProgram = {
       week: 9,
       days: [
         {
-          day: 1, focus: 'Drücken', method: 'Intervallsätze',
+          day: 1, focus: 'Push', method: 'Interval Sets',
           exercises: [
-            'Einarmiger Liegestütz',
-            'Handstandliegestütz',
-            'Sturzflug',
-            'Erhöhter Trizepsstrecker (hüfthoch)',
+            'One-Arm Push-Up',
+            'Handstand Push-Up',
+            'Pike Push-Up',
+            'Table Tricep Extension (hip-height)',
           ],
         },
         {
-          day: 2, focus: 'Beine', method: 'Hochintensitätssätze',
-          exercises: ['Iron Mike', 'Seitsprung', 'Gestreckte Kniebeuge', 'Kniebeuge'],
+          day: 2, focus: 'Legs', method: 'High Intensity Sets',
+          exercises: ['Alternating Jump Lunge', 'Side Jump', 'Extended Squat', 'Squat'],
         },
         {
-          day: 3, focus: 'Ziehen', method: 'Stufenintervalle',
+          day: 3, focus: 'Pull', method: 'Step Intervals',
           exercises: [
-            'Türklimmzug',
-            'Umgekehrtes Bankdrücken',
-            'Umgekehrtes Bankdrücken im Untergriff',
-            'Einarmiges Türziehen im Wechsel',
+            'Door Pull-Up',
+            'Inverted Row',
+            'Inverted Row (underhand)',
+            'One-Arm Door Row im Wechsel',
           ],
         },
         {
-          day: 4, focus: 'Core', method: 'Supersätze',
+          day: 4, focus: 'Core', method: 'Supersets',
           exercises: [
-            'Hängendes Beinheben (4–6 Sek.) / Langsames Fahrradfahren (24 ×)',
-            'Rückenheber / Superman',
-            'Klappmesser / Beintwist (12 × langsam)',
+            'Hanging Leg Raise (4–6 Sek.) / Langsames Bicycle Crunch (24 ×)',
+            'Back Extension / Superman',
+            'V-Up (Jackknife) / Leg Twist (12 × langsam)',
           ],
         },
         {
-          day: 5, focus: 'Ganzkörper', method: 'Zirkelintervalle',
+          day: 5, focus: 'Full Body', method: 'Circuits',
           exercises: [
-            '12 Pistolen im Wechsel (6/Seite) oder 24 Iron Mikes',
-            '6 Handstandliegestütze',
-            '8 Türklimmzüge',
+            '12 alternating Single-Leg Squats (6/side) or 24 Jump Lunges',
+            '6 Handstand Push-Upe',
+            '8 Door Pull-Ups',
           ],
         },
       ],
@@ -1284,41 +1277,41 @@ const CHIEF: FogProgram = {
       week: 10,
       days: [
         {
-          day: 1, focus: 'Drücken', method: 'Supersätze',
+          day: 1, focus: 'Push', method: 'Supersets',
           exercises: [
-            'Einarmiger Liegestütz (Füße erhöht) / Federnder Liegestütz',
-            'Handstandliegestütz / Sturzflug (mit Haltezeit)',
-            'Erhöhter Trizepsstrecker (kniehoch) / Liegestütz mit Abstoßen',
+            'One-Arm Push-Up (feet elevated) / Explosive Push-Up',
+            'Handstand Push-Up / Pike Push-Up (mit hold)',
+            'Table Tricep Extension (knee-height) / Explosive Push-Up',
           ],
         },
         {
-          day: 2, focus: 'Beine', method: 'Intervallsätze',
+          day: 2, focus: 'Legs', method: 'Interval Sets',
           exercises: [
-            'Einbeinige Kniebeuge',
-            'Kniebeuge im Ausfallschritt (Rucksack über Kopf)',
-            'Iron Mike',
-            'Fallender Liegestütz',
+            'Single-Leg Squat',
+            'Split Squat (backpack overhead)',
+            'Alternating Jump Lunge',
+            'Drop Push-Up',
           ],
         },
         {
-          day: 3, focus: 'Ziehen', method: 'Hochintensitätssätze',
-          exercises: ['Türklimmzug', 'Umgekehrtes Bankdrücken', 'Türziehen', 'Bergsteiger'],
+          day: 3, focus: 'Pull', method: 'High Intensity Sets',
+          exercises: ['Door Pull-Up', 'Inverted Row', 'Door Row', 'Mountain Climber'],
         },
         {
-          day: 4, focus: 'Core', method: 'Stufenintervalle',
+          day: 4, focus: 'Core', method: 'Step Intervals',
           exercises: [
-            'Klappmesser',
-            'Rückenheber',
-            'Schräger V-Up im Wechsel (Beine gestreckt)',
+            'V-Up (Jackknife)',
+            'Back Extension',
+            'Oblique V-Up im Wechsel (Beine gestreckt)',
             'Superman',
           ],
         },
         {
-          day: 5, focus: 'Ganzkörper', method: 'Zirkelintervalle',
+          day: 5, focus: 'Full Body', method: 'Circuits',
           exercises: [
-            '12 Pistolen im Wechsel (6/Seite) oder 24 Iron Mikes',
-            '6 Handstandliegestütze',
-            '8 Türklimmzüge',
+            '12 alternating Single-Leg Squats (6/side) or 24 Jump Lunges',
+            '6 Handstand Push-Upe',
+            '8 Door Pull-Ups',
           ],
         },
       ],

@@ -12,13 +12,13 @@ import type { SessionExercise } from '../types'
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
 const FOCUS_TO_TAGS: Record<string, string[]> = {
-  'Drücken': ['Push'],
-  'Ziehen': ['Pull'],
-  'Drücken/Ziehen': ['Push', 'Pull'],
-  'Beine': ['Legs'],
+  'Push': ['Push'],
+  'Pull': ['Pull'],
+  'Push/Pull': ['Push', 'Pull'],
+  'Legs': ['Legs'],
   'Core': ['Core'],
-  'Beine/Core': ['Legs', 'Core'],
-  'Ganzkörper': ['Full Body'],
+  'Legs/Core': ['Legs', 'Core'],
+  'Full Body': ['Full Body'],
 }
 
 function makeExercises(session: FogFlatSession, programId: string): SessionExercise[] {
@@ -37,7 +37,7 @@ function makeExercises(session: FogFlatSession, programId: string): SessionExerc
 
 function TrainingMethodsPanel({ onClose }: { onClose: () => void }) {
   return (
-    <InfoPanel title="Trainingsmethoden" onClose={onClose}>
+    <InfoPanel title="Training Methods" onClose={onClose}>
       <div className="space-y-5">
         {TRAINING_METHODS.map(m => (
           <div key={m.name}>
@@ -71,8 +71,8 @@ function ProgramInfoPanel({
   const flat = flattenFogProgram(program)
 
   const tabs: { id: ProgramTab; label: string }[] = [
-    { id: 'plan', label: 'Programm' },
-    { id: 'requirements', label: 'Voraussetzungen' },
+    { id: 'plan', label: 'Program' },
+    { id: 'requirements', label: 'Requirements' },
   ]
 
   return (
@@ -99,7 +99,7 @@ function ProgramInfoPanel({
             <div key={block.weekLabel}>
               <div className="flex items-baseline gap-2 mb-2">
                 <p className="text-xs font-semibold text-stone-900 dark:text-stone-100">{block.weekLabel}</p>
-                <span className="text-xs text-stone-400 dark:text-stone-500">{block.phase} · {block.sessionsPerWeek}×/Woche</span>
+                <span className="text-xs text-stone-400 dark:text-stone-500">{block.phase} · {block.sessionsPerWeek}×/week</span>
               </div>
               <div className="space-y-2">
                 {block.days.map(day => {
@@ -138,13 +138,13 @@ function ProgramInfoPanel({
 
           <div>
             <div className="flex items-baseline gap-2 mb-2">
-              <p className="text-xs font-semibold text-stone-900 dark:text-stone-100">Woche 7–10</p>
-              <span className="text-xs text-stone-400 dark:text-stone-500">Wechselblock · 5×/Woche</span>
+              <p className="text-xs font-semibold text-stone-900 dark:text-stone-100">Weeks 7–10</p>
+              <span className="text-xs text-stone-400 dark:text-stone-500">Alternating Block · 5×/week</span>
             </div>
             <div className="space-y-3">
               {program.wechsel.map(ww => (
                 <div key={ww.week}>
-                  <p className="text-[11px] font-semibold text-stone-500 dark:text-stone-400 mb-1.5">Woche {ww.week}</p>
+                  <p className="text-[11px] font-semibold text-stone-500 dark:text-stone-400 mb-1.5">Week {ww.week}</p>
                   <div className="space-y-1.5">
                     {ww.days.map(day => {
                       const idx = flat.findIndex(s => s.week === ww.week && s.day === day.day)
@@ -163,11 +163,11 @@ function ProgramInfoPanel({
                         >
                           <div className="flex items-center gap-1.5 mb-1">
                             <span className="text-[10px] font-semibold text-stone-400 dark:text-stone-500 uppercase tracking-wide">
-                              Tag {day.day} · {day.focus}
+                              Day {day.day} · {day.focus}
                             </span>
                             <span className="text-[10px] text-stone-400 dark:text-stone-500">· {day.method}</span>
                             {isCurrent && (
-                              <span className="ml-auto text-[10px] font-semibold text-stone-900 dark:text-stone-200">← aktuell</span>
+                              <span className="ml-auto text-[10px] font-semibold text-stone-900 dark:text-stone-200">← current</span>
                             )}
                           </div>
                           <p className="text-xs text-stone-600 dark:text-stone-400 leading-relaxed">
@@ -188,8 +188,8 @@ function ProgramInfoPanel({
         <div>
           {program.requirements.length === 0 ? (
             <p className="text-sm text-stone-500 dark:text-stone-400 leading-relaxed">
-              Jeder, der gesund genug für ein hartes Training ist, sollte das Basisprogramm absolvieren können.
-              Bei Zweifeln konsultieren Sie bitte Ihren Arzt.
+              Anyone healthy enough for intense exercise should be able to complete this program.
+              If in doubt, consult your doctor.
             </p>
           ) : (
             <div className="space-y-5">
@@ -250,13 +250,13 @@ function ProgramCard({
           <div className="px-4 py-4 text-center space-y-3">
             <div>
               <p className="text-lg font-bold text-stone-900 dark:text-stone-100">{program.name} ✓</p>
-              <p className="text-xs text-stone-400 dark:text-stone-500 mt-1">Alle {total} Einheiten abgeschlossen!</p>
+              <p className="text-xs text-stone-400 dark:text-stone-500 mt-1">All {total} sessions completed!</p>
             </div>
             <button
               onClick={onRedo}
               className="w-full py-2.5 rounded-xl border border-stone-200 dark:border-stone-600 text-stone-500 dark:text-stone-400 text-sm font-medium hover:bg-stone-50 dark:hover:bg-stone-700 transition-colors"
             >
-              Nochmal von vorne
+              Start over
             </button>
           </div>
         ) : (
@@ -267,12 +267,12 @@ function ProgramCard({
             {current && (
               <div className="mt-1 mb-3">
                 <p className="text-xs text-stone-400 dark:text-stone-500 mb-0.5">
-                  Woche {current.week} · {current.phase} · Tag {current.day}
+                  Week {current.week} · {current.phase} · Day {current.day}
                 </p>
                 <p className="text-sm font-medium text-stone-500 dark:text-stone-400">{current.method}</p>
                 {started && (
                   <p className="text-xs text-stone-500 dark:text-stone-400 mt-1 font-medium">
-                    {current.sessionsPerWeek} Einheiten / Woche
+                    {current.sessionsPerWeek} sessions / week
                   </p>
                 )}
               </div>
@@ -292,7 +292,7 @@ function ProgramCard({
                   : 'bg-stone-900 dark:bg-stone-100 hover:bg-stone-800 dark:hover:bg-white active:scale-[0.98] text-white dark:text-stone-900'
               }`}
             >
-              {hasDraft ? 'Weiter' : 'Starten'}
+              {hasDraft ? 'Continue' : 'Start'}
             </button>
           </div>
         )}
@@ -308,11 +308,11 @@ function ProgramCard({
 // ── Dev method cards ──────────────────────────────────────────────────────────
 
 const DEV_METHOD_SESSIONS: { method: string; exercises: string[] }[] = [
-  { method: 'Stufenintervalle',     exercises: ['Liegestütz', 'Kniebeuge', 'Klimmzug'] },
-  { method: 'Intervallsätze',       exercises: ['Ausfallschritt', 'Türziehen', 'Beinheber'] },
-  { method: 'Supersätze',           exercises: ['Liegestütz (Füße erhöht) / Liegestütz mit Abstoßen', 'Military Press / Daumen hoch', 'Enger Liegestütz / Trizepsdip mit Stuhl'] },
-  { method: 'Zirkelintervalle',     exercises: ['Liegestütz', 'Kniebeuge', 'Beinheber', 'Türziehen'] },
-  { method: 'Hochintensitätssätze', exercises: ['Kniebeuge', 'Liegestütz'] },
+  { method: 'Step Intervals',      exercises: ['Push-Up', 'Squat', 'Pull-Up'] },
+  { method: 'Interval Sets',       exercises: ['Lunge', 'Door Row', 'Leg Raise'] },
+  { method: 'Supersets',           exercises: ['Push-Up (feet elevated) / Explosive Push-Up', 'Military Press / Thumbs Up', 'Close-Grip Push-Up / Tricep Dip with chair'] },
+  { method: 'Circuits',            exercises: ['Push-Up', 'Squat', 'Leg Raise', 'Door Row'] },
+  { method: 'High Intensity Sets', exercises: ['Squat', 'Push-Up'] },
 ]
 
 // DEV: remove export + rename to DevMethodCards and uncomment usage below to re-enable
@@ -399,12 +399,12 @@ export function Classes() {
       <div className="pt-14 pb-6 flex items-start justify-between">
         <div>
           <h1 className="text-4xl font-bold text-stone-900 dark:text-stone-100 tracking-tight">Classes</h1>
-          <p className="text-stone-500 dark:text-stone-400 mt-1 text-sm">Strukturierte Programme</p>
+          <p className="text-stone-500 dark:text-stone-400 mt-1 text-sm">Structured programs</p>
         </div>
         <button
           onClick={() => setShowMethods(true)}
           className="mt-2 w-8 h-8 rounded-full bg-stone-100 dark:bg-stone-700 hover:bg-stone-200 dark:hover:bg-stone-600 flex items-center justify-center text-stone-500 dark:text-stone-400 font-bold transition-colors"
-          aria-label="Trainingsmethoden"
+          aria-label="Training methods"
         >
           ?
         </button>

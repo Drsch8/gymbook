@@ -125,16 +125,8 @@ function NumCell({
     }
   }, [])
 
-  // Split label at decimal point — mirrors GhostPicker's cx-aligned layout so
-  // the overlay numbers land exactly on the cell numbers.
   const decPlaces = (step.toString().split('.')[1] ?? '').length
-  const [intLabel, decLabel] = value == null
-    ? ['—', '']
-    : (() => {
-        const fixed = value.toFixed(decPlaces)
-        const dot   = fixed.indexOf('.')
-        return dot === -1 ? [fixed, ''] : [fixed.slice(0, dot), fixed.slice(dot)]
-      })()
+  const label = value == null ? '—' : value.toFixed(decPlaces)
 
   return (
     <div
@@ -161,13 +153,12 @@ function NumCell({
         </svg>
       </div>
       <div
-        className={`absolute inset-0 flex items-center font-mono tabular-nums pointer-events-none select-none transition-opacity duration-150 ${
+        className={`absolute inset-0 flex items-center justify-center font-mono tabular-nums pointer-events-none select-none transition-opacity duration-150 ${
           disabled ? 'text-stone-400 dark:text-stone-500' : 'text-stone-900 dark:text-stone-100'
         }`}
         style={{ fontSize: 30, fontWeight: 600, opacity: disabled ? 0.4 : dragging ? 0 : 1 }}
       >
-        <div style={{ flex: '0 0 50%', textAlign: 'right' }}>{intLabel}</div>
-        <div style={{ flex: '0 0 50%', textAlign: 'left' }}>{decLabel}</div>
+        {label}
       </div>
     </div>
   )
