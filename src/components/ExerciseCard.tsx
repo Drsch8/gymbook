@@ -1,7 +1,8 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { nanoid } from '../utils/nanoid'
 import type { ExerciseSet, SessionExercise, WeightUnit } from '../types'
 import { SetRow } from './SetRow'
+import { SetTimer } from './SetTimer'
 import { MethodTimer } from './MethodTimer'
 
 const REVEAL_EX = 88
@@ -50,6 +51,8 @@ export function ExerciseCard({ item, weightUnit, previousSets, collapsed, onTogg
   const isClassSession = !!method
   // Methods that replace standard set rows with a dedicated timer UI
   const timerOnly = method === 'Step Intervals' || method === 'Interval Sets' || method === 'High Intensity Sets'
+  // Index of the time-tracked set currently counting down (null = no timer running)
+  const [timedIdx, setTimedIdx] = useState<number | null>(null)
   const updateSet = (index: number, updated: ExerciseSet) =>
     onChange({ ...item, sets: item.sets.map((s, i) => (i === index ? updated : s)) })
 
@@ -198,6 +201,20 @@ export function ExerciseCard({ item, weightUnit, previousSets, collapsed, onTogg
             <>
               {method && <MethodTimer method={method} />}
 
+              {timedIdx !== null && item.sets[timedIdx] && (
+                <SetTimer
+                  key={item.sets[timedIdx].id}
+                  seconds={item.sets[timedIdx].duration ?? 0}
+                  label={`Set ${timedIdx + 1} · ${item.exerciseName}`}
+                  onDone={() => {
+                    const i = timedIdx
+                    setTimedIdx(null)
+                    if (!item.sets[i].completed) completeSet(i)
+                  }}
+                  onStop={() => setTimedIdx(null)}
+                />
+              )}
+
               {!timerOnly && (
                 <div className="sets-list space-y-1">
                   <div className="flex items-center gap-2 pb-1 text-xs text-stone-400 dark:text-stone-500 px-1">
@@ -207,7 +224,9 @@ export function ExerciseCard({ item, weightUnit, previousSets, collapsed, onTogg
                       <><span className="flex-1 text-center">Reps</span><span className="flex-1 text-center">{weightUnit}</span></>
                     )}
                     {item.trackingType === 'reps_only' && <span className="flex-1 text-center">Reps</span>}
-                    {item.trackingType === 'time' && <span className="flex-1 text-center">Seconds</span>}
+                    {item.trackingType === 'time' && (
+                      <><span className="flex-1 text-center">Seconds</span><span className="w-8 shrink-0" /></>
+                    )}
                     <span className="w-8 shrink-0" />
                   </div>
 
@@ -221,6 +240,7 @@ export function ExerciseCard({ item, weightUnit, previousSets, collapsed, onTogg
                       onChange={updated => updateSet(i, updated)}
                       onRemove={() => removeSet(i)}
                       onComplete={() => completeSet(i)}
+                      onStartTimer={() => setTimedIdx(i)}
                     />
                   ))}
 

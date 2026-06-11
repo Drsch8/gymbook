@@ -5,12 +5,12 @@ import { ExerciseCard } from '../components/ExerciseCard'
 import { RestTimer } from '../components/RestTimer'
 import { getLastSessionForExercise, getPreferences, getSessions, saveSession, advancePlanSession, advanceFogProgram } from '../db'
 import { nanoid } from '../utils/nanoid'
-import { getPreset } from '../data/presets'
+import { getPreset, rollVariant } from '../data/presets'
 import { TRAINING_METHODS } from '../data/fogPrograms'
 import { InfoPanel } from '../components/InfoPanel'
 import { saveDraft, loadDraft, clearDraft } from '../utils/draft'
 import type { Exercise, ExerciseSet, SessionExercise, WeightUnit } from '../types'
-import type { PresetVariant } from '../data/presets'
+import type { PresetExercise, PresetVariant } from '../data/presets'
 
 const TITLE_CHIPS = ['Legs', 'Upper', 'Push', 'Pull', 'Core', 'Cardio', 'Full Body']
 
@@ -618,7 +618,7 @@ export function NewSession() {
   const [showSearch, setShowSearch] = useState((initialDraft?.exercises ?? repeated).length === 0)
   const [lastCompleted, setLastCompleted] = useState(0)
   const [expandedId, setExpandedId] = useState<string | null>((initialDraft?.exercises ?? repeated)[0]?.id ?? null)
-  const [variantOptions, setVariantOptions] = useState<PresetVariant[] | null>(null)
+  const [variantOptions, setVariantOptions] = useState<{ variant: PresetVariant; exercises: PresetExercise[] }[] | null>(null)
   const [chipCounts, setChipCounts] = useState<Record<string, number>>({})
   const [activeIdx, setActiveIdx] = useState<number | null>(null)
   const [showMethodInfo, setShowMethodInfo] = useState(false)
@@ -845,7 +845,7 @@ export function NewSession() {
                           if (exercises.length === 0) {
                             const preset = getPreset(chip)
                             if (preset) {
-                              setVariantOptions(preset.variants)
+                              setVariantOptions(preset.variants.map(v => ({ variant: v, exercises: rollVariant(v) })))
                               setShowSearch(false)
                             }
                           }
@@ -868,13 +868,21 @@ export function NewSession() {
 
         {variantOptions && (
           <div key={sessionTags.join(',')} className="bg-white border border-stone-200 rounded-2xl overflow-hidden">
-            <p className="px-4 pt-3 pb-2 text-xs font-semibold text-stone-400 uppercase tracking-wider">Choose a session</p>
+            <div className="flex items-center justify-between px-4 pt-3 pb-2">
+              <p className="text-xs font-semibold text-stone-400 uppercase tracking-wider">Choose a session</p>
+              <button
+                onClick={() => setVariantOptions(prev => prev?.map(({ variant }) => ({ variant, exercises: rollVariant(variant) })) ?? null)}
+                className="text-xs font-semibold text-stone-400 hover:text-stone-600 transition-colors"
+              >
+                ↻ Shuffle
+              </button>
+            </div>
             <div className="divide-y divide-stone-100">
-              {variantOptions.map(variant => (
+              {variantOptions.map(({ variant, exercises: rolled }) => (
                 <button
                   key={variant.name}
                   onClick={() => {
-                    const items: SessionExercise[] = variant.exercises.map(ex => ({
+                    const items: SessionExercise[] = rolled.map(ex => ({
                       id: nanoid(),
                       exerciseId: ex.exerciseId,
                       exerciseName: ex.exerciseName,
@@ -890,7 +898,7 @@ export function NewSession() {
                 >
                   <p className="text-sm font-semibold text-stone-900">{variant.name}</p>
                   <p className="text-xs text-stone-400 mt-0.5">
-                    {variant.exercises.map(e => e.exerciseName).join(' · ')}
+                    {rolled.map(e => e.exerciseName).join(' · ')}
                   </p>
                 </button>
               ))}

@@ -10,6 +10,7 @@ interface Props {
   onChange: (updated: ExerciseSet) => void
   onRemove: () => void
   onComplete: () => void
+  onStartTimer?: () => void
   previousSet?: { reps?: number; weight?: number; duration?: number }
 }
 
@@ -43,11 +44,76 @@ function NumCell({
 
   useEffect(() => {
     const el = cellRef.current!
+    const PX_PER_STEP = 20
     // All mutable drag state in a plain object — no React state, no closures captured by value.
-    // dragValue is committed to parent only on touchend, so there are zero re-renders during drag.
+    // The value is committed to parent only once the gesture (incl. momentum) settles,
+    // so there are zero re-renders during drag.
     const d = {
-      active: false, startY: 0, startX: 0, base: 0, lastStep: 0,
-      rect: null as DOMRect | null, dir: null as 'h' | 'v' | null, dragValue: 0,
+      active: false, startY: 0, startX: 0, base: 0,
+      raw: 0,                 // continuous steps travelled since touchstart
+      lastStep: 0,
+      vel: 0, lastY: 0, lastT: 0,   // velocity tracking (steps/ms)
+      rect: null as DOMRect | null, dir: null as 'h' | 'v' | null,
+      raf: 0,
+    }
+
+    const valueAt = (steps: number) =>
+      Math.max(0, +(d.base + steps * stepRef.current).toFixed(2))
+
+    // Smallest raw allowed so the value never goes below 0
+    const minRaw = () => -d.base / stepRef.current
+
+    const publish = () =>
+      dragState.set({ rect: d.rect!, value: valueAt(Math.round(d.raw)), step: stepRef.current, rawSteps: d.raw })
+
+    const hapticOnStepChange = () => {
+      const steps = Math.round(d.raw)
+      if (steps !== d.lastStep) {
+        d.lastStep = steps
+        if ('vibrate' in navigator) navigator.vibrate(4)
+      }
+    }
+
+    const commit = () => {
+      onChangeRef.current(valueAt(Math.round(d.raw)))
+      setDragging(false)
+      dragState.set(null)
+    }
+
+    // Ease the fractional offset onto the snapped step, then commit
+    const settle = () => {
+      const from = d.raw
+      const to   = Math.round(d.raw)
+      if (Math.abs(to - from) < 0.01) { commit(); return }
+      const t0  = performance.now()
+      const DUR = 150
+      const tick = (now: number) => {
+        const t = Math.min(1, (now - t0) / DUR)
+        d.raw = from + (to - from) * (1 - (1 - t) ** 3)
+        publish()
+        if (t < 1) { d.raf = requestAnimationFrame(tick); return }
+        d.raf = 0
+        commit()
+      }
+      d.raf = requestAnimationFrame(tick)
+    }
+
+    // Momentum scroll after a flick: decay velocity, then snap to the nearest step
+    const glide = () => {
+      d.vel = Math.max(-0.08, Math.min(0.08, d.vel))
+      let last = performance.now()
+      const tick = (now: number) => {
+        const dt = now - last
+        last = now
+        d.raw += d.vel * dt
+        d.vel *= Math.exp(-dt / 380)
+        if (d.raw <= minRaw()) { d.raw = minRaw(); d.vel = 0 }
+        hapticOnStepChange()
+        publish()
+        if (Math.abs(d.vel) < 0.0005) { d.raf = 0; settle(); return }
+        d.raf = requestAnimationFrame(tick)
+      }
+      d.raf = requestAnimationFrame(tick)
     }
 
     const onMove = (e: TouchEvent) => {
@@ -61,7 +127,7 @@ function NumCell({
           d.dir = Math.abs(dy) >= Math.abs(dx) ? 'v' : 'h'
           if (d.dir === 'v') {
             setDragging(true)
-            dragState.set({ rect: d.rect!, value: d.base, step: stepRef.current, rawSteps: 0 })
+            publish()
           }
         }
         if (d.dir === null) return
@@ -75,44 +141,59 @@ function NumCell({
       }
 
       e.preventDefault()
-      const dy       = d.startY - e.touches[0].clientY
-      const rawSteps = dy / 20
-      const steps    = Math.round(rawSteps)
-      const next     = Math.max(0, +(d.base + steps * stepRef.current).toFixed(2))
-      if (steps !== d.lastStep) {
-        d.lastStep  = steps
-        d.dragValue = next           // remember final value; parent notified on touchend only
-        if ('vibrate' in navigator) navigator.vibrate(4)
+      const y   = e.touches[0].clientY
+      const now = e.timeStamp
+      d.raw = Math.max(minRaw(), (d.startY - y) / PX_PER_STEP)
+      const dt = now - d.lastT
+      if (dt > 0) {
+        const instV = ((d.lastY - y) / PX_PER_STEP) / dt
+        d.vel = d.vel === 0 ? instV : 0.5 * d.vel + 0.5 * instV
       }
+      d.lastY = y
+      d.lastT = now
+      hapticOnStepChange()
       // Refresh rect each frame so the ghost stays aligned even if layout shifts
       // (e.g. soft keyboard opening pushes the cell's position)
       d.rect = el.getBoundingClientRect()
-      // Update ghost picker every frame (no parent re-renders during drag)
-      dragState.set({ rect: d.rect, value: next, step: stepRef.current, rawSteps })
+      publish()
     }
 
     const onEnd = () => {
       if (!d.active) return
       d.active = false
-      if (d.dir === 'v') {
-        onChangeRef.current(d.dragValue) // single parent update on lift
-        setDragging(false)
-        dragState.set(null)
-      }
       document.removeEventListener('touchmove', onMove)
       document.removeEventListener('touchend',  onEnd)
+      if (d.dir !== 'v') return
+      // A pause before lifting means no flick — kill stale velocity
+      if (performance.now() - d.lastT > 80) d.vel = 0
+      if (Math.abs(d.vel) > 0.004) glide()
+      else settle()
     }
 
     const onStart = (e: TouchEvent) => {
       if (disabledRef.current) return
-      d.rect      = el.getBoundingClientRect()
-      d.startY    = e.touches[0].clientY
-      d.startX    = e.touches[0].clientX
-      d.base      = valueRef.current ?? 0
-      d.dragValue = d.base
-      d.lastStep  = 0
-      d.dir       = null
-      d.active    = true
+      if (d.raf) {
+        // Catch a glide/settle in flight: stop it and continue from the current value
+        cancelAnimationFrame(d.raf)
+        d.raf = 0
+        const caught = valueAt(Math.round(d.raw))
+        onChangeRef.current(caught)
+        setDragging(false)
+        dragState.set(null)
+        d.base = caught
+      } else {
+        d.base = valueRef.current ?? 0
+      }
+      d.rect     = el.getBoundingClientRect()
+      d.startY   = e.touches[0].clientY
+      d.startX   = e.touches[0].clientX
+      d.raw      = 0
+      d.lastStep = 0
+      d.vel      = 0
+      d.lastY    = d.startY
+      d.lastT    = e.timeStamp
+      d.dir      = null
+      d.active   = true
       document.addEventListener('touchmove', onMove, { passive: false })
       document.addEventListener('touchend',  onEnd,  { passive: true  })
     }
@@ -122,6 +203,7 @@ function NumCell({
       el.removeEventListener('touchstart', onStart)
       document.removeEventListener('touchmove', onMove)
       document.removeEventListener('touchend',  onEnd)
+      if (d.raf) { cancelAnimationFrame(d.raf); dragState.set(null) }
     }
   }, [])
 
@@ -164,7 +246,7 @@ function NumCell({
   )
 }
 
-export function SetRow({ set, index, trackingType, weightUnit, onChange, onRemove, onComplete, previousSet }: Props) {
+export function SetRow({ set, index, trackingType, weightUnit, onChange, onRemove, onComplete, onStartTimer, previousSet }: Props) {
   const lbsFactor = 2.20462
   const locked    = set.completed
 
@@ -269,6 +351,19 @@ export function SetRow({ set, index, trackingType, weightUnit, onChange, onRemov
           {trackingType === 'time' && (
             <NumCell value={set.duration} onChange={v => onChange({ ...set, duration: v })}
               step={5} disabled={locked} />
+          )}
+
+          {trackingType === 'time' && onStartTimer && (
+            <button
+              onClick={onStartTimer}
+              disabled={locked || !set.duration}
+              className="shrink-0 w-8 h-8 rounded-xl flex items-center justify-center bg-stone-100 dark:bg-stone-700 text-stone-500 dark:text-stone-300 hover:bg-stone-200 dark:hover:bg-stone-600 border border-stone-200 dark:border-stone-600 disabled:opacity-30 transition-colors"
+              aria-label="Start set timer"
+            >
+              <svg width="11" height="12" viewBox="0 0 11 12" fill="currentColor">
+                <polygon points="1,0.5 10.5,6 1,11.5" />
+              </svg>
+            </button>
           )}
 
           <button
