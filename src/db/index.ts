@@ -178,6 +178,19 @@ export async function syncFromFirebase(userId: string, clearFirst = false): Prom
     getDocs(collection(firestore, 'users', userId, 'planned_workouts')),
   ])
 
+  // Push local sessions the cloud doesn't have yet (e.g. saved while offline,
+  // or the original write never completed). This is the safety net that makes
+  // a locally saved workout impossible to lose through sign-out/sync cycles.
+  if (!clearFirst) {
+    const remoteIds = new Set(sessionsSnap.docs.map(d => d.id))
+    const localSessions = await db.sessions.toArray()
+    await Promise.all(
+      localSessions
+        .filter(s => !remoteIds.has(s.id))
+        .map(s => setDoc(sessionDoc(userId, s.id), s).catch(e => console.error('firebase push session', e)))
+    )
+  }
+
   if (!sessionsSnap.empty) {
     const sessions = sessionsSnap.docs.map(d => d.data() as Session)
     await db.sessions.bulkPut(sessions)

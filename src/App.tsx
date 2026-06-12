@@ -11,9 +11,8 @@ import { Recent } from './pages/Recent'
 import { Statistics } from './pages/Statistics'
 import { Settings } from './pages/Settings'
 import { Login } from './pages/Login'
-import { GhostPicker } from './components/GhostPicker'
 import { auth } from './lib/firebase'
-import { syncFromFirebase, clearLocalData } from './db'
+import { syncFromFirebase } from './db'
 
 const SHELL_ROUTES = ['/', '/classes', '/recent', '/history', '/statistics', '/settings']
 const INACTIVITY_MS = 60 * 60 * 1000 // 60 minutes
@@ -51,12 +50,20 @@ export function App() {
 
       if (verified && !syncedRef.current) {
         syncedRef.current = true
-        syncFromFirebase(user!.uid, true).catch(console.error)
+        // Only wipe local data when a DIFFERENT account logs in. For the same
+        // account we merge instead, so sessions that never reached the cloud
+        // (e.g. saved offline before an auto sign-out) are pushed up, not lost.
+        const lastUid = localStorage.getItem('gymbook_last_uid')
+        const sameUser = lastUid === user!.uid
+        localStorage.setItem('gymbook_last_uid', user!.uid)
+        syncFromFirebase(user!.uid, !sameUser).catch(console.error)
         if (pathname === '/login') navigate('/')
       }
       if (!verified) {
         syncedRef.current = false
-        clearLocalData().catch(console.error)
+        // Keep local data on sign-out — it belongs to the last signed-in user
+        // and is merged back to the cloud on next login. Wiping here destroyed
+        // any session whose cloud write hadn't completed yet.
         if (pathname !== '/login') navigate('/login')
       }
     })
@@ -112,7 +119,6 @@ export function App() {
         </Routes>
       </main>
       {showNav && authed && <BottomNav />}
-      <GhostPicker />
       {wellDone && (
         <div className={`fixed inset-0 z-[300] flex items-center justify-center bg-stone-950 transition-opacity duration-700 pointer-events-none ${wellDoneFade ? 'opacity-0' : 'opacity-100'}`}>
           <div className="text-center animate-scaleIn">

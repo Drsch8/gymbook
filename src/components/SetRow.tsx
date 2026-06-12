@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import type { ExerciseSet, TrackingType, WeightUnit } from '../types'
-import { dragState } from '../utils/dragState'
+import { WheelPicker } from './WheelPicker'
 
 interface Props {
   set: ExerciseSet
@@ -22,226 +22,75 @@ const SLOT_H  = 62
 const REVEAL  = 72
 
 function NumCell({
-  value, onChange, step = 1, disabled,
+  value, onChange, step = 1, max, disabled,
 }: {
   value: number | undefined
   onChange: (v: number | undefined) => void
   step?: number
+  max: number
   disabled: boolean
 }) {
-  const cellRef    = useRef<HTMLDivElement>(null)
-  const [dragging, setDragging] = useState(false)
-
-  // Keep latest prop values accessible inside stable native handlers
-  const disabledRef  = useRef(disabled)
-  const valueRef     = useRef(value)
-  const stepRef      = useRef(step)
-  const onChangeRef  = useRef(onChange)
-  useEffect(() => { disabledRef.current = disabled  }, [disabled])
-  useEffect(() => { valueRef.current    = value     }, [value])
-  useEffect(() => { stepRef.current     = step      }, [step])
-  useEffect(() => { onChangeRef.current = onChange  }, [onChange])
-
-  useEffect(() => {
-    const el = cellRef.current!
-    const PX_PER_STEP = 20
-    // All mutable drag state in a plain object — no React state, no closures captured by value.
-    // The value is committed to parent only once the gesture (incl. momentum) settles,
-    // so there are zero re-renders during drag.
-    const d = {
-      active: false, startY: 0, startX: 0, base: 0,
-      raw: 0,                 // continuous steps travelled since touchstart
-      lastStep: 0,
-      vel: 0, lastY: 0, lastT: 0,   // velocity tracking (steps/ms)
-      rect: null as DOMRect | null, dir: null as 'h' | 'v' | null,
-      raf: 0,
-    }
-
-    const valueAt = (steps: number) =>
-      Math.max(0, +(d.base + steps * stepRef.current).toFixed(2))
-
-    // Smallest raw allowed so the value never goes below 0
-    const minRaw = () => -d.base / stepRef.current
-
-    const publish = () =>
-      dragState.set({ rect: d.rect!, value: valueAt(Math.round(d.raw)), step: stepRef.current, rawSteps: d.raw })
-
-    const hapticOnStepChange = () => {
-      const steps = Math.round(d.raw)
-      if (steps !== d.lastStep) {
-        d.lastStep = steps
-        if ('vibrate' in navigator) navigator.vibrate(4)
-      }
-    }
-
-    const commit = () => {
-      onChangeRef.current(valueAt(Math.round(d.raw)))
-      setDragging(false)
-      dragState.set(null)
-    }
-
-    // Ease the fractional offset onto the snapped step, then commit
-    const settle = () => {
-      const from = d.raw
-      const to   = Math.round(d.raw)
-      if (Math.abs(to - from) < 0.01) { commit(); return }
-      const t0  = performance.now()
-      const DUR = 150
-      const tick = (now: number) => {
-        const t = Math.min(1, (now - t0) / DUR)
-        d.raw = from + (to - from) * (1 - (1 - t) ** 3)
-        publish()
-        if (t < 1) { d.raf = requestAnimationFrame(tick); return }
-        d.raf = 0
-        commit()
-      }
-      d.raf = requestAnimationFrame(tick)
-    }
-
-    // Momentum scroll after a flick: decay velocity, then snap to the nearest step
-    const glide = () => {
-      d.vel = Math.max(-0.08, Math.min(0.08, d.vel))
-      let last = performance.now()
-      const tick = (now: number) => {
-        const dt = now - last
-        last = now
-        d.raw += d.vel * dt
-        d.vel *= Math.exp(-dt / 380)
-        if (d.raw <= minRaw()) { d.raw = minRaw(); d.vel = 0 }
-        hapticOnStepChange()
-        publish()
-        if (Math.abs(d.vel) < 0.0005) { d.raf = 0; settle(); return }
-        d.raf = requestAnimationFrame(tick)
-      }
-      d.raf = requestAnimationFrame(tick)
-    }
-
-    const onMove = (e: TouchEvent) => {
-      if (!d.active) return
-
-      // Determine direction on first significant movement
-      if (d.dir === null) {
-        const dx = e.touches[0].clientX - d.startX
-        const dy = d.startY - e.touches[0].clientY
-        if (Math.abs(dx) > 4 || Math.abs(dy) > 4) {
-          d.dir = Math.abs(dy) >= Math.abs(dx) ? 'v' : 'h'
-          if (d.dir === 'v') {
-            setDragging(true)
-            publish()
-          }
-        }
-        if (d.dir === null) return
-        if (d.dir === 'h') {
-          // Release to row swipe handler — no ghost picker, no parent update
-          d.active = false
-          document.removeEventListener('touchmove', onMove)
-          document.removeEventListener('touchend',  onEnd)
-          return
-        }
-      }
-
-      e.preventDefault()
-      const y   = e.touches[0].clientY
-      const now = e.timeStamp
-      d.raw = Math.max(minRaw(), (d.startY - y) / PX_PER_STEP)
-      const dt = now - d.lastT
-      if (dt > 0) {
-        const instV = ((d.lastY - y) / PX_PER_STEP) / dt
-        d.vel = d.vel === 0 ? instV : 0.5 * d.vel + 0.5 * instV
-      }
-      d.lastY = y
-      d.lastT = now
-      hapticOnStepChange()
-      // Refresh rect each frame so the ghost stays aligned even if layout shifts
-      // (e.g. soft keyboard opening pushes the cell's position)
-      d.rect = el.getBoundingClientRect()
-      publish()
-    }
-
-    const onEnd = () => {
-      if (!d.active) return
-      d.active = false
-      document.removeEventListener('touchmove', onMove)
-      document.removeEventListener('touchend',  onEnd)
-      if (d.dir !== 'v') return
-      // A pause before lifting means no flick — kill stale velocity
-      if (performance.now() - d.lastT > 80) d.vel = 0
-      if (Math.abs(d.vel) > 0.004) glide()
-      else settle()
-    }
-
-    const onStart = (e: TouchEvent) => {
-      if (disabledRef.current) return
-      if (d.raf) {
-        // Catch a glide/settle in flight: stop it and continue from the current value
-        cancelAnimationFrame(d.raf)
-        d.raf = 0
-        const caught = valueAt(Math.round(d.raw))
-        onChangeRef.current(caught)
-        setDragging(false)
-        dragState.set(null)
-        d.base = caught
-      } else {
-        d.base = valueRef.current ?? 0
-      }
-      d.rect     = el.getBoundingClientRect()
-      d.startY   = e.touches[0].clientY
-      d.startX   = e.touches[0].clientX
-      d.raw      = 0
-      d.lastStep = 0
-      d.vel      = 0
-      d.lastY    = d.startY
-      d.lastT    = e.timeStamp
-      d.dir      = null
-      d.active   = true
-      document.addEventListener('touchmove', onMove, { passive: false })
-      document.addEventListener('touchend',  onEnd,  { passive: true  })
-    }
-
-    el.addEventListener('touchstart', onStart, { passive: true })
-    return () => {
-      el.removeEventListener('touchstart', onStart)
-      document.removeEventListener('touchmove', onMove)
-      document.removeEventListener('touchend',  onEnd)
-      if (d.raf) { cancelAnimationFrame(d.raf); dragState.set(null) }
-    }
-  }, [])
+  const cellRef = useRef<HTMLDivElement>(null)
+  const [pickerRect, setPickerRect] = useState<DOMRect | null>(null)
 
   const decPlaces = (step.toString().split('.')[1] ?? '').length
   const label = value == null ? '—' : value.toFixed(decPlaces)
 
+  const nudge = (dir: 1 | -1) => {
+    const next = Math.min(max, Math.max(0, +((value ?? 0) + dir * step).toFixed(2)))
+    if ('vibrate' in navigator) navigator.vibrate(4)
+    onChange(next)
+  }
+
   return (
-    <div
-      ref={cellRef}
-      className={`relative flex-1 min-w-0 ${disabled ? 'cursor-default' : 'cursor-ns-resize'}`}
-      style={{ height: SLOT_H }}
-    >
-      <div
-        className="absolute inset-x-0 top-0 h-6 pointer-events-none flex items-start justify-center pt-1.5
-          bg-gradient-to-b from-white dark:from-stone-800 to-transparent transition-opacity duration-150"
-        style={{ opacity: dragging ? 0 : 1 }}
+    <div ref={cellRef} className="relative flex-1 min-w-0" style={{ height: SLOT_H }}>
+      {/* Steppers: tap the arrows for ±1 step */}
+      <button
+        onClick={() => nudge(1)}
+        disabled={disabled}
+        className="absolute inset-x-0 top-0 h-5 z-10 flex items-start justify-center pt-1.5
+          bg-gradient-to-b from-white dark:from-stone-800 to-transparent"
+        aria-label="Increase"
       >
         <svg width="12" height="7" viewBox="0 0 12 7" className={disabled ? 'text-stone-200 dark:text-stone-700' : 'text-stone-400 dark:text-stone-500'}>
           <path d="M6 0L12 7H0L6 0Z" fill="currentColor" />
         </svg>
-      </div>
-      <div
-        className="absolute inset-x-0 bottom-0 h-6 pointer-events-none flex items-end justify-center pb-1.5
-          bg-gradient-to-t from-white dark:from-stone-800 to-transparent transition-opacity duration-150"
-        style={{ opacity: dragging ? 0 : 1 }}
+      </button>
+      <button
+        onClick={() => nudge(-1)}
+        disabled={disabled}
+        className="absolute inset-x-0 bottom-0 h-5 z-10 flex items-end justify-center pb-1.5
+          bg-gradient-to-t from-white dark:from-stone-800 to-transparent"
+        aria-label="Decrease"
       >
         <svg width="12" height="7" viewBox="0 0 12 7" className={disabled ? 'text-stone-200 dark:text-stone-700' : 'text-stone-400 dark:text-stone-500'}>
           <path d="M6 7L0 0H12L6 7Z" fill="currentColor" />
         </svg>
-      </div>
-      <div
-        className={`absolute inset-0 flex items-center justify-center font-mono tabular-nums pointer-events-none select-none transition-opacity duration-150 ${
-          disabled ? 'text-stone-400 dark:text-stone-500' : 'text-stone-900 dark:text-stone-100'
+      </button>
+
+      {/* Tap the number to open the native scroll wheel */}
+      <button
+        onClick={() => { if (!disabled) setPickerRect(cellRef.current!.getBoundingClientRect()) }}
+        disabled={disabled}
+        className={`absolute inset-x-0 flex items-center justify-center font-mono tabular-nums select-none ${
+          disabled ? 'text-stone-400 dark:text-stone-500 cursor-default' : 'text-stone-900 dark:text-stone-100'
         }`}
-        style={{ fontSize: 30, fontWeight: 600, opacity: disabled ? 0.4 : dragging ? 0 : 1 }}
+        style={{ top: 20, bottom: 20, fontSize: 30, fontWeight: 600, opacity: disabled ? 0.4 : 1 }}
       >
         {label}
-      </div>
+      </button>
+
+      {pickerRect && (
+        <WheelPicker
+          rect={pickerRect}
+          value={value ?? 0}
+          min={0}
+          max={max}
+          step={step}
+          decimals={decPlaces}
+          onClose={v => { setPickerRect(null); if (v != null) onChange(v) }}
+        />
+      )}
     </div>
   )
 }
@@ -288,7 +137,6 @@ export function SetRow({ set, index, trackingType, weightUnit, onChange, onRemov
     }
 
     const onMove = (e: TouchEvent) => {
-      if (dragState.get() !== null) return   // number-cell drag in progress — lock swipe
       const dx = e.touches[0].clientX - s.startX
       const dy = e.touches[0].clientY - s.startY
       if (!s.dir) {
@@ -339,18 +187,18 @@ export function SetRow({ set, index, trackingType, weightUnit, onChange, onRemov
           {trackingType === 'reps_weight' && (
             <>
               <NumCell value={set.reps} onChange={v => onChange({ ...set, reps: v })}
-                step={1} disabled={locked} />
+                step={1} max={100} disabled={locked} />
               <NumCell value={displayWeight(set.weight)} onChange={v => onChange({ ...set, weight: storeWeight(v) })}
-                step={weightUnit === 'lbs' ? 2.5 : 1.25} disabled={locked} />
+                step={weightUnit === 'lbs' ? 2.5 : 1.25} max={weightUnit === 'lbs' ? 660 : 300} disabled={locked} />
             </>
           )}
           {trackingType === 'reps_only' && (
             <NumCell value={set.reps} onChange={v => onChange({ ...set, reps: v })}
-              step={1} disabled={locked} />
+              step={1} max={100} disabled={locked} />
           )}
           {trackingType === 'time' && (
             <NumCell value={set.duration} onChange={v => onChange({ ...set, duration: v })}
-              step={5} disabled={locked} />
+              step={5} max={3600} disabled={locked} />
           )}
 
           {trackingType === 'time' && onStartTimer && (

@@ -1,8 +1,7 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef } from 'react'
 import { nanoid } from '../utils/nanoid'
 import type { ExerciseSet, SessionExercise, WeightUnit } from '../types'
 import { SetRow } from './SetRow'
-import { SetTimer } from './SetTimer'
 import { MethodTimer } from './MethodTimer'
 
 const REVEAL_EX = 88
@@ -16,6 +15,7 @@ interface Props {
   onChange: (updated: SessionExercise) => void
   onRemove: () => void
   onSetCompleted: () => void
+  onStartSetTimer?: (setIdx: number) => void
   method?: string
 }
 
@@ -47,12 +47,10 @@ function newSet(): ExerciseSet {
   return { id: nanoid(), completed: false }
 }
 
-export function ExerciseCard({ item, weightUnit, previousSets, collapsed, onToggle, onChange, onRemove, onSetCompleted, method }: Props) {
+export function ExerciseCard({ item, weightUnit, previousSets, collapsed, onToggle, onChange, onRemove, onSetCompleted, onStartSetTimer, method }: Props) {
   const isClassSession = !!method
   // Methods that replace standard set rows with a dedicated timer UI
   const timerOnly = method === 'Step Intervals' || method === 'Interval Sets' || method === 'High Intensity Sets'
-  // Index of the time-tracked set currently counting down (null = no timer running)
-  const [timedIdx, setTimedIdx] = useState<number | null>(null)
   const updateSet = (index: number, updated: ExerciseSet) =>
     onChange({ ...item, sets: item.sets.map((s, i) => (i === index ? updated : s)) })
 
@@ -201,20 +199,6 @@ export function ExerciseCard({ item, weightUnit, previousSets, collapsed, onTogg
             <>
               {method && <MethodTimer method={method} />}
 
-              {timedIdx !== null && item.sets[timedIdx] && (
-                <SetTimer
-                  key={item.sets[timedIdx].id}
-                  seconds={item.sets[timedIdx].duration ?? 0}
-                  label={`Set ${timedIdx + 1} · ${item.exerciseName}`}
-                  onDone={() => {
-                    const i = timedIdx
-                    setTimedIdx(null)
-                    if (!item.sets[i].completed) completeSet(i)
-                  }}
-                  onStop={() => setTimedIdx(null)}
-                />
-              )}
-
               {!timerOnly && (
                 <div className="sets-list space-y-1">
                   <div className="flex items-center gap-2 pb-1 text-xs text-stone-400 dark:text-stone-500 px-1">
@@ -240,7 +224,7 @@ export function ExerciseCard({ item, weightUnit, previousSets, collapsed, onTogg
                       onChange={updated => updateSet(i, updated)}
                       onRemove={() => removeSet(i)}
                       onComplete={() => completeSet(i)}
-                      onStartTimer={() => setTimedIdx(i)}
+                      onStartTimer={onStartSetTimer ? () => onStartSetTimer(i) : undefined}
                     />
                   ))}
 

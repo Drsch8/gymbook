@@ -3,6 +3,7 @@ import { useLocation, useNavigate } from 'react-router-dom'
 import { ExerciseSearch } from '../components/ExerciseSearch'
 import { ExerciseCard } from '../components/ExerciseCard'
 import { RestTimer } from '../components/RestTimer'
+import { SetTimer } from '../components/SetTimer'
 import { getLastSessionForExercise, getPreferences, getSessions, saveSession, advancePlanSession, advanceFogProgram } from '../db'
 import { nanoid } from '../utils/nanoid'
 import { getPreset, rollVariant } from '../data/presets'
@@ -621,6 +622,8 @@ export function NewSession() {
   const [variantOptions, setVariantOptions] = useState<{ variant: PresetVariant; exercises: PresetExercise[] }[] | null>(null)
   const [chipCounts, setChipCounts] = useState<Record<string, number>>({})
   const [activeIdx, setActiveIdx] = useState<number | null>(null)
+  // Running countdown for a time-tracked set; mutually exclusive with the rest timer
+  const [actionTimer, setActionTimer] = useState<{ exId: string; setIdx: number } | null>(null)
   const [showMethodInfo, setShowMethodInfo] = useState(false)
   const [showZirkelPanel, setShowZirkelPanel] = useState(false)
   const [showSuperPanel, setShowSuperPanel] = useState(false)
@@ -727,6 +730,14 @@ export function NewSession() {
       i === index ? { ...e, sets: e.sets.map(s => ({ ...s, completed: true })) } : e
     ))
 
+  // Mark a single set complete (used when its action timer finishes) and kick off the rest timer
+  const completeSetAt = (exIdx: number, setIdx: number) => {
+    setExercises(prev => prev.map((e, i) =>
+      i === exIdx ? { ...e, sets: e.sets.map((s, j) => j === setIdx ? { ...s, completed: true } : s) } : e
+    ))
+    setLastCompleted(Date.now())
+  }
+
   const removeExercise = (index: number) => {
     const removed = exercises[index]
     setExercises(prev => prev.filter((_, i) => i !== index))
@@ -769,7 +780,11 @@ export function NewSession() {
       if (planSessionIndex !== undefined) await advancePlanSession()
       if (fogProgramId) await advanceFogProgram(fogProgramId)
     } catch (e) {
+      // Keep the draft and stay on the page — clearing it here lost the workout
       console.error('Failed to save session', e)
+      setFinishing(false)
+      alert('Saving failed — your workout is kept as a draft. Please try again.')
+      return
     }
     clearDraft()
     window.dispatchEvent(new CustomEvent('wellDone'))
@@ -941,11 +956,26 @@ export function NewSession() {
           />
         )) : !isClassSession ? (() => {
           const firstActive = exercises.findIndex(e => !(e.sets.length > 0 && e.sets.every(s => s.completed)))
+          // One timer at a time: a running action timer replaces the rest timer slot
+          const actionExIdx = actionTimer ? exercises.findIndex(e => e.id === actionTimer.exId) : -1
+          const actionSet = actionTimer && actionExIdx !== -1 ? exercises[actionExIdx].sets[actionTimer.setIdx] : undefined
+          const actionActive = !!(actionTimer && actionSet && !actionSet.completed)
           return exercises.map((item, i) => (
             <React.Fragment key={item.id}>
-              {i === firstActive && (
+              {actionActive ? (i === actionExIdx && (
+                <SetTimer
+                  key={`${actionTimer!.exId}-${actionTimer!.setIdx}`}
+                  seconds={actionSet!.duration ?? 0}
+                  label={`${item.exerciseName} · Set ${actionTimer!.setIdx + 1}`}
+                  onDone={() => {
+                    setActionTimer(null)
+                    completeSetAt(actionExIdx, actionTimer!.setIdx)
+                  }}
+                  onStop={() => setActionTimer(null)}
+                />
+              )) : (i === firstActive && (
                 <RestTimer key={lastCompleted} defaultSeconds={restSeconds} lastCompleted={lastCompleted} />
-              )}
+              ))}
               <ExerciseCard
                 item={item}
                 weightUnit={weightUnit}
@@ -963,6 +993,7 @@ export function NewSession() {
                 }}
                 onRemove={() => removeExercise(i)}
                 onSetCompleted={() => setLastCompleted(Date.now())}
+                onStartSetTimer={setIdx => setActionTimer({ exId: item.id, setIdx })}
               />
             </React.Fragment>
           ))
