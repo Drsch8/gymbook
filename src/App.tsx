@@ -16,6 +16,7 @@ import { syncFromFirebase } from './db'
 
 const SHELL_ROUTES = ['/', '/classes', '/recent', '/history', '/statistics', '/settings']
 const INACTIVITY_MS = 60 * 60 * 1000 // 60 minutes
+const LAST_ACTIVE_KEY = 'gymbook_last_active'
 
 export function App() {
   const { pathname } = useLocation()
@@ -73,13 +74,19 @@ export function App() {
   useEffect(() => {
     if (!authed) return
     let timeout: ReturnType<typeof setTimeout>
+
+    const doSignOut = () => signOut(auth).catch(console.error)
+
     const reset = () => {
+      localStorage.setItem(LAST_ACTIVE_KEY, String(Date.now()))
       clearTimeout(timeout)
-      timeout = setTimeout(() => signOut(auth).catch(console.error), INACTIVITY_MS)
+      timeout = setTimeout(doSignOut, INACTIVITY_MS)
     }
+
     const events = ['touchstart', 'mousedown', 'keydown'] as const
     events.forEach(ev => document.addEventListener(ev, reset, { passive: true }))
     reset()
+
     return () => {
       clearTimeout(timeout)
       events.forEach(ev => document.removeEventListener(ev, reset))
@@ -89,6 +96,12 @@ export function App() {
   useEffect(() => {
     const handleVisibility = () => {
       if (document.visibilityState === 'visible') {
+        // Check inactivity first — setTimeout may have been frozen while backgrounded
+        const last = Number(localStorage.getItem(LAST_ACTIVE_KEY) ?? Date.now())
+        if (Date.now() - last >= INACTIVITY_MS) {
+          signOut(auth).catch(console.error)
+          return
+        }
         const user = auth.currentUser
         if (user) syncFromFirebase(user.uid).catch(console.error)
       }
