@@ -9,7 +9,7 @@ interface Props {
 
 function pad(n: number) { return String(n).padStart(2, '0') }
 
-// Countdown for a time-tracked set — same look and feel as the rest timer
+// Countdown for a time-tracked set — inverted card matching the running rest timer
 export function SetTimer({ seconds, label, onDone, onStop }: Props) {
   const [remaining, setRemaining] = useState(seconds)
   const onDoneRef = useRef(onDone)
@@ -29,30 +29,39 @@ export function SetTimer({ seconds, label, onDone, onStop }: Props) {
   const mins = Math.floor(remaining / 60)
   const secs = remaining % 60
   const pct  = seconds > 0 ? (remaining / seconds) * 100 : 0
+  const low  = pct < 20
 
   return (
     <div
-      className="bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-2xl px-4 py-3 space-y-2"
+      className="rounded-2xl px-4 py-3 border bg-stone-900 dark:bg-stone-100 border-stone-900 dark:border-stone-100"
       style={{ animation: 'timer-slide-in 0.25s ease forwards' }}
     >
-      <div className="flex items-center justify-between">
-        <span className="text-xs font-medium text-stone-400 dark:text-stone-500">{label}</span>
-        <span className={`text-xs font-mono tabular-nums ${pct < 20 ? 'text-red-500' : 'text-stone-700 dark:text-stone-300'}`}>
-          {pad(mins)}:{pad(secs)}
+      <div className="flex items-baseline justify-between mb-2 gap-3">
+        <span className="text-[11px] font-semibold uppercase tracking-[0.12em] text-stone-400 dark:text-stone-500 truncate">
+          {label}
         </span>
+        <div className="flex items-baseline gap-3 shrink-0">
+          <button
+            onClick={onStop}
+            className="text-[11px] font-medium text-stone-500 dark:text-stone-400 hover:text-stone-300 dark:hover:text-stone-600 transition-colors"
+          >
+            Stop
+          </button>
+          <span className={`font-mono tabular-nums text-2xl font-bold leading-none ${
+            low ? 'text-red-400 dark:text-red-500' : 'text-white dark:text-stone-900'
+          }`}>
+            {pad(mins)}:{pad(secs)}
+          </span>
+        </div>
       </div>
-      <div className="h-1.5 w-full bg-stone-100 dark:bg-stone-700 rounded-full overflow-hidden">
+      <div className="h-1 w-full rounded-full overflow-hidden bg-white/15 dark:bg-stone-900/15">
         <div
-          className={`h-full rounded-full transition-all duration-1000 ease-linear ${pct < 20 ? 'bg-red-400' : 'bg-stone-800 dark:bg-stone-300'}`}
+          className={`h-full rounded-full transition-all duration-1000 ease-linear ${
+            low ? 'bg-red-400 dark:bg-red-500' : 'bg-white dark:bg-stone-900'
+          }`}
           style={{ width: `${pct}%` }}
         />
       </div>
-      <button
-        onClick={onStop}
-        className="text-[11px] text-stone-400 hover:text-stone-600 dark:hover:text-stone-300 transition-colors"
-      >
-        Stop
-      </button>
     </div>
   )
 }

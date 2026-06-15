@@ -1,10 +1,10 @@
-import { useLayoutEffect, useRef, useState } from 'react'
+import { useMemo, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
+import Picker from 'react-mobile-picker'
 
-const ITEM_H  = 46
-const VISIBLE = 5               // odd number of rows in the window
-const WHEEL_H = ITEM_H * VISIBLE
-const WHEEL_W = 132
+const ITEM_H  = 44
+const WHEEL_H = 220
+const WHEEL_W = 148
 
 interface Props {
   rect: DOMRect                 // cell rect — the wheel anchors to its centre
@@ -21,37 +21,31 @@ function clamp(v: number, lo: number, hi: number) {
   return Math.max(lo, Math.min(hi, v))
 }
 
-// Full-screen overlay with a native scroll-snap wheel. The browser owns the
-// physics (momentum, snap), so flicks and slow scrolls feel exactly like any
-// other list. Tap outside to confirm; tap a number to jump to it.
+// Anchored overlay around react-mobile-picker — the package implements the
+// real iOS drum (inertia, rubber-banding, 3D item rotation). Tap outside to
+// confirm and close.
 export function WheelPicker({ rect, value, min, max, step, decimals, onClose }: Props) {
-  const count = Math.floor((max - min) / step) + 1
-  const initialIdx = clamp(Math.round((value - min) / step), 0, count - 1)
-  const [centerIdx, setCenterIdx] = useState(initialIdx)
-  const scrollRef = useRef<HTMLDivElement>(null)
-  const centerRef = useRef(initialIdx)
+  const options = useMemo(() => {
+    const count = Math.floor((max - min) / step) + 1
+    return Array.from({ length: count }, (_, i) => (min + i * step).toFixed(decimals))
+  }, [min, max, step, decimals])
 
-  useLayoutEffect(() => {
-    scrollRef.current!.scrollTop = initialIdx * ITEM_H
-  }, []) // eslint-disable-line react-hooks/exhaustive-deps
+  const initial = options[clamp(Math.round((value - min) / step), 0, options.length - 1)]
+  const [picked, setPicked] = useState({ v: initial })
+  const pickedRef = useRef(initial)
 
-  const handleScroll = () => {
-    const idx = clamp(Math.round(scrollRef.current!.scrollTop / ITEM_H), 0, count - 1)
-    if (idx !== centerRef.current) {
-      centerRef.current = idx
-      setCenterIdx(idx)
-      if ('vibrate' in navigator) navigator.vibrate(4)
-    }
+  const handleChange = (next: { v: string }) => {
+    pickedRef.current = next.v
+    setPicked(next)
+    if ('vibrate' in navigator) navigator.vibrate(4)
   }
 
   const commit = () => {
-    const idx = centerRef.current
-    onClose(idx === initialIdx ? null : +(min + idx * step).toFixed(2))
+    onClose(pickedRef.current === initial ? null : parseFloat(pickedRef.current))
   }
 
   const dark = document.documentElement.classList.contains('dark')
-  const bandColor = dark ? '#57534e' : '#d6d3d1'
-  const textColor = dark ? '#f5f5f4' : '#1c1917'
+  const bandColor = dark ? 'rgba(245,245,244,0.08)' : 'rgba(28,25,23,0.05)'
   const cx = clamp(rect.left + rect.width / 2, WHEEL_W / 2 + 8, window.innerWidth  - WHEEL_W / 2 - 8)
   const cy = clamp(rect.top  + rect.height / 2, WHEEL_H / 2 + 8, window.innerHeight - WHEEL_H / 2 - 8)
 
@@ -68,56 +62,49 @@ export function WheelPicker({ rect, value, min, max, step, decimals, onClose }: 
         }}
       />
 
-      {/* Selection band */}
-      <div style={{
-        position: 'fixed', left: 0, right: 0, zIndex: 41, pointerEvents: 'none',
-        top: cy - ITEM_H / 2, height: ITEM_H,
-        borderTop:    `1px solid ${bandColor}`,
-        borderBottom: `1px solid ${bandColor}`,
-      }} />
-
-      {/* The wheel: a real scroll container with snap — native momentum physics */}
       <div
-        ref={scrollRef}
-        onScroll={handleScroll}
-        className="no-scrollbar"
         style={{
-          position: 'fixed', zIndex: 42,
+          position: 'fixed', zIndex: 41,
           left: cx - WHEEL_W / 2, top: cy - WHEEL_H / 2,
           width: WHEEL_W, height: WHEEL_H,
-          overflowY: 'scroll',
-          scrollSnapType: 'y mandatory',
-          overscrollBehavior: 'contain',
-          WebkitMaskImage: 'linear-gradient(to bottom, transparent, black 28%, black 72%, transparent)',
-          maskImage: 'linear-gradient(to bottom, transparent, black 28%, black 72%, transparent)',
         }}
       >
-        <div style={{ height: ITEM_H * ((VISIBLE - 1) / 2) }} />
-        {Array.from({ length: count }, (_, i) => {
-          const isCenter = i === centerIdx
-          return (
-            <div
-              key={i}
-              onClick={() => scrollRef.current!.scrollTo({ top: i * ITEM_H, behavior: 'smooth' })}
-              style={{
-                height: ITEM_H,
-                scrollSnapAlign: 'center',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                fontFamily: 'ui-monospace, monospace',
-                fontVariantNumeric: 'tabular-nums',
-                fontSize: isCenter ? 32 : 18,
-                fontWeight: isCenter ? 700 : 400,
-                opacity: isCenter ? 1 : 0.4,
-                color: textColor,
-                userSelect: 'none',
-                transition: 'font-size 0.1s ease, opacity 0.1s ease',
-              }}
-            >
-              {(min + i * step).toFixed(decimals)}
-            </div>
-          )
-        })}
-        <div style={{ height: ITEM_H * ((VISIBLE - 1) / 2) }} />
+        {/* Selection band behind the centre row */}
+        <div style={{
+          position: 'absolute', left: -6, right: -6, pointerEvents: 'none',
+          top: (WHEEL_H - ITEM_H) / 2, height: ITEM_H,
+          borderRadius: 12,
+          background: bandColor,
+        }} />
+
+        <Picker
+          value={picked}
+          onChange={handleChange}
+          height={WHEEL_H}
+          itemHeight={ITEM_H}
+          wheelMode="natural"
+        >
+          <Picker.Column name="v">
+            {options.map(o => (
+              <Picker.Item key={o} value={o}>
+                {({ selected }) => (
+                  <span
+                    className="font-mono tabular-nums select-none"
+                    style={{
+                      fontSize: selected ? 30 : 19,
+                      fontWeight: selected ? 700 : 400,
+                      opacity: selected ? 1 : 0.45,
+                      color: dark ? '#f5f5f4' : '#1c1917',
+                      transition: 'font-size 0.12s ease, opacity 0.12s ease',
+                    }}
+                  >
+                    {o}
+                  </span>
+                )}
+              </Picker.Item>
+            ))}
+          </Picker.Column>
+        </Picker>
       </div>
     </>,
     document.body

@@ -148,13 +148,6 @@ export function ExerciseCard({ item, weightUnit, previousSets, collapsed, onTogg
         onClick={() => { if (swipeXRef.current !== 0) { setSlideX(0, true); return } onToggle() }}
       >
         <div className="flex items-center gap-2 min-w-0">
-          {allDone && (
-            <span className="shrink-0 w-4 h-4 rounded-full bg-stone-900 dark:bg-stone-300 flex items-center justify-center">
-              <svg className="w-2.5 h-2.5 text-white dark:text-stone-900" fill="none" viewBox="0 0 10 8" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M1 4l3 3 5-6" />
-              </svg>
-            </span>
-          )}
           <div className="min-w-0">
             <span className={`font-semibold truncate block ${allDone ? 'text-stone-400 dark:text-stone-500' : 'text-stone-900 dark:text-stone-100'}`}>
               {item.exerciseName}
@@ -166,8 +159,14 @@ export function ExerciseCard({ item, weightUnit, previousSets, collapsed, onTogg
             )}
           </div>
         </div>
-        <div className="flex items-center gap-3 shrink-0 ml-2">
-          <span className="text-xs text-stone-400 dark:text-stone-500 shrink-0">{completedCount}/{item.sets.length}</span>
+        <div className="flex items-center gap-2.5 shrink-0 ml-2">
+          <span className={`px-2 py-0.5 rounded-full text-[11px] font-mono tabular-nums shrink-0 ${
+            allDone
+              ? 'bg-stone-900 dark:bg-stone-300 text-white dark:text-stone-900'
+              : 'bg-stone-100 dark:bg-stone-700 text-stone-500 dark:text-stone-400'
+          }`}>
+            {completedCount}/{item.sets.length}
+          </span>
           <svg className={`w-4 h-4 text-stone-300 dark:text-stone-600 transition-transform ${collapsed ? '-rotate-90' : ''}`}
             fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />

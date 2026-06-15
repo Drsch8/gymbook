@@ -15,6 +15,24 @@ import type { PresetExercise, PresetVariant } from '../data/presets'
 
 const TITLE_CHIPS = ['Legs', 'Upper', 'Push', 'Pull', 'Core', 'Cardio', 'Full Body']
 
+// Live workout duration shown in the session header
+function ElapsedClock({ startedAt }: { startedAt: string }) {
+  const [, force] = useState(0)
+  useEffect(() => {
+    const iv = setInterval(() => force(t => t + 1), 1000)
+    return () => clearInterval(iv)
+  }, [])
+  const total = Math.max(0, Math.floor((Date.now() - new Date(startedAt).getTime()) / 1000))
+  const h = Math.floor(total / 3600)
+  const m = Math.floor((total % 3600) / 60)
+  const s = total % 60
+  return (
+    <span className="font-mono tabular-nums text-sm font-semibold text-stone-700 dark:text-stone-200">
+      {h > 0 ? `${h}:${String(m).padStart(2, '0')}` : m}:{String(s).padStart(2, '0')}
+    </span>
+  )
+}
+
 
 // ── Class session helpers ─────────────────────────────────────────────────────
 
@@ -133,6 +151,112 @@ function ProgressStrip({ progress, accent }: { progress: number; accent?: string
   )
 }
 
+// ── Method animations ─────────────────────────────────────────────────────────
+// Small live visuals for the fullscreen class panels. All sit on the dark
+// (stone-950) background and fill in as the method progresses.
+
+// Step Intervals: a step pyramid (up, peak, down). All steps are faintly
+// visible from the start; each one solidifies as its time slice elapses.
+function StepPyramid({ progress }: { progress: number }) {
+  const heights = [1, 2, 3, 4, 5, 4, 3, 2, 1]
+  const unit = 9, colW = 16, gap = 5
+  const maxH = 5 * unit
+  const w = heights.length * colW + (heights.length - 1) * gap
+  const filled = progress * heights.length
+  return (
+    <svg width={w} height={maxH} viewBox={`0 0 ${w} ${maxH}`} className="mt-7">
+      {heights.map((h, i) => {
+        const x = i * (colW + gap)
+        const barH = h * unit
+        const f = Math.max(0, Math.min(1, filled - i))
+        return (
+          <g key={i}>
+            <rect x={x} y={maxH - barH} width={colW} height={barH} rx={3} fill="#44403c" opacity={0.45} />
+            <rect x={x} y={maxH - barH} width={colW} height={barH} rx={3} fill="#f5f5f4"
+              opacity={f} style={{ transition: 'opacity 0.9s linear' }} />
+          </g>
+        )
+      })}
+    </svg>
+  )
+}
+
+// Interval Sets: one capsule per set, filling left to right in real time.
+function IntervalBlocks({ satz, seconds, setLen }: { satz: number; seconds: number; setLen: number }) {
+  return (
+    <div className="flex gap-2.5 mt-7">
+      {[1, 2, 3].map(n => {
+        const f = n < satz ? 1 : n > satz ? 0 : (setLen - seconds) / setLen
+        return (
+          <div key={n} className="w-16 h-2.5 rounded-full bg-stone-800 overflow-hidden">
+            <div className="h-full bg-stone-100 rounded-full" style={{ width: `${f * 100}%`, transition: 'width 0.9s linear' }} />
+          </div>
+        )
+      })}
+    </div>
+  )
+}
+
+// Supersets: one tile per block, labelled with its exercise number — the
+// 1·2·3·1·2·3 alternation becomes visible, the active tile fills with time.
+function SuperBlocks({ block, seconds, numEx, blockLen }: { block: number; seconds: number; numEx: number; blockLen: number }) {
+  const total = numEx * 2
+  return (
+    <div className="flex gap-1.5 mt-7">
+      {Array.from({ length: total }, (_, i) => {
+        const f = i < block ? 1 : i > block ? 0 : (blockLen - seconds) / blockLen
+        return (
+          <div key={i} className="relative w-9 h-7 rounded-lg bg-stone-800 overflow-hidden flex items-center justify-center">
+            <div className="absolute inset-0 bg-stone-100" style={{ opacity: f, transition: 'opacity 0.9s linear' }} />
+            <span className={`relative text-[11px] font-bold transition-colors duration-500 ${f > 0.5 ? 'text-stone-900' : 'text-stone-400'}`}>
+              {(i % numEx) + 1}
+            </span>
+          </div>
+        )
+      })}
+    </div>
+  )
+}
+
+// Circuits: a ring that closes over the 20 minutes, with a dot running laps.
+function CircuitRing({ progress }: { progress: number }) {
+  const R = 44
+  const C = 2 * Math.PI * R
+  const a = progress * 2 * Math.PI - Math.PI / 2
+  const dx = 50 + R * Math.cos(a)
+  const dy = 50 + R * Math.sin(a)
+  return (
+    <svg width={108} height={108} viewBox="0 0 100 100" className="mt-7">
+      <circle cx="50" cy="50" r={R} fill="none" stroke="#44403c" strokeWidth="5" opacity="0.55" />
+      <circle cx="50" cy="50" r={R} fill="none" stroke="#f5f5f4" strokeWidth="5" strokeLinecap="round"
+        strokeDasharray={C} strokeDashoffset={C * (1 - progress)} transform="rotate(-90 50 50)"
+        style={{ transition: 'stroke-dashoffset 0.9s linear' }} />
+      <circle cx={dx} cy={dy} r="4.5" fill="#ffffff" style={{ transition: 'cx 0.9s linear, cy 0.9s linear' }} />
+    </svg>
+  )
+}
+
+// High Intensity: one pill per round — done rounds solid, the active one
+// pulses (white while working, blue while resting).
+function HiitRounds({ round, phase, done }: { round: number; phase: 'work' | 'rest'; done: boolean }) {
+  return (
+    <div className="flex gap-1.5 mt-7">
+      {Array.from({ length: 8 }, (_, i) => {
+        const n = i + 1
+        const state = done || n < round ? 'done' : n === round ? phase : 'todo'
+        return (
+          <div key={i} className={`w-7 h-2.5 rounded-full transition-colors duration-300 ${
+            state === 'done' ? 'bg-stone-100'
+              : state === 'work' ? 'bg-stone-100 animate-pulse'
+              : state === 'rest' ? 'bg-blue-500 animate-pulse'
+              : 'bg-stone-800'
+          }`} />
+        )
+      })}
+    </div>
+  )
+}
+
 // ── Stufenintervall flat timer ─────────────────────────────────────────────────
 
 function FlatStufen({ running, onDone, onProgress }: { running: boolean; onDone: () => void; onProgress: (p: number) => void }) {
@@ -163,14 +287,13 @@ function FlatStufen({ running, onDone, onProgress }: { running: boolean; onDone:
     onDoneRef.current()
   }, [done])
 
-  const arrow = done ? null : seconds > 225 ? '↑' : '↓'
-
   return (
     <>
       <BigTime dim={done}>{done ? '0:00' : fmtFlat(seconds)}</BigTime>
-      {arrow && (
-        <p className={`text-4xl font-black mt-2 transition-colors ${seconds > 225 ? 'text-stone-300' : 'text-stone-500'}`}>
-          {arrow}
+      <StepPyramid progress={1 - seconds / 450} />
+      {!done && (
+        <p className="text-sm font-semibold uppercase tracking-[0.14em] text-stone-500 mt-3">
+          {seconds > 225 ? 'Climbing' : 'Descending'}
         </p>
       )}
     </>
@@ -218,7 +341,8 @@ function FlatIntervall({ running, onResume, onDone, onProgress }: { running: boo
   return (
     <>
       <BigTime dim={done}>{done ? '0:00' : fmtFlat(seconds)}</BigTime>
-      {!done && <p className="text-xl font-semibold text-stone-500 mt-2">{`Set ${satz} / 3`}</p>}
+      <IntervalBlocks satz={satz} seconds={seconds} setLen={180} />
+      {!done && <p className="text-sm font-semibold uppercase tracking-[0.14em] text-stone-500 mt-3">{`Set ${satz} / 3`}</p>}
     </>
   )
 }
@@ -317,6 +441,7 @@ function SuperPanel({ exercises, onClose, onComplete }: {
       {/* Timer — centered in remaining space */}
       <div className="flex-1 flex flex-col items-center justify-center">
         <BigTime dim={timerDone}>{!ready ? `${countdown}s` : timerDone ? '0:00' : fmtFlat(seconds)}</BigTime>
+        {ready && <SuperBlocks block={timerDone ? totalBlocks : block} seconds={timerDone ? 0 : seconds} numEx={numEx} blockLen={BLOCK} />}
       </div>
 
       {/* Controls */}
@@ -387,7 +512,8 @@ function FlatHoch({ running, onPhaseChange, onDone, onProgress }: { running: boo
       <BigTime dim={done} blue={isRest}>
         {done ? '0:00' : `0:${String(seconds).padStart(2, '0')}`}
       </BigTime>
-      <p className="text-xl font-semibold text-stone-500 mt-2">
+      <HiitRounds round={round} phase={phase} done={done} />
+      <p className="text-sm font-semibold uppercase tracking-[0.14em] text-stone-500 mt-3">
         {done ? 'Done ✓' : `Round ${round} / 8`}
       </p>
       {!done && (
@@ -565,8 +691,9 @@ function ZirkelPanel({ exercises, onClose, onComplete }: {
       </div>
 
       {/* Timer — centered in remaining space */}
-      <div className="flex-1 flex items-center justify-center">
+      <div className="flex-1 flex flex-col items-center justify-center">
         <BigTime dim={timerDone}>{!ready ? `${countdown}s` : timerDone ? '0:00' : fmtFlat(seconds)}</BigTime>
+        {ready && <CircuitRing progress={progress} />}
       </div>
 
       {/* Controls */}
@@ -801,17 +928,36 @@ export function NewSession() {
 
   return (
     <div className="flex flex-col min-h-full bg-stone-50 dark:bg-stone-900">
-      <header className="sticky top-0 z-40 bg-white/80 dark:bg-stone-900/80 backdrop-blur border-b border-stone-200 dark:border-stone-700 px-4 py-3 flex items-center justify-between">
-        <button onClick={() => navigate(-1)} className="text-stone-400 hover:text-stone-700 dark:hover:text-stone-200 transition-colors text-sm">
-          ← Back
-        </button>
-        <span className="text-sm text-stone-400 dark:text-stone-500 font-mono">{totalCompleted}/{totalSets} sets</span>
-        <div className="w-16 flex justify-end">
-          {undoItem && (
-            <button onClick={undoRemove} className="text-sm text-stone-500 dark:text-stone-400 hover:text-stone-700 dark:hover:text-stone-200 transition-colors">
-              Undo
-            </button>
-          )}
+      <header className="sticky top-0 z-40 bg-white/90 dark:bg-stone-900/90 backdrop-blur-md border-b border-stone-200/70 dark:border-stone-800">
+        <div className="px-3 py-2.5 flex items-center justify-between max-w-lg mx-auto w-full">
+          <button
+            onClick={() => navigate(-1)}
+            className="w-9 h-9 -ml-1 rounded-full flex items-center justify-center text-stone-400 hover:text-stone-700 dark:hover:text-stone-200 hover:bg-stone-100 dark:hover:bg-stone-800 transition-colors"
+            aria-label="Back"
+          >
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+            </svg>
+          </button>
+          <ElapsedClock startedAt={startedAt.current} />
+          <div className="min-w-[4.5rem] flex justify-end">
+            {undoItem ? (
+              <button onClick={undoRemove} className="text-sm font-medium text-stone-500 dark:text-stone-400 hover:text-stone-700 dark:hover:text-stone-200 transition-colors">
+                Undo
+              </button>
+            ) : (
+              <span className="px-2 py-0.5 rounded-full bg-stone-100 dark:bg-stone-800 text-xs font-mono tabular-nums text-stone-500 dark:text-stone-400">
+                {totalCompleted}/{totalSets}
+              </span>
+            )}
+          </div>
+        </div>
+        {/* Overall session progress */}
+        <div className="h-0.5 w-full bg-transparent">
+          <div
+            className="h-full bg-stone-900 dark:bg-stone-200 transition-all duration-500 ease-out"
+            style={{ width: totalSets > 0 ? `${(totalCompleted / totalSets) * 100}%` : '0%' }}
+          />
         </div>
       </header>
 
@@ -882,17 +1028,17 @@ export function NewSession() {
         </div>
 
         {variantOptions && (
-          <div key={sessionTags.join(',')} className="bg-white border border-stone-200 rounded-2xl overflow-hidden">
+          <div key={sessionTags.join(',')} className="bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-2xl overflow-hidden">
             <div className="flex items-center justify-between px-4 pt-3 pb-2">
-              <p className="text-xs font-semibold text-stone-400 uppercase tracking-wider">Choose a session</p>
+              <p className="text-xs font-semibold text-stone-400 dark:text-stone-500 uppercase tracking-wider">Choose a session</p>
               <button
                 onClick={() => setVariantOptions(prev => prev?.map(({ variant }) => ({ variant, exercises: rollVariant(variant) })) ?? null)}
-                className="text-xs font-semibold text-stone-400 hover:text-stone-600 transition-colors"
+                className="text-xs font-semibold text-stone-400 dark:text-stone-500 hover:text-stone-600 dark:hover:text-stone-300 transition-colors"
               >
                 ↻ Shuffle
               </button>
             </div>
-            <div className="divide-y divide-stone-100">
+            <div className="divide-y divide-stone-100 dark:divide-stone-700">
               {variantOptions.map(({ variant, exercises: rolled }) => (
                 <button
                   key={variant.name}
@@ -909,10 +1055,10 @@ export function NewSession() {
                     setShowSearch(false)
                     setVariantOptions(null)
                   }}
-                  className="w-full text-left px-4 py-3 hover:bg-stone-50 transition-colors"
+                  className="w-full text-left px-4 py-3 hover:bg-stone-50 dark:hover:bg-stone-700/50 transition-colors"
                 >
-                  <p className="text-sm font-semibold text-stone-900">{variant.name}</p>
-                  <p className="text-xs text-stone-400 mt-0.5">
+                  <p className="text-sm font-semibold text-stone-900 dark:text-stone-100">{variant.name}</p>
+                  <p className="text-xs text-stone-400 dark:text-stone-500 mt-0.5">
                     {rolled.map(e => e.exerciseName).join(' · ')}
                   </p>
                 </button>
@@ -1023,7 +1169,7 @@ export function NewSession() {
               setShowSearch(true)
               setTimeout(() => bottomRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 150)
             }}
-            className="w-full py-3 rounded-2xl border border-dashed border-stone-200 text-stone-400 text-sm hover:border-stone-400 hover:text-stone-600 bg-white transition-colors"
+            className="w-full py-3 rounded-2xl border border-dashed border-stone-300 dark:border-stone-600 text-stone-400 dark:text-stone-500 text-sm font-medium hover:border-stone-400 hover:text-stone-600 dark:hover:text-stone-300 bg-white/50 dark:bg-stone-800/50 transition-colors"
           >
             + Add Exercise
           </button>
