@@ -1,6 +1,6 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef } from 'react'
 import type { ExerciseSet, TrackingType, WeightUnit } from '../types'
-import { WheelPicker } from './WheelPicker'
+import { InlineWheel } from './InlineWheel'
 
 interface Props {
   set: ExerciseSet
@@ -11,6 +11,7 @@ interface Props {
   onRemove: () => void
   onComplete: () => void
   onStartTimer?: () => void
+  active?: boolean
   previousSet?: { reps?: number; weight?: number; duration?: number }
 }
 
@@ -18,84 +19,9 @@ function fmt(n: number | undefined, unit = '') {
   return n != null ? `${n}${unit}` : '—'
 }
 
-const SLOT_H  = 62
-const REVEAL  = 72
+const REVEAL = 72
 
-function NumCell({
-  value, onChange, step = 1, max, disabled,
-}: {
-  value: number | undefined
-  onChange: (v: number | undefined) => void
-  step?: number
-  max: number
-  disabled: boolean
-}) {
-  const cellRef = useRef<HTMLDivElement>(null)
-  const [pickerRect, setPickerRect] = useState<DOMRect | null>(null)
-
-  const decPlaces = (step.toString().split('.')[1] ?? '').length
-  const label = value == null ? '—' : value.toFixed(decPlaces)
-
-  const nudge = (dir: 1 | -1) => {
-    const next = Math.min(max, Math.max(0, +((value ?? 0) + dir * step).toFixed(2)))
-    if ('vibrate' in navigator) navigator.vibrate(4)
-    onChange(next)
-  }
-
-  return (
-    <div ref={cellRef} className="relative flex-1 min-w-0" style={{ height: SLOT_H }}>
-      {/* Steppers: tap the arrows for ±1 step */}
-      <button
-        onClick={() => nudge(1)}
-        disabled={disabled}
-        className="absolute inset-x-0 top-0 h-5 z-10 flex items-start justify-center pt-1.5
-          bg-gradient-to-b from-white dark:from-stone-800 to-transparent"
-        aria-label="Increase"
-      >
-        <svg width="12" height="7" viewBox="0 0 12 7" className={disabled ? 'text-stone-200 dark:text-stone-700' : 'text-stone-400 dark:text-stone-500'}>
-          <path d="M6 0L12 7H0L6 0Z" fill="currentColor" />
-        </svg>
-      </button>
-      <button
-        onClick={() => nudge(-1)}
-        disabled={disabled}
-        className="absolute inset-x-0 bottom-0 h-5 z-10 flex items-end justify-center pb-1.5
-          bg-gradient-to-t from-white dark:from-stone-800 to-transparent"
-        aria-label="Decrease"
-      >
-        <svg width="12" height="7" viewBox="0 0 12 7" className={disabled ? 'text-stone-200 dark:text-stone-700' : 'text-stone-400 dark:text-stone-500'}>
-          <path d="M6 7L0 0H12L6 7Z" fill="currentColor" />
-        </svg>
-      </button>
-
-      {/* Tap the number to open the native scroll wheel */}
-      <button
-        onClick={() => { if (!disabled) setPickerRect(cellRef.current!.getBoundingClientRect()) }}
-        disabled={disabled}
-        className={`absolute inset-x-0 flex items-center justify-center font-mono tabular-nums select-none ${
-          disabled ? 'text-stone-400 dark:text-stone-500 cursor-default' : 'text-stone-900 dark:text-stone-100'
-        }`}
-        style={{ top: 20, bottom: 20, fontSize: 30, fontWeight: 600, opacity: disabled ? 0.4 : 1 }}
-      >
-        {label}
-      </button>
-
-      {pickerRect && (
-        <WheelPicker
-          rect={pickerRect}
-          value={value ?? 0}
-          min={0}
-          max={max}
-          step={step}
-          decimals={decPlaces}
-          onClose={v => { setPickerRect(null); if (v != null) onChange(v) }}
-        />
-      )}
-    </div>
-  )
-}
-
-export function SetRow({ set, index, trackingType, weightUnit, onChange, onRemove, onComplete, onStartTimer, previousSet }: Props) {
+export function SetRow({ set, index, trackingType, weightUnit, onChange, onRemove, onComplete, onStartTimer, active = true, previousSet }: Props) {
   const lbsFactor = 2.20462
   const locked    = set.completed
 
@@ -140,8 +66,10 @@ export function SetRow({ set, index, trackingType, weightUnit, onChange, onRemov
       const dx = e.touches[0].clientX - s.startX
       const dy = e.touches[0].clientY - s.startY
       if (!s.dir) {
-        if (Math.abs(dx) > 5 || Math.abs(dy) > 5)
-          s.dir = Math.abs(dx) > Math.abs(dy) ? 'h' : 'v'
+        // Bias toward vertical so the inline wheels keep their scroll; only a
+        // clearly horizontal drag reveals the delete action.
+        if (Math.abs(dx) > 8 || Math.abs(dy) > 8)
+          s.dir = Math.abs(dx) > Math.abs(dy) * 1.3 ? 'h' : 'v'
         return
       }
       if (s.dir === 'v') return
@@ -174,9 +102,9 @@ export function SetRow({ set, index, trackingType, weightUnit, onChange, onRemov
         style={{ transform: 'translateX(0)', width: locked ? undefined : `calc(100% + ${REVEAL}px)` }}
       >
         <div className="flex-1 min-w-0 flex items-center gap-2 py-1 px-1 bg-white dark:bg-stone-800">
-          <span className="w-5 text-center text-xs font-mono text-stone-400 shrink-0">{index + 1}</span>
+          <span className="w-5 text-center text-xs font-mono text-stone-400 dark:text-stone-500 shrink-0">{index + 1}</span>
 
-          <span className="w-14 text-center text-xs text-stone-400 shrink-0 hidden sm:block">
+          <span className="w-12 text-center text-xs text-stone-400 dark:text-stone-500 shrink-0 hidden sm:block">
             {trackingType === 'time'
               ? fmt(previousSet?.duration, 's')
               : previousSet
@@ -186,26 +114,26 @@ export function SetRow({ set, index, trackingType, weightUnit, onChange, onRemov
 
           {trackingType === 'reps_weight' && (
             <>
-              <NumCell value={set.reps} onChange={v => onChange({ ...set, reps: v })}
-                step={1} max={100} disabled={locked} />
-              <NumCell value={displayWeight(set.weight)} onChange={v => onChange({ ...set, weight: storeWeight(v) })}
-                step={weightUnit === 'lbs' ? 2.5 : 1.25} max={weightUnit === 'lbs' ? 660 : 300} disabled={locked} />
+              <InlineWheel value={set.reps} onChange={v => onChange({ ...set, reps: v })}
+                step={1} max={100} disabled={locked} active={active} />
+              <InlineWheel value={displayWeight(set.weight)} onChange={v => onChange({ ...set, weight: storeWeight(v) })}
+                step={weightUnit === 'lbs' ? 2.5 : 1.25} max={weightUnit === 'lbs' ? 660 : 300} disabled={locked} active={active} />
             </>
           )}
           {trackingType === 'reps_only' && (
-            <NumCell value={set.reps} onChange={v => onChange({ ...set, reps: v })}
-              step={1} max={100} disabled={locked} />
+            <InlineWheel value={set.reps} onChange={v => onChange({ ...set, reps: v })}
+              step={1} max={100} disabled={locked} active={active} />
           )}
           {trackingType === 'time' && (
-            <NumCell value={set.duration} onChange={v => onChange({ ...set, duration: v })}
-              step={5} max={3600} disabled={locked} />
+            <InlineWheel value={set.duration} onChange={v => onChange({ ...set, duration: v })}
+              step={5} max={3600} disabled={locked} active={active} />
           )}
 
           {trackingType === 'time' && onStartTimer && (
             <button
               onClick={onStartTimer}
               disabled={locked || !set.duration}
-              className="shrink-0 w-8 h-8 rounded-xl flex items-center justify-center bg-stone-100 dark:bg-stone-700 text-stone-500 dark:text-stone-300 hover:bg-stone-200 dark:hover:bg-stone-600 border border-stone-200 dark:border-stone-600 disabled:opacity-30 transition-colors"
+              className="shrink-0 w-9 h-9 rounded-xl flex items-center justify-center bg-stone-100 dark:bg-stone-700 text-stone-500 dark:text-stone-300 hover:bg-stone-200 dark:hover:bg-stone-600 disabled:opacity-30 transition-colors"
               aria-label="Start set timer"
             >
               <svg width="11" height="12" viewBox="0 0 11 12" fill="currentColor">
@@ -217,12 +145,16 @@ export function SetRow({ set, index, trackingType, weightUnit, onChange, onRemov
           <button
             onClick={onComplete}
             className={[
-              'shrink-0 w-8 h-8 rounded-xl flex items-center justify-center transition-colors text-sm font-semibold',
-              locked ? 'bg-stone-900 dark:bg-stone-300 text-white dark:text-stone-900' : 'bg-stone-100 dark:bg-stone-700 text-stone-400 hover:bg-stone-200 border border-stone-200 dark:border-stone-600',
+              'shrink-0 w-9 h-9 rounded-xl flex items-center justify-center transition-colors',
+              locked
+                ? 'bg-stone-900 dark:bg-stone-300 text-white dark:text-stone-900'
+                : 'bg-stone-100 dark:bg-stone-700 text-stone-400 dark:text-stone-500 hover:bg-stone-200 dark:hover:bg-stone-600',
             ].join(' ')}
             aria-label={locked ? 'Mark incomplete' : 'Mark complete'}
           >
-            ✓
+            <svg width="14" height="11" viewBox="0 0 14 11" fill="none" stroke="currentColor" strokeWidth={2.4}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M1.5 5.5l4 4 7-8" />
+            </svg>
           </button>
         </div>
 

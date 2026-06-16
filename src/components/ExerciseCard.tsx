@@ -200,17 +200,17 @@ export function ExerciseCard({ item, weightUnit, previousSets, collapsed, onTogg
 
               {!timerOnly && (
                 <div className="sets-list space-y-1">
-                  <div className="flex items-center gap-2 pb-1 text-xs text-stone-400 dark:text-stone-500 px-1">
+                  <div className="flex items-center gap-2 pb-1 text-[11px] font-medium uppercase tracking-wide text-stone-400 dark:text-stone-500 px-1">
                     <span className="w-5 text-center shrink-0">#</span>
-                    <span className="w-14 text-center shrink-0 hidden sm:block">Prev</span>
+                    <span className="w-12 text-center shrink-0 hidden sm:block">Prev</span>
                     {item.trackingType === 'reps_weight' && (
                       <><span className="flex-1 text-center">Reps</span><span className="flex-1 text-center">{weightUnit}</span></>
                     )}
                     {item.trackingType === 'reps_only' && <span className="flex-1 text-center">Reps</span>}
                     {item.trackingType === 'time' && (
-                      <><span className="flex-1 text-center">Seconds</span><span className="w-8 shrink-0" /></>
+                      <><span className="flex-1 text-center">Seconds</span><span className="w-9 shrink-0" /></>
                     )}
-                    <span className="w-8 shrink-0" />
+                    <span className="w-9 shrink-0" />
                   </div>
 
                   {item.sets.map((set, i) => (
@@ -220,6 +220,7 @@ export function ExerciseCard({ item, weightUnit, previousSets, collapsed, onTogg
                       trackingType={item.trackingType}
                       weightUnit={weightUnit}
                       previousSet={previousSets?.[i]}
+                      active={!collapsed}
                       onChange={updated => updateSet(i, updated)}
                       onRemove={() => removeSet(i)}
                       onComplete={() => completeSet(i)}
