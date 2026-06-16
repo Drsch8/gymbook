@@ -1,8 +1,9 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 
 // Compact, directly-scrollable number wheel that lives inline in a set row —
-// no tap-to-open. Native CSS scroll-snap owns the momentum/physics; we only
-// track the centred index for the highlight and commit on settle.
+// no tap-to-open. Native CSS scroll-snap owns the momentum/physics. Each item
+// is scaled/faded as a *continuous* function of its distance from the centre
+// (like the iOS drum), driven imperatively so scrolling never re-renders React.
 
 const ITEM_H  = 26
 const VISIBLE = 3                 // odd: one centre row + one above/below
@@ -21,6 +22,13 @@ interface Props {
 
 const clamp = (v: number, lo: number, hi: number) => Math.max(lo, Math.min(hi, v))
 
+// Visual emphasis purely from distance-to-centre — no discrete "selected" flip.
+function styleSpan(span: HTMLElement, dist: number) {
+  const d = Math.min(dist, 2.2)
+  span.style.transform = `scale(${Math.max(0.55, 1 - 0.34 * d).toFixed(3)})`
+  span.style.opacity   = Math.max(0.18, 1 - 0.5 * d).toFixed(3)
+}
+
 export function InlineWheel({ value, onChange, step, max, min = 0, disabled, active = true }: Props) {
   const decimals = (step.toString().split('.')[1] ?? '').length
   const count = Math.floor((max - min) / step) + 1
@@ -30,36 +38,68 @@ export function InlineWheel({ value, onChange, step, max, min = 0, disabled, act
   )
   const idxOf = (v: number | undefined) => clamp(Math.round(((v ?? min) - min) / step), 0, count - 1)
 
-  const scrollRef  = useRef<HTMLDivElement>(null)
-  const centerRef  = useRef(idxOf(value))
-  const settleRef  = useRef<ReturnType<typeof setTimeout>>()
-  const [center, setCenter] = useState(centerRef.current)
+  const scrollRef = useRef<HTMLDivElement>(null)
+  const indexRef  = useRef(idxOf(value))    // last integer index (haptics + commit)
+  const styledRef = useRef<Set<number>>(new Set())
+  const rafRef    = useRef(0)
+  const settleRef = useRef<ReturnType<typeof setTimeout>>()
+  const [ariaIdx, setAriaIdx] = useState(indexRef.current)
 
-  // Position the wheel on the current value before paint.
+  // Paint the scale/opacity for the window of items around the live scroll centre.
+  const paint = () => {
+    const el = scrollRef.current
+    if (!el) return
+    const c  = el.scrollTop / ITEM_H               // fractional centre index
+    const lo = Math.max(0, Math.floor(c) - 2)
+    const hi = Math.min(count - 1, Math.ceil(c) + 2)
+    for (const idx of styledRef.current) {
+      if (idx < lo || idx > hi) {
+        const span = el.children[idx + 1]?.firstElementChild as HTMLElement | undefined
+        if (span) styleSpan(span, 3)
+      }
+    }
+    const next = new Set<number>()
+    for (let i = lo; i <= hi; i++) {
+      const span = el.children[i + 1]?.firstElementChild as HTMLElement | undefined
+      if (span) styleSpan(span, Math.abs(i - c))
+      next.add(i)
+    }
+    styledRef.current = next
+  }
+
+  // Position on the current value + paint before the browser shows the frame.
   useLayoutEffect(() => {
-    if (scrollRef.current) scrollRef.current.scrollTop = centerRef.current * ITEM_H
-  }, [active])
+    const el = scrollRef.current
+    if (!el) return
+    el.scrollTop = indexRef.current * ITEM_H
+    styledRef.current = new Set()
+    paint()
+  }, [active]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Follow external value changes (e.g. copied from the previous session) without fighting the user.
+  // Follow external value changes (e.g. copied from the previous session).
   useEffect(() => {
     const want = idxOf(value)
-    if (want !== centerRef.current) {
-      centerRef.current = want
-      setCenter(want)
-      if (scrollRef.current) scrollRef.current.scrollTop = want * ITEM_H
+    if (want !== indexRef.current) {
+      indexRef.current = want
+      setAriaIdx(want)
+      const el = scrollRef.current
+      if (el) { el.scrollTop = want * ITEM_H; paint() }
     }
   }, [value]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const onScroll = () => {
+    if (!rafRef.current) {
+      rafRef.current = requestAnimationFrame(() => { rafRef.current = 0; paint() })
+    }
     const i = clamp(Math.round(scrollRef.current!.scrollTop / ITEM_H), 0, count - 1)
-    if (i !== centerRef.current) {
-      centerRef.current = i
-      setCenter(i)
+    if (i !== indexRef.current) {
+      indexRef.current = i
       if ('vibrate' in navigator) navigator.vibrate(3)
     }
     clearTimeout(settleRef.current)
     settleRef.current = setTimeout(() => {
-      const v = options[centerRef.current]
+      const v = options[indexRef.current]
+      setAriaIdx(indexRef.current)
       if (v !== value) onChange(v)
     }, 110)
   }
@@ -85,7 +125,7 @@ export function InlineWheel({ value, onChange, step, max, min = 0, disabled, act
       role="slider"
       aria-valuemin={min}
       aria-valuemax={max}
-      aria-valuenow={options[center]}
+      aria-valuenow={options[ariaIdx]}
     >
       {/* Selection band sitting behind the centre value */}
       <div
@@ -104,25 +144,16 @@ export function InlineWheel({ value, onChange, step, max, min = 0, disabled, act
         }}
       >
         <div style={{ height: PAD }} />
-        {options.map((o, i) => {
-          const sel = i === center
-          const near = Math.abs(i - center) === 1
-          return (
-            <div key={i} style={{ height: ITEM_H, scrollSnapAlign: 'center' }} className="flex items-center justify-center">
-              <span
-                className="font-mono tabular-nums leading-none text-stone-900 dark:text-stone-100"
-                style={{
-                  fontSize: sel ? 21 : 13,
-                  fontWeight: sel ? 700 : 500,
-                  opacity: sel ? 1 : near ? 0.4 : 0.2,
-                  transition: 'font-size 0.12s ease, opacity 0.12s ease',
-                }}
-              >
-                {o.toFixed(decimals)}
-              </span>
-            </div>
-          )
-        })}
+        {options.map((o, i) => (
+          <div key={i} style={{ height: ITEM_H, scrollSnapAlign: 'center' }} className="flex items-center justify-center">
+            <span
+              className="font-mono tabular-nums leading-none text-stone-900 dark:text-stone-100"
+              style={{ fontSize: 21, fontWeight: 600, display: 'inline-block', opacity: 0.18, transform: 'scale(0.55)' }}
+            >
+              {o.toFixed(decimals)}
+            </span>
+          </div>
+        ))}
         <div style={{ height: PAD }} />
       </div>
     </div>
