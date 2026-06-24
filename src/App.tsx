@@ -17,6 +17,9 @@ import { syncFromFirebase } from './db'
 const SHELL_ROUTES = ['/', '/classes', '/recent', '/history', '/statistics', '/settings']
 const INACTIVITY_MS = 60 * 60 * 1000 // 60 minutes
 const LAST_ACTIVE_KEY = 'gymbook_last_active'
+// sessionStorage survives reloads + backgrounding but is wiped when the app is
+// fully closed, so its absence on a cold start means "reopened after a close".
+const SESSION_KEY = 'gymbook_session_alive'
 
 export function App() {
   const { pathname } = useLocation()
@@ -50,12 +53,22 @@ export function App() {
       const firstResolve = firstAuthRef.current
       firstAuthRef.current = false
 
-      // A fresh sign-in starts a new inactivity window. The very first auth
-      // callback is the cold-start session restore — there we keep the
-      // persisted deadline so an idle period that elapsed while the app was
-      // closed still triggers an auto sign-out.
-      if (verified && !firstResolve) {
-        localStorage.setItem(LAST_ACTIVE_KEY, String(Date.now()))
+      // Log out on app close: on the first (cold-start) callback, a restored
+      // session with no live marker means the app was reopened after a full
+      // close — sign out. Reloads and backgrounding keep the marker, so they
+      // stay signed in (subject to the idle window below).
+      if (verified && firstResolve && !sessionStorage.getItem(SESSION_KEY)) {
+        signOut(auth).catch(console.error)
+        setAuthReady(true)
+        return
+      }
+
+      if (verified) {
+        sessionStorage.setItem(SESSION_KEY, '1')
+        // A fresh sign-in (not the cold-start restore) starts a new idle window.
+        // On restore we keep the persisted deadline so an idle period that
+        // elapsed while the app was open still triggers an auto sign-out.
+        if (!firstResolve) localStorage.setItem(LAST_ACTIVE_KEY, String(Date.now()))
       }
 
       setAuthed(verified)
