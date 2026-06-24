@@ -23,6 +23,7 @@ export function App() {
   const navigate = useNavigate()
   const showNav = SHELL_ROUTES.includes(pathname) || pathname.startsWith('/session/')
   const syncedRef = useRef(false)
+  const firstAuthRef = useRef(true)
   const [authReady, setAuthReady] = useState(false)
   const [authed, setAuthed] = useState(false)
   const [wellDone, setWellDone] = useState(false)
@@ -46,6 +47,17 @@ export function App() {
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, user => {
       const verified = !!user && user.emailVerified
+      const firstResolve = firstAuthRef.current
+      firstAuthRef.current = false
+
+      // A fresh sign-in starts a new inactivity window. The very first auth
+      // callback is the cold-start session restore — there we keep the
+      // persisted deadline so an idle period that elapsed while the app was
+      // closed still triggers an auto sign-out.
+      if (verified && !firstResolve) {
+        localStorage.setItem(LAST_ACTIVE_KEY, String(Date.now()))
+      }
+
       setAuthed(verified)
       setAuthReady(true)
 
@@ -77,15 +89,29 @@ export function App() {
 
     const doSignOut = () => signOut(auth).catch(console.error)
 
+    // Schedule sign-out for whatever remains of the inactivity window, derived
+    // from the persisted last-active time. On (re)mount we do NOT reset the
+    // clock, so a deadline that already elapsed while the app was closed signs
+    // the user out immediately.
+    const schedule = () => {
+      clearTimeout(timeout)
+      const last = Number(localStorage.getItem(LAST_ACTIVE_KEY) ?? Date.now())
+      const remaining = INACTIVITY_MS - (Date.now() - last)
+      if (remaining <= 0) {
+        doSignOut()
+        return
+      }
+      timeout = setTimeout(doSignOut, remaining)
+    }
+
     const reset = () => {
       localStorage.setItem(LAST_ACTIVE_KEY, String(Date.now()))
-      clearTimeout(timeout)
-      timeout = setTimeout(doSignOut, INACTIVITY_MS)
+      schedule()
     }
 
     const events = ['touchstart', 'mousedown', 'keydown'] as const
     events.forEach(ev => document.addEventListener(ev, reset, { passive: true }))
-    reset()
+    schedule()
 
     return () => {
       clearTimeout(timeout)

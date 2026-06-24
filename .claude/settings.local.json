@@ -21,7 +21,8 @@
       "Bash(grep:*)",
       "Bash(git fetch:*)",
       "Bash(git pull:*)",
-      "Bash(node_modules/.bin/tsc --noEmit)"
+      "Bash(node_modules/.bin/tsc --noEmit)",
+      "Bash(echo \"=== tsc exit: $? ===\")"
     ]
   }
 }
