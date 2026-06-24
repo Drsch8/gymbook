@@ -55,7 +55,7 @@ export function Recent() {
                   </p>
                   <p className="text-stone-400 dark:text-stone-500 text-xs mt-0.5">
                     {session.exercises.length} exercise{session.exercises.length !== 1 ? 's' : ''}
-                    {' · '}{completedSets} sets
+                    {' · '}{completedSets} set{completedSets !== 1 ? 's' : ''}
                     {dur && ` · ${dur}`}
                   </p>
                   {session.exercises.length > 0 && (

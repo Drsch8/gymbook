@@ -408,7 +408,7 @@ function SessionCard({ session, onClick }: { session: Session; onClick: () => vo
           </p>
           <div className="flex items-center gap-3 mt-0.5 text-xs text-stone-400 flex-wrap">
             <span>{session.exercises.length} exercise{session.exercises.length !== 1 ? 's' : ''}</span>
-            <span>{sets} sets</span>
+            <span>{sets} set{sets !== 1 ? 's' : ''}</span>
             {dur && <span>{dur}</span>}
             {vol > 0 && <span>{(vol / 1000).toFixed(1)}t vol.</span>}
           </div>
