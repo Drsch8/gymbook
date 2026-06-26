@@ -110,7 +110,12 @@ export async function saveSession(session: Session): Promise<void> {
   await db.sessions.put(session)
   const userId = uid()
   if (userId) {
-    setDoc(sessionDoc(userId, session.id), session).catch(e => console.error('firebase saveSession', e))
+    // Fire-and-forget cloud mirror. Wrapped so a synchronous setDoc throw (e.g.
+    // bad field value) can't bubble up and fail the local-first save that just
+    // succeeded above — the write is retried from local cache on next sync.
+    Promise.resolve()
+      .then(() => setDoc(sessionDoc(userId, session.id), session))
+      .catch(e => console.error('firebase saveSession', e))
   }
 }
 

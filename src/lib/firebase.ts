@@ -17,4 +17,8 @@ export const auth = getAuth(app)
 // retried automatically instead of dying with the page.
 export const db   = initializeFirestore(app, {
   localCache: persistentLocalCache({ tabManager: persistentMultipleTabManager() }),
+  // Session/set data has optional fields (reps/weight/duration) that are often
+  // undefined — e.g. time-tracked exercises like Running. Firestore otherwise
+  // throws "Unsupported field value: undefined" and fails the whole save.
+  ignoreUndefinedProperties: true,
 })
