@@ -749,6 +749,7 @@ export function NewSession() {
   const [variantOptions, setVariantOptions] = useState<{ variant: PresetVariant; exercises: PresetExercise[] }[] | null>(null)
   const [chipCounts, setChipCounts] = useState<Record<string, number>>({})
   const [activeIdx, setActiveIdx] = useState<number | null>(null)
+  const [showPanel, setShowPanel] = useState(false)
   // Running countdown for a time-tracked set; mutually exclusive with the rest timer
   const [actionTimer, setActionTimer] = useState<{ exId: string; setIdx: number } | null>(null)
   const [showMethodInfo, setShowMethodInfo] = useState(false)
@@ -1093,14 +1094,35 @@ export function NewSession() {
           </>
         ) : null}
 
-        {isClassSession && !isZirkel && !isSuper ? exercises.map((item, i) => (
-          <ClassExerciseRow
-            key={item.id}
-            item={item}
-            method={state?.method ?? ''}
-            onStart={() => setActiveIdx(i)}
-          />
-        )) : !isClassSession ? (() => {
+        {isClassSession && !isZirkel && !isSuper ? (
+          activeIdx !== null ? (
+            <>
+              <button
+                onClick={() => setActiveIdx(null)}
+                className="flex items-center gap-1.5 text-sm text-stone-400 dark:text-stone-500 hover:text-stone-700 dark:hover:text-stone-200 transition-colors -mb-1"
+              >
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+                </svg>
+                All exercises
+              </button>
+              <ClassExerciseRow
+                item={exercises[activeIdx]}
+                method={state?.method ?? ''}
+                onStart={() => setShowPanel(true)}
+              />
+            </>
+          ) : (
+            exercises.map((item, i) => (
+              <ClassExerciseRow
+                key={item.id}
+                item={item}
+                method={state?.method ?? ''}
+                onStart={() => { setActiveIdx(i); setShowPanel(true) }}
+              />
+            ))
+          )
+        ) : !isClassSession ? (() => {
           const firstActive = exercises.findIndex(e => !(e.sets.length > 0 && e.sets.every(s => s.completed)))
           // One timer at a time: a running action timer replaces the rest timer slot
           const actionExIdx = actionTimer ? exercises.findIndex(e => e.id === actionTimer.exId) : -1
@@ -1188,13 +1210,14 @@ export function NewSession() {
         <div className="h-24" />
       </div>
 
-      {activeIdx !== null && exercises[activeIdx] && (
+      {showPanel && activeIdx !== null && exercises[activeIdx] && (
         <ClassExercisePanel
           exercise={exercises[activeIdx]}
           method={state?.method ?? ''}
-          onClose={() => setActiveIdx(null)}
+          onClose={() => setShowPanel(false)}
           onComplete={() => {
             completeExercise(activeIdx)
+            setShowPanel(false)
             if (activeIdx === exercises.length - 1) finish()
             else setActiveIdx(null)
           }}
