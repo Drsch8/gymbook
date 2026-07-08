@@ -22,10 +22,7 @@
       "Bash(git fetch:*)",
       "Bash(git pull:*)",
       "Bash(node_modules/.bin/tsc --noEmit)",
-      "Bash(echo \"=== tsc exit: $? ===\")",
-      "WebFetch(domain:claude.ai)",
-      "Bash(Get-Content \"C:\\\\Users\\\\David Schäfer\\\\Downloads\\\\Training Session Ideas Standalone.html\")",
-      "Bash(Select-Object -Last 50)"
+      "Bash(echo \"=== tsc exit: $? ===\")"
     ]
   }
 }
