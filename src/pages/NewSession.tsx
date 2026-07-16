@@ -11,6 +11,7 @@ import { TRAINING_METHODS } from '../data/fogPrograms'
 import { InfoPanel } from '../components/InfoPanel'
 import { saveDraft, loadDraft, clearDraft } from '../utils/draft'
 import { useWakeLock } from '../hooks/useWakeLock'
+import { playDing } from '../utils/sound'
 import type { Exercise, ExerciseSet, SessionExercise, WeightUnit } from '../types'
 import type { PresetExercise, PresetVariant } from '../data/presets'
 
@@ -77,28 +78,6 @@ function ClassExerciseRow({ item, method, onStart }: {
   )
 }
 
-// ── Audio helpers ─────────────────────────────────────────────────────────────
-
-function playDing(count: 1 | 3 = 1) {
-  try {
-    const ctx = new AudioContext()
-    const schedule = count === 1 ? [0] : [0, 0.22, 0.44]
-    schedule.forEach(offset => {
-      const osc = ctx.createOscillator()
-      const gain = ctx.createGain()
-      osc.connect(gain)
-      gain.connect(ctx.destination)
-      osc.type = 'sine'
-      osc.frequency.value = 880
-      gain.gain.setValueAtTime(0, ctx.currentTime + offset)
-      gain.gain.linearRampToValueAtTime(0.6, ctx.currentTime + offset + 0.01)
-      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + offset + 0.4)
-      osc.start(ctx.currentTime + offset)
-      osc.stop(ctx.currentTime + offset + 0.4)
-    })
-    setTimeout(() => ctx.close(), count === 1 ? 600 : 1200)
-  } catch { /* silently ignore if AudioContext unavailable */ }
-}
 
 // ── Shared helpers for flat timers ────────────────────────────────────────────
 
@@ -654,6 +633,11 @@ function ZirkelPanel({ exercises, onClose, onComplete }: {
     if (!timerDone) return
     playDing(3)
   }, [timerDone])
+
+  // Half-time cue at the 10-minute mark of the 20-minute circuit.
+  useEffect(() => {
+    if (seconds === 600) playDing(1)
+  }, [seconds])
 
   useEffect(() => {
     if (running && seconds > 0) {
