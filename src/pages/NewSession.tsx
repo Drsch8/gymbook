@@ -10,6 +10,7 @@ import { getPreset, rollVariant } from '../data/presets'
 import { TRAINING_METHODS } from '../data/fogPrograms'
 import { InfoPanel } from '../components/InfoPanel'
 import { saveDraft, loadDraft, clearDraft } from '../utils/draft'
+import { useWakeLock } from '../hooks/useWakeLock'
 import type { Exercise, ExerciseSet, SessionExercise, WeightUnit } from '../types'
 import type { PresetExercise, PresetVariant } from '../data/presets'
 
@@ -767,6 +768,9 @@ export function NewSession() {
   sessionTagsRef.current = sessionTags
   const finishingRef = useRef(finishing)
   finishingRef.current = finishing
+
+  // Keep the screen awake during an active class so it doesn't sleep mid-workout.
+  useWakeLock(isClassSession)
 
   useEffect(() => {
     getPreferences().then(p => { setWeightUnit(p.weightUnit); setRestSeconds(p.restTimerDefault) })
