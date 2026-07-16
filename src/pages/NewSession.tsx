@@ -44,6 +44,18 @@ function parsePair(name: string): { a: string; b: string } | null {
   return { a: name.slice(0, i).trim(), b: name.slice(i + 3).trim() }
 }
 
+// Fullscreen panel enter/exit animation. Returns the current animation class and
+// an `exit` helper that plays the fade-out, then runs the real close/complete
+// callback once the animation has finished (so the panel doesn't just pop away).
+function usePanelExit(): { anim: string; exit: (done: () => void) => void } {
+  const [closing, setClosing] = useState(false)
+  const exit = (done: () => void) => {
+    setClosing(true)
+    setTimeout(done, 300)
+  }
+  return { anim: closing ? 'animate-panelOut' : 'animate-panelIn', exit }
+}
+
 function ClassExerciseRow({ item, method, onStart }: {
   item: SessionExercise
   method: string
@@ -384,12 +396,13 @@ function SuperPanel({ exercises, onClose, onComplete }: {
   const currentExIdx = block % numEx
   const round = Math.floor(block / numEx) + 1
   const progress = (block * BLOCK + (BLOCK - seconds)) / (totalBlocks * BLOCK)
+  const { anim, exit } = usePanelExit()
 
   return (
-    <div className="fixed inset-0 z-[100] bg-stone-950 flex flex-col select-none">
+    <div className={`fixed inset-0 z-[100] bg-stone-950 flex flex-col select-none ${anim}`}>
       {/* Quit */}
       <div className="flex items-center justify-end px-5 shrink-0" style={{ paddingTop: 'calc(env(safe-area-inset-top) + 12px)', paddingBottom: 10 }}>
-        <button onClick={onClose} className="text-stone-500 hover:text-stone-300 text-sm font-semibold transition-colors">
+        <button onClick={() => exit(onClose)} className="text-stone-500 hover:text-stone-300 text-sm font-semibold transition-colors">
           Quit
         </button>
       </div>
@@ -428,7 +441,7 @@ function SuperPanel({ exercises, onClose, onComplete }: {
       <div className="shrink-0 px-5 space-y-3" style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 28px)', paddingTop: 8 }}>
         {timerDone ? (
           <button
-            onClick={() => onCompleteRef.current()}
+            onClick={() => exit(() => onCompleteRef.current())}
             className="w-full py-4 rounded-2xl text-lg font-bold bg-white text-stone-900 hover:bg-stone-100 transition-colors"
           >
             Done
@@ -519,6 +532,7 @@ function ClassExercisePanel({ exercise, method, onClose, onComplete }: {
   const [progress, setProgress] = useState(0)
   const [hochPhase, setHochPhase] = useState<'work' | 'rest'>('work')
   const ready = countdown === 0
+  const { anim, exit } = usePanelExit()
 
   useEffect(() => {
     if (countdown <= 0) return
@@ -548,10 +562,10 @@ function ClassExercisePanel({ exercise, method, onClose, onComplete }: {
     : undefined
 
   return (
-    <div className="fixed inset-0 z-[100] bg-stone-950 flex flex-col select-none">
+    <div className={`fixed inset-0 z-[100] bg-stone-950 flex flex-col select-none ${anim}`}>
       {/* Quit */}
       <div className="flex items-center justify-end px-5 shrink-0" style={{ paddingTop: 'calc(env(safe-area-inset-top) + 12px)', paddingBottom: 10 }}>
-        <button onClick={onClose} className="text-stone-500 hover:text-stone-300 text-sm font-semibold transition-colors">
+        <button onClick={() => exit(onClose)} className="text-stone-500 hover:text-stone-300 text-sm font-semibold transition-colors">
           Quit
         </button>
       </div>
@@ -583,7 +597,7 @@ function ClassExercisePanel({ exercise, method, onClose, onComplete }: {
       <div className="shrink-0 px-5 space-y-3" style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 28px)', paddingTop: 8 }}>
         {timerDone ? (
           <button
-            onClick={handleFinish}
+            onClick={() => exit(handleFinish)}
             className="w-full py-4 rounded-2xl text-lg font-bold bg-white text-stone-900 hover:bg-stone-100 transition-colors"
           >
             Done
@@ -650,12 +664,13 @@ function ZirkelPanel({ exercises, onClose, onComplete }: {
   }, [running, seconds])
 
   const progress = 1 - seconds / 1200
+  const { anim, exit } = usePanelExit()
 
   return (
-    <div className="fixed inset-0 z-[100] bg-stone-950 flex flex-col select-none">
+    <div className={`fixed inset-0 z-[100] bg-stone-950 flex flex-col select-none ${anim}`}>
       {/* Quit row */}
       <div className="flex items-center justify-end px-5 shrink-0" style={{ paddingTop: 'calc(env(safe-area-inset-top) + 12px)', paddingBottom: 8 }}>
-        <button onClick={onClose} className="text-stone-500 hover:text-stone-300 text-sm font-semibold transition-colors">
+        <button onClick={() => exit(onClose)} className="text-stone-500 hover:text-stone-300 text-sm font-semibold transition-colors">
           Quit
         </button>
       </div>
@@ -685,7 +700,7 @@ function ZirkelPanel({ exercises, onClose, onComplete }: {
       <div className="shrink-0 px-5 space-y-3" style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 28px)', paddingTop: 8 }}>
         {timerDone ? (
           <button
-            onClick={() => onCompleteRef.current()}
+            onClick={() => exit(() => onCompleteRef.current())}
             className="w-full py-4 rounded-2xl text-lg font-bold bg-white text-stone-900 hover:bg-stone-100 transition-colors"
           >
             Done

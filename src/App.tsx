@@ -30,14 +30,16 @@ export function App() {
   const [authReady, setAuthReady] = useState(false)
   const [authed, setAuthed] = useState(false)
   const [wellDone, setWellDone] = useState(false)
-  const [wellDoneFade, setWellDoneFade] = useState(false)
+  const [wellDoneShown, setWellDoneShown] = useState(false)
 
   useEffect(() => {
     const handler = () => {
       setWellDone(true)
-      setWellDoneFade(false)
-      setTimeout(() => setWellDoneFade(true), 900)
-      setTimeout(() => setWellDone(false), 1700)
+      setWellDoneShown(false)
+      // Fade the celebration in (next frame), hold, then fade out before unmount.
+      requestAnimationFrame(() => setWellDoneShown(true))
+      setTimeout(() => setWellDoneShown(false), 1500)
+      setTimeout(() => setWellDone(false), 2050)
     }
     window.addEventListener('wellDone', handler)
     return () => window.removeEventListener('wellDone', handler)
@@ -172,7 +174,7 @@ export function App() {
       </main>
       {showNav && authed && <BottomNav />}
       {wellDone && (
-        <div className={`fixed inset-0 z-[300] flex items-center justify-center bg-stone-950 transition-opacity duration-700 pointer-events-none ${wellDoneFade ? 'opacity-0' : 'opacity-100'}`}>
+        <div className={`fixed inset-0 z-[300] flex items-center justify-center bg-stone-950 transition-opacity duration-500 pointer-events-none ${wellDoneShown ? 'opacity-100' : 'opacity-0'}`}>
           <div className="text-center animate-scaleIn">
             <p className="text-5xl font-black text-stone-100 mb-2">Well done!</p>
           </div>
