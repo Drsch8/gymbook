@@ -3,6 +3,7 @@ import { useLiveQuery } from 'dexie-react-hooks'
 import { useNavigate } from 'react-router-dom'
 import { getSessions, getPlannedWorkouts, savePlannedWorkout, deletePlannedWorkout, deleteSession } from '../db'
 import { nanoid } from '../utils/nanoid'
+import { FOG_PROGRAMS } from '../data/fogPrograms'
 import type { Session, TrackingType, PlannedWorkout } from '../types'
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -14,6 +15,18 @@ function formatDuration(session: Session) {
   const mins = Math.round((new Date(session.finishedAt).getTime() - new Date(session.startedAt).getTime()) / 60000)
   if (mins < 60) return `${mins} min`
   return `${Math.floor(mins / 60)}h ${mins % 60}m`
+}
+
+// Which class program a session belongs to, or undefined for free training.
+// Sessions logged before `fogProgramId` was stored fall back to the
+// `fog_<programId>_` exercise ids that class sessions generate.
+function classProgramId(session: Session): string | undefined {
+  if (session.fogProgramId) return session.fogProgramId
+  for (const ex of session.exercises) {
+    const match = /^fog_([a-z0-9]+)_/.exec(ex.exerciseId)
+    if (match) return match[1]
+  }
+  return undefined
 }
 
 function sessionVolume(session: Session) {
@@ -397,6 +410,11 @@ function SessionCard({ session, onClick }: { session: Session; onClick: () => vo
   const dur = formatDuration(session)
   const sets = session.exercises.reduce((n, e) => n + e.sets.filter(s => s.completed).length, 0)
   const dateLabel = new Date(session.date + 'T12:00:00').toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' })
+  const programId = classProgramId(session)
+  const isClass = !!programId
+  const classDetail = [FOG_PROGRAMS.find(p => p.id === programId)?.name, session.method]
+    .filter(Boolean)
+    .join(' · ')
 
   return (
     <button onClick={onClick}
@@ -406,7 +424,17 @@ function SessionCard({ session, onClick }: { session: Session; onClick: () => vo
           <p className="font-semibold text-stone-900 text-sm truncate">
             {session.name ? `${dateLabel}, ${session.name}` : dateLabel}
           </p>
-          <div className="flex items-center gap-3 mt-0.5 text-xs text-stone-400 flex-wrap">
+          <div className="flex items-center gap-1.5 mt-1 flex-wrap">
+            <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold uppercase tracking-wide ${
+              isClass ? 'bg-stone-900 text-white' : 'bg-stone-100 text-stone-500'
+            }`}>
+              {isClass ? 'Class' : 'Training'}
+            </span>
+            {isClass && classDetail && (
+              <span className="text-[11px] text-stone-500 truncate">{classDetail}</span>
+            )}
+          </div>
+          <div className="flex items-center gap-3 mt-1 text-xs text-stone-400 flex-wrap">
             <span>{session.exercises.length} exercise{session.exercises.length !== 1 ? 's' : ''}</span>
             <span>{sets} set{sets !== 1 ? 's' : ''}</span>
             {dur && <span>{dur}</span>}

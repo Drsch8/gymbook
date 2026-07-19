@@ -906,6 +906,9 @@ export function NewSession() {
         startedAt: startedAt.current,
         finishedAt: new Date().toISOString(),
         exercises: exercisesToSave,
+        // Record class provenance so the calendar can tell class vs. free training
+        fogProgramId,
+        method: state?.method,
       })
       if (planSessionIndex !== undefined) await advancePlanSession()
       if (fogProgramId) await advanceFogProgram(fogProgramId)
