@@ -898,6 +898,11 @@ export function NewSession() {
         ...e,
         sets: e.sets.map(s => ({ ...s, completed: true })),
       }))
+      // Progress hasn't advanced yet, so the stored counter is this session's
+      // own 0-based position in the program (survives resuming a draft).
+      const fogSessionIndex = fogProgramId
+        ? (await getPreferences()).programProgress?.[fogProgramId] ?? 0
+        : undefined
       await saveSession({
         id: nanoid(),
         name: derivedName,
@@ -909,6 +914,7 @@ export function NewSession() {
         // Record class provenance so the calendar can tell class vs. free training
         fogProgramId,
         method: state?.method,
+        fogSessionIndex,
       })
       if (planSessionIndex !== undefined) await advancePlanSession()
       if (fogProgramId) await advanceFogProgram(fogProgramId)

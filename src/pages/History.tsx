@@ -3,7 +3,7 @@ import { useLiveQuery } from 'dexie-react-hooks'
 import { useNavigate } from 'react-router-dom'
 import { getSessions, getPlannedWorkouts, savePlannedWorkout, deletePlannedWorkout, deleteSession } from '../db'
 import { nanoid } from '../utils/nanoid'
-import { FOG_PROGRAMS } from '../data/fogPrograms'
+import { FOG_PROGRAMS, flattenFogProgram } from '../data/fogPrograms'
 import type { Session, TrackingType, PlannedWorkout } from '../types'
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -16,6 +16,11 @@ function formatDuration(session: Session) {
   if (mins < 60) return `${mins} min`
   return `${Math.floor(mins / 60)}h ${mins % 60}m`
 }
+
+// Program name + session count, resolved once (the programs are static).
+const PROGRAM_INFO: Record<string, { name: string; total: number }> = Object.fromEntries(
+  FOG_PROGRAMS.map(p => [p.id, { name: p.name, total: flattenFogProgram(p).length }])
+)
 
 // Which class program a session belongs to, or undefined for free training.
 // Sessions logged before `fogProgramId` was stored fall back to the
@@ -412,9 +417,13 @@ function SessionCard({ session, onClick }: { session: Session; onClick: () => vo
   const dateLabel = new Date(session.date + 'T12:00:00').toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' })
   const programId = classProgramId(session)
   const isClass = !!programId
-  const classDetail = [FOG_PROGRAMS.find(p => p.id === programId)?.name, session.method]
-    .filter(Boolean)
-    .join(' · ')
+  const info = programId ? PROGRAM_INFO[programId] : undefined
+  const classDetail = [info?.name, session.method].filter(Boolean).join(' · ')
+  // Which session of the program this was (1-based). Absent on sessions logged
+  // before the index was recorded.
+  const position = info && session.fogSessionIndex !== undefined
+    ? `${session.fogSessionIndex + 1} / ${info.total}`
+    : undefined
 
   return (
     <button onClick={onClick}
@@ -432,6 +441,9 @@ function SessionCard({ session, onClick }: { session: Session; onClick: () => vo
             </span>
             {isClass && classDetail && (
               <span className="text-[11px] text-stone-500 truncate">{classDetail}</span>
+            )}
+            {isClass && position && (
+              <span className="text-[11px] font-mono text-stone-400">{position}</span>
             )}
           </div>
           <div className="flex items-center gap-3 mt-1 text-xs text-stone-400 flex-wrap">

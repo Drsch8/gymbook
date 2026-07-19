@@ -52,8 +52,9 @@ export interface Session {
   exercises: SessionExercise[]
   notes?: string
   templateId?: string
-  fogProgramId?: string  // set when this was a class session — which program it belonged to
-  method?: string        // training method of a class session, e.g. 'Step Intervals'
+  fogProgramId?: string    // set when this was a class session — which program it belonged to
+  method?: string          // training method of a class session, e.g. 'Step Intervals'
+  fogSessionIndex?: number // 0-based position of this session within its program
 }
 
 export interface Template {
