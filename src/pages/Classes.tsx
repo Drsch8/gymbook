@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { InfoPanel } from '../components/InfoPanel'
 import { usePreferences } from '../hooks/usePreferences'
@@ -216,6 +216,7 @@ function ProgramCard({
   onRedo,
   blocked,
   hasDraft,
+  detailed,
 }: {
   program: FogProgram
   sessionIndex: number
@@ -223,6 +224,8 @@ function ProgramCard({
   onRedo: () => void
   blocked?: boolean
   hasDraft?: boolean
+  /** Show the upcoming session's exercises — used when this is the only card on screen. */
+  detailed?: boolean
 }) {
   const [showInfo, setShowInfo] = useState(false)
   const flat = flattenFogProgram(program)
@@ -275,6 +278,22 @@ function ProgramCard({
                     {current.sessionsPerWeek} sessions / week
                   </p>
                 )}
+              </div>
+            )}
+
+            {detailed && current && current.exercises.length > 0 && (
+              <div className="mb-3 rounded-xl bg-stone-50 dark:bg-stone-900/40 px-3 py-2.5">
+                <p className="text-[11px] font-semibold uppercase tracking-wider text-stone-400 dark:text-stone-500 mb-1.5">
+                  Next session · {current.exercises.length} exercise{current.exercises.length !== 1 ? 's' : ''}
+                </p>
+                <ol className="space-y-1">
+                  {current.exercises.map((name, i) => (
+                    <li key={`${name}-${i}`} className="flex gap-2">
+                      <span className="text-xs font-mono text-stone-400 dark:text-stone-500 w-4 shrink-0 text-right leading-5">{i + 1}</span>
+                      <span className="text-sm text-stone-600 dark:text-stone-300 leading-5">{name}</span>
+                    </li>
+                  ))}
+                </ol>
               </div>
             )}
             <div className="w-full bg-stone-100 dark:bg-stone-700 rounded-full h-1 mb-3">
@@ -363,6 +382,7 @@ export function Classes() {
   const { prefs } = usePreferences()
   const programProgress = prefs.programProgress ?? {}
   const [showMethods, setShowMethods] = useState(false)
+  const [showAll, setShowAll] = useState(false)
 
   // Determine if a class session is in progress (has at least one completed set)
   const activeDraftProgramId = (() => {
@@ -375,6 +395,24 @@ export function Classes() {
   function getIndex(programId: string) {
     return programProgress[programId] ?? 0
   }
+
+  // The program you're currently working through: an unfinished session wins,
+  // otherwise the first program that's partway done. Finished programs don't
+  // count, so completing one returns you to the full list.
+  const activeProgramId = useMemo(() => {
+    if (activeDraftProgramId) return activeDraftProgramId
+    const inProgress = FOG_PROGRAMS.find(p => {
+      const i = programProgress[p.id] ?? 0
+      return i > 0 && i < flattenFogProgram(p).length
+    })
+    return inProgress?.id ?? null
+  }, [activeDraftProgramId, programProgress])
+
+  // Once a class is under way, focus the page on just that one.
+  const focused = !showAll && activeProgramId
+    ? FOG_PROGRAMS.find(p => p.id === activeProgramId) ?? null
+    : null
+  const visiblePrograms = focused ? [focused] : FOG_PROGRAMS
 
   function handleStart(program: FogProgram) {
     const flat = flattenFogProgram(program)
@@ -410,7 +448,7 @@ export function Classes() {
         </button>
       </div>
 
-      {FOG_PROGRAMS.map(program => (
+      {visiblePrograms.map(program => (
         <ProgramCard
           key={program.id}
           program={program}
@@ -419,8 +457,18 @@ export function Classes() {
           onRedo={() => resetFogProgram(program.id)}
           blocked={activeDraftProgramId !== null && activeDraftProgramId !== program.id}
           hasDraft={activeDraftProgramId === program.id}
+          detailed={focused?.id === program.id}
         />
       ))}
+
+      {activeProgramId && (
+        <button
+          onClick={() => setShowAll(v => !v)}
+          className="mb-4 w-full py-2.5 rounded-xl border border-dashed border-stone-200 dark:border-stone-700 text-stone-400 dark:text-stone-500 text-sm font-medium hover:border-stone-400 hover:text-stone-600 dark:hover:text-stone-300 transition-colors"
+        >
+          {showAll ? 'Show only my program' : 'Show all programs'}
+        </button>
+      )}
 
       {/* DEV — uncomment to test training methods
       <DevMethodCards />
