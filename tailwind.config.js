@@ -5,8 +5,41 @@ export default {
   theme: {
     extend: {
       fontFamily: {
+        // New "Instrument Panel" system. `sans` stays Inter until every screen
+        // is migrated onto `body`/`display`, so nothing shifts mid-rebuild.
         sans: ['Inter', 'system-ui', 'sans-serif'],
+        display: ['Space Grotesk', 'system-ui', 'sans-serif'],
+        body: ['Manrope', 'system-ui', 'sans-serif'],
         mono: ['JetBrains Mono', 'monospace'],
+      },
+      colors: {
+        // Neutral roles (light/dark via CSS vars on :root / .dark)
+        bg: 'var(--c-bg)',
+        surface: 'var(--c-surface)',
+        elevated: 'var(--c-elevated)',
+        line: 'var(--c-line)',
+        ink: 'var(--c-ink)',
+        muted: 'var(--c-muted)',
+        faint: 'var(--c-faint)',
+        // Semantic accents — always paired with a label/icon in use
+        brand: { DEFAULT: 'var(--c-brand)', ink: 'var(--c-brand-ink)' },
+        work: 'var(--c-work)',
+        rest: 'var(--c-rest)',
+        klass: 'var(--c-class)',
+        training: 'var(--c-training)',
+        pr: 'var(--c-pr)',
+        done: 'var(--c-done)',
+        danger: 'var(--c-danger)',
+        // Program-focus hues
+        'focus-push': 'var(--c-focus-push)',
+        'focus-pull': 'var(--c-focus-pull)',
+        'focus-legs': 'var(--c-focus-legs)',
+        'focus-core': 'var(--c-focus-core)',
+      },
+      borderRadius: {
+        control: '4px',
+        card: '8px',
+        panel: '12px',
       },
       keyframes: {
         fadeIn: {
