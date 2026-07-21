@@ -2,17 +2,13 @@ import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { InfoPanel } from '../components/InfoPanel'
 import { usePreferences } from '../hooks/usePreferences'
-import { nanoid } from '../utils/nanoid'
 import { resetFogProgram } from '../db'
 import { loadDraft } from '../utils/draft'
 import { buildClassStartState, findActiveProgramId } from '../utils/classSession'
 import { FOG_PROGRAMS, flattenFogProgram, TRAINING_METHODS } from '../data/fogPrograms'
 import type { FogProgram } from '../data/fogPrograms'
-import type { SessionExercise } from '../types'
 
-// Panel is now InfoPanel from components
-
-// ── Trainingsmethoden panel ───────────────────────────────────────────────────
+// ── Training methods panel ────────────────────────────────────────────────────
 
 function TrainingMethodsPanel({ onClose }: { onClose: () => void }) {
   return (
@@ -20,10 +16,10 @@ function TrainingMethodsPanel({ onClose }: { onClose: () => void }) {
       <div className="space-y-5">
         {TRAINING_METHODS.map(m => (
           <div key={m.name}>
-            <p className="text-sm font-semibold text-stone-900 dark:text-stone-100 mb-1">{m.name}</p>
+            <p className="text-sm font-semibold font-display text-ink mb-1">{m.name}</p>
             <div className="space-y-2">
               {m.description.split('\n\n').map((para, i) => (
-                <p key={i} className="text-xs text-stone-500 dark:text-stone-400 leading-relaxed">{para}</p>
+                <p key={i} className="text-xs text-muted leading-relaxed">{para}</p>
               ))}
             </div>
           </div>
@@ -33,7 +29,7 @@ function TrainingMethodsPanel({ onClose }: { onClose: () => void }) {
   )
 }
 
-// ── Program info panel ────────────────────────────────────────────────────────
+// ── Program info panel (week-by-week drill-down) ──────────────────────────────
 
 type ProgramTab = 'plan' | 'requirements'
 
@@ -54,17 +50,37 @@ function ProgramInfoPanel({
     { id: 'requirements', label: 'Requirements' },
   ]
 
+  const dayRow = (day: { day: number; focus: string; method: string; exercises: string[] }, week: number) => {
+    const idx = flat.findIndex(s => s.week === week && s.day === day.day)
+    const isDone = idx < currentIndex
+    const isCurrent = idx === currentIndex
+    return (
+      <div
+        key={`${week}-${day.day}`}
+        className={`rounded-card px-3 py-2 border ${isCurrent ? 'border-pr bg-elevated' : 'border-line'} ${isDone ? 'opacity-60' : ''}`}
+      >
+        <div className="flex items-center gap-1.5 mb-1">
+          {isDone && <span className="text-[10px] font-bold text-done">✓</span>}
+          <span className="text-[10px] font-bold font-body text-faint uppercase tracking-wide">
+            Day {day.day} · {day.focus}
+          </span>
+          <span className="text-[10px] text-faint">· {day.method}</span>
+          {isCurrent && <span className="ml-auto text-[10px] font-bold text-pr">← current</span>}
+        </div>
+        <p className="text-xs text-muted leading-relaxed">{day.exercises.join(' · ')}</p>
+      </div>
+    )
+  }
+
   return (
     <InfoPanel title={program.name} onClose={onClose}>
-      <div className="flex bg-stone-100 dark:bg-stone-700 rounded-xl p-1 gap-1 mb-4 -mx-1">
+      <div className="flex bg-elevated rounded-card p-1 gap-1 mb-4 -mx-1">
         {tabs.map(t => (
           <button
             key={t.id}
             onClick={() => setTab(t.id)}
-            className={`flex-1 py-1.5 rounded-lg text-xs font-medium transition-colors ${
-              tab === t.id
-                ? 'bg-white dark:bg-stone-600 text-stone-900 dark:text-stone-100 shadow-sm'
-                : 'text-stone-500 dark:text-stone-400 hover:text-stone-700 dark:hover:text-stone-200'
+            className={`flex-1 py-1.5 rounded-control text-xs font-semibold transition-colors ${
+              tab === t.id ? 'bg-surface text-ink' : 'text-muted hover:text-ink'
             }`}
           >
             {t.label}
@@ -77,96 +93,38 @@ function ProgramInfoPanel({
           {program.blocks.map(block => (
             <div key={block.weekLabel}>
               <div className="flex items-baseline gap-2 mb-2">
-                <p className="text-xs font-semibold text-stone-900 dark:text-stone-100">{block.weekLabel}</p>
-                <span className="text-xs text-stone-400 dark:text-stone-500">{block.phase} · {block.sessionsPerWeek}×/week</span>
+                <p className="text-xs font-bold font-display text-ink">{block.weekLabel}</p>
+                <span className="text-xs text-faint">{block.phase} · {block.sessionsPerWeek}×/week</span>
               </div>
               <div className="space-y-2">
-                {block.days.map(day => {
-                  const idx = flat.findIndex(s => s.week === block.weeks[0] && s.day === day.day)
-                  const isDone = idx < currentIndex
-                  const isCurrent = idx === currentIndex
-                  return (
-                    <div
-                      key={day.day}
-                      className={`rounded-xl px-3 py-2 border ${
-                        isCurrent
-                          ? 'border-stone-900 dark:border-stone-300 bg-stone-50 dark:bg-stone-700'
-                          : isDone
-                          ? 'border-stone-100 dark:border-stone-700 opacity-40'
-                          : 'border-stone-100 dark:border-stone-700'
-                      }`}
-                    >
-                      <div className="flex items-center gap-1.5 mb-1">
-                        <span className="text-[10px] font-semibold text-stone-400 dark:text-stone-500 uppercase tracking-wide">
-                          Tag {day.day} · {day.focus}
-                        </span>
-                        <span className="text-[10px] text-stone-400 dark:text-stone-500">· {day.method}</span>
-                        {isCurrent && (
-                          <span className="ml-auto text-[10px] font-semibold text-stone-900 dark:text-stone-200">← aktuell</span>
-                        )}
-                      </div>
-                      <p className="text-xs text-stone-600 dark:text-stone-400 leading-relaxed">
-                        {day.exercises.join(' · ')}
-                      </p>
-                    </div>
-                  )
-                })}
+                {block.weeks.map(week => block.days.map(day => dayRow(day, week)))}
               </div>
             </div>
           ))}
 
-          <div>
-            <div className="flex items-baseline gap-2 mb-2">
-              <p className="text-xs font-semibold text-stone-900 dark:text-stone-100">Weeks 7–10</p>
-              <span className="text-xs text-stone-400 dark:text-stone-500">Alternating Block · 5×/week</span>
-            </div>
-            <div className="space-y-3">
-              {program.wechsel.map(ww => (
-                <div key={ww.week}>
-                  <p className="text-[11px] font-semibold text-stone-500 dark:text-stone-400 mb-1.5">Week {ww.week}</p>
-                  <div className="space-y-1.5">
-                    {ww.days.map(day => {
-                      const idx = flat.findIndex(s => s.week === ww.week && s.day === day.day)
-                      const isDone = idx < currentIndex
-                      const isCurrent = idx === currentIndex
-                      return (
-                        <div
-                          key={day.day}
-                          className={`rounded-xl px-3 py-2 border ${
-                            isCurrent
-                              ? 'border-stone-900 dark:border-stone-300 bg-stone-50 dark:bg-stone-700'
-                              : isDone
-                              ? 'border-stone-100 dark:border-stone-700 opacity-40'
-                              : 'border-stone-100 dark:border-stone-700'
-                          }`}
-                        >
-                          <div className="flex items-center gap-1.5 mb-1">
-                            <span className="text-[10px] font-semibold text-stone-400 dark:text-stone-500 uppercase tracking-wide">
-                              Day {day.day} · {day.focus}
-                            </span>
-                            <span className="text-[10px] text-stone-400 dark:text-stone-500">· {day.method}</span>
-                            {isCurrent && (
-                              <span className="ml-auto text-[10px] font-semibold text-stone-900 dark:text-stone-200">← current</span>
-                            )}
-                          </div>
-                          <p className="text-xs text-stone-600 dark:text-stone-400 leading-relaxed">
-                            {day.exercises.join(' · ')}
-                          </p>
-                        </div>
-                      )
-                    })}
+          {program.wechsel.length > 0 && (
+            <div>
+              <div className="flex items-baseline gap-2 mb-2">
+                <p className="text-xs font-bold font-display text-ink">Alternating block</p>
+                <span className="text-xs text-faint">5×/week</span>
+              </div>
+              <div className="space-y-3">
+                {program.wechsel.map(ww => (
+                  <div key={ww.week}>
+                    <p className="text-[11px] font-bold text-muted mb-1.5">Week {ww.week}</p>
+                    <div className="space-y-1.5">{ww.days.map(day => dayRow(day, ww.week))}</div>
                   </div>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
-          </div>
+          )}
         </div>
       )}
 
       {tab === 'requirements' && (
         <div>
           {program.requirements.length === 0 ? (
-            <p className="text-sm text-stone-500 dark:text-stone-400 leading-relaxed">
+            <p className="text-sm text-muted leading-relaxed">
               Anyone healthy enough for intense exercise should be able to complete this program.
               If in doubt, consult your doctor.
             </p>
@@ -174,8 +132,8 @@ function ProgramInfoPanel({
             <div className="space-y-5">
               {program.requirements.map(r => (
                 <div key={r.category}>
-                  <p className="text-xs font-semibold text-stone-400 dark:text-stone-500 uppercase tracking-wider mb-1">{r.category}</p>
-                  <p className="text-sm text-stone-700 dark:text-stone-300 leading-relaxed">{r.text}</p>
+                  <p className="text-xs font-bold text-faint uppercase tracking-wider mb-1">{r.category}</p>
+                  <p className="text-sm text-ink leading-relaxed">{r.text}</p>
                 </div>
               ))}
             </div>
@@ -186,184 +144,184 @@ function ProgramInfoPanel({
   )
 }
 
-// ── Program Card ──────────────────────────────────────────────────────────────
+// ── Program arc — 44 sessions grouped by week-block, coloured by progress ────
 
-function ProgramCard({
-  program,
-  sessionIndex,
-  onStart,
-  onRedo,
-  blocked,
-  hasDraft,
-  detailed,
-}: {
-  program: FogProgram
-  sessionIndex: number
-  onStart: () => void
-  onRedo: () => void
-  blocked?: boolean
-  hasDraft?: boolean
-  /** Show the upcoming session's exercises — used when this is the only card on screen. */
-  detailed?: boolean
-}) {
-  const [showInfo, setShowInfo] = useState(false)
-  const flat = flattenFogProgram(program)
-  const total = flat.length
-  const done = sessionIndex >= total
-  const current = done ? null : flat[sessionIndex]
-  const started = sessionIndex > 0
+interface ArcRow { label: string; phase: string; startIdx: number; count: number }
 
-  return (
-    <>
-      <div className="mb-4 bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-2xl overflow-hidden">
-        <div className="px-4 pt-3 pb-2 border-b border-stone-100 dark:border-stone-700 flex items-center justify-between">
-          <button
-            onClick={() => setShowInfo(true)}
-            className="text-xs font-semibold text-stone-400 dark:text-stone-500 uppercase tracking-wider hover:text-stone-700 dark:hover:text-stone-200 transition-colors"
-          >
-            {program.name} ›
-          </button>
-          {!done && (
-            <span className="text-xs text-stone-400 dark:text-stone-500 font-mono">{sessionIndex} / {total}</span>
-          )}
-        </div>
-
-        {done ? (
-          <div className="px-4 py-4 text-center space-y-3">
-            <div>
-              <p className="text-lg font-bold text-stone-900 dark:text-stone-100">{program.name} ✓</p>
-              <p className="text-xs text-stone-400 dark:text-stone-500 mt-1">All {total} sessions completed!</p>
-            </div>
-            <button
-              onClick={onRedo}
-              className="w-full py-2.5 rounded-xl border border-stone-200 dark:border-stone-600 text-stone-500 dark:text-stone-400 text-sm font-medium hover:bg-stone-50 dark:hover:bg-stone-700 transition-colors"
-            >
-              Start over
-            </button>
-          </div>
-        ) : (
-          <div className="px-4 py-3">
-            <p className="text-lg font-bold text-stone-900 dark:text-stone-100 leading-tight mb-1">
-              {current ? current.focus.split('/').join(' · ') : program.name}
-            </p>
-            {current && (
-              <div className="mt-1 mb-3">
-                <p className="text-xs text-stone-400 dark:text-stone-500 mb-0.5">
-                  Week {current.week} · {current.phase} · Day {current.day}
-                </p>
-                <p className="text-sm font-medium text-stone-500 dark:text-stone-400">{current.method}</p>
-                {started && (
-                  <p className="text-xs text-stone-500 dark:text-stone-400 mt-1 font-medium">
-                    {current.sessionsPerWeek} sessions / week
-                  </p>
-                )}
-              </div>
-            )}
-
-            {detailed && current && current.exercises.length > 0 && (
-              <div className="mb-3 rounded-xl bg-stone-50 dark:bg-stone-900/40 px-3 py-2.5">
-                <p className="text-[11px] font-semibold uppercase tracking-wider text-stone-400 dark:text-stone-500 mb-1.5">
-                  Next session · {current.exercises.length} exercise{current.exercises.length !== 1 ? 's' : ''}
-                </p>
-                <ol className="space-y-1">
-                  {current.exercises.map((name, i) => (
-                    <li key={`${name}-${i}`} className="flex gap-2">
-                      <span className="text-xs font-mono text-stone-400 dark:text-stone-500 w-4 shrink-0 text-right leading-5">{i + 1}</span>
-                      <span className="text-sm text-stone-600 dark:text-stone-300 leading-5">{name}</span>
-                    </li>
-                  ))}
-                </ol>
-              </div>
-            )}
-            <div className="w-full bg-stone-100 dark:bg-stone-700 rounded-full h-1 mb-3">
-              <div
-                className="bg-stone-900 dark:bg-stone-300 h-1 rounded-full transition-all"
-                style={{ width: `${(sessionIndex / total) * 100}%` }}
-              />
-            </div>
-            <button
-              onClick={blocked ? undefined : onStart}
-              disabled={blocked}
-              className={`w-full py-3 rounded-xl font-semibold text-sm transition ${
-                blocked
-                  ? 'bg-stone-100 dark:bg-stone-700 text-stone-400 dark:text-stone-500 cursor-not-allowed'
-                  : 'bg-stone-900 dark:bg-stone-100 hover:bg-stone-800 dark:hover:bg-white active:scale-[0.98] text-white dark:text-stone-900'
-              }`}
-            >
-              {hasDraft ? 'Continue' : 'Start'}
-            </button>
-          </div>
-        )}
-      </div>
-
-      {showInfo && (
-        <ProgramInfoPanel program={program} currentIndex={sessionIndex} onClose={() => setShowInfo(false)} />
-      )}
-    </>
-  )
+function getArcRows(program: FogProgram): ArcRow[] {
+  const rows: ArcRow[] = []
+  let offset = 0
+  for (const block of program.blocks) {
+    const count = block.weeks.length * block.days.length
+    const last = block.weeks[block.weeks.length - 1]
+    rows.push({ label: block.weeks.length > 1 ? `Wk ${block.weeks[0]}–${last}` : `Wk ${block.weeks[0]}`, phase: block.phase, startIdx: offset, count })
+    offset += count
+  }
+  if (program.wechsel.length > 0) {
+    const count = program.wechsel.reduce((n, ww) => n + ww.days.length, 0)
+    const weeks = program.wechsel.map(w => w.week)
+    rows.push({ label: `Wk ${weeks[0]}–${weeks[weeks.length - 1]}`, phase: 'Alternating', startIdx: offset, count })
+  }
+  return rows
 }
 
-// ── Dev method cards ──────────────────────────────────────────────────────────
-
-const DEV_METHOD_SESSIONS: { method: string; exercises: string[] }[] = [
-  { method: 'Step Intervals',      exercises: ['Push-Up', 'Squat', 'Pull-Up'] },
-  { method: 'Interval Sets',       exercises: ['Lunge', 'Door Row', 'Leg Raise'] },
-  { method: 'Supersets',           exercises: ['Push-Up (feet elevated) / Explosive Push-Up', 'Military Press / Thumbs Up', 'Close-Grip Push-Up / Tricep Dip with chair'] },
-  { method: 'Circuits',            exercises: ['Push-Up', 'Squat', 'Leg Raise', 'Door Row'] },
-  { method: 'High Intensity Sets', exercises: ['Squat', 'Push-Up'] },
-]
-
-// DEV: remove export + rename to DevMethodCards and uncomment usage below to re-enable
-export function DevMethodCards() {
-  const navigate = useNavigate()
-
-  function start(method: string, exerciseNames: string[]) {
-    const exercises: SessionExercise[] = exerciseNames.map(name => ({
-      id: nanoid(),
-      exerciseId: `dev_${name.replace(/[^a-z0-9]/gi, '_').toLowerCase()}`,
-      exerciseName: name,
-      trackingType: 'reps_only' as const,
-      sets: [{ id: nanoid(), completed: false }],
-    }))
-    navigate('/session/new', {
-      state: { fogProgramId: 'dev', name: method, tags: [], method, repeat: exercises },
-    })
-  }
+function ProgramArc({ program, sessionIndex }: { program: FogProgram; sessionIndex: number }) {
+  const rows = useMemo(() => getArcRows(program), [program])
+  const total = useMemo(() => flattenFogProgram(program).length, [program])
 
   return (
     <div className="mb-4">
-      <p className="text-[10px] font-semibold text-amber-500 uppercase tracking-wider mb-2">Dev — Methoden-Test</p>
-      <div className="space-y-2">
-        {DEV_METHOD_SESSIONS.map(({ method, exercises }) => (
-          <button
-            key={method}
-            onClick={() => start(method, exercises)}
-            className="w-full flex items-center justify-between px-4 py-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-2xl hover:bg-amber-100 dark:hover:bg-amber-900/30 transition-colors text-left"
-          >
-            <div>
-              <p className="text-sm font-semibold text-stone-900 dark:text-stone-100">{method}</p>
-              <p className="text-xs text-stone-400 dark:text-stone-500 mt-0.5">{exercises.join(' · ')}</p>
+      <p className="text-[11px] font-bold font-body text-faint uppercase tracking-wider mb-3">
+        Program arc — {total} sessions
+      </p>
+      <div className="space-y-3">
+        {rows.map(row => (
+          <div key={row.label}>
+            <div className="flex items-baseline gap-2 mb-1.5">
+              <p className="text-[13px] font-bold font-display text-ink">{row.label}</p>
+              <span className="text-[11px] text-faint">{row.phase}</span>
             </div>
-            <svg className="w-4 h-4 text-stone-300 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-            </svg>
-          </button>
+            <div className="flex flex-wrap gap-[3px]">
+              {Array.from({ length: row.count }, (_, i) => row.startIdx + i).map(idx => (
+                <div
+                  key={idx}
+                  className={`h-4 flex-1 min-w-[10px] rounded-[3px] ${
+                    idx < sessionIndex ? 'bg-done' : idx === sessionIndex ? 'bg-pr' : 'bg-elevated border border-line'
+                  }`}
+                />
+              ))}
+            </div>
+          </div>
         ))}
       </div>
     </div>
   )
 }
 
+// ── Active program hero (the "My program" tab) ────────────────────────────────
+
+function ActiveProgramCard({
+  program,
+  sessionIndex,
+  onStart,
+  onOpenInfo,
+  blocked,
+  hasDraft,
+}: {
+  program: FogProgram
+  sessionIndex: number
+  onStart: () => void
+  onOpenInfo: () => void
+  blocked?: boolean
+  hasDraft?: boolean
+}) {
+  const flat = flattenFogProgram(program)
+  const total = flat.length
+  const done = sessionIndex >= total
+  const current = done ? null : flat[sessionIndex]
+
+  if (done) {
+    return (
+      <div className="bg-surface border border-line rounded-panel px-[18px] py-5 text-center mb-4">
+        <p className="text-lg font-bold font-display text-ink">{program.name} ✓</p>
+        <p className="text-xs text-faint mt-1 mb-4">All {total} sessions completed!</p>
+        <button onClick={() => resetFogProgram(program.id)} className="w-full h-11 rounded-card border border-line text-muted text-sm font-semibold">
+          Start over
+        </button>
+      </div>
+    )
+  }
+
+  return (
+    <div className="bg-surface border border-line rounded-panel p-[18px] mb-4">
+      <div className="flex items-center justify-between mb-2">
+        <button onClick={onOpenInfo} className="text-[11px] font-bold font-body text-klass uppercase tracking-wider">
+          {program.name.replace(/ Program$/, '')} ›
+        </button>
+        <span className="font-mono text-[13px] text-faint">{sessionIndex}/{total}</span>
+      </div>
+      {current && (
+        <>
+          <p className="text-[15px] font-semibold font-display text-ink mb-3">
+            {current.focus.split('/').join(' · ')} · {current.method}
+          </p>
+          <div className="flex flex-col gap-1.5 mb-4">
+            {current.exercises.slice(0, 6).map((name, i) => (
+              <div key={i} className="flex items-center gap-2">
+                <span className="font-mono text-[11px] text-faint w-3.5">{i}</span>
+                <span className="text-[13px] text-muted truncate">{name}</span>
+              </div>
+            ))}
+          </div>
+          <div className="w-full h-1 bg-elevated rounded-full mb-4">
+            <div className="h-1 bg-klass rounded-full transition-all" style={{ width: `${(sessionIndex / total) * 100}%` }} />
+          </div>
+        </>
+      )}
+      <button
+        onClick={blocked ? undefined : onStart}
+        disabled={blocked}
+        className={`w-full h-12 rounded-card font-bold text-[14.5px] transition ${
+          blocked ? 'bg-elevated text-faint cursor-not-allowed' : 'bg-ink text-bg'
+        }`}
+      >
+        {hasDraft ? 'Continue' : 'Start'}
+      </button>
+    </div>
+  )
+}
+
+// ── Compact program card ("All programs" tab) ─────────────────────────────────
+
+function CompactProgramCard({
+  program,
+  sessionIndex,
+  onStart,
+  onOpenInfo,
+  blocked,
+  hasDraft,
+}: {
+  program: FogProgram
+  sessionIndex: number
+  onStart: () => void
+  onOpenInfo: () => void
+  blocked?: boolean
+  hasDraft?: boolean
+}) {
+  const total = flattenFogProgram(program).length
+  const done = sessionIndex >= total
+
+  return (
+    <div className="bg-surface border border-line rounded-panel px-4 py-3.5 mb-3 flex items-center justify-between gap-3">
+      <button onClick={onOpenInfo} className="min-w-0 text-left">
+        <p className="text-[14px] font-semibold font-display text-ink truncate">{program.name}</p>
+        <p className="text-[11.5px] text-faint font-mono mt-0.5">{done ? `${total}/${total} ✓` : `${sessionIndex}/${total}`}</p>
+      </button>
+      <button
+        onClick={blocked ? undefined : onStart}
+        disabled={blocked}
+        className={`shrink-0 px-4 py-2 rounded-control text-[13px] font-bold transition ${
+          blocked ? 'bg-elevated text-faint cursor-not-allowed' : done ? 'border border-line text-muted' : 'bg-ink text-bg'
+        }`}
+      >
+        {done ? 'Restart' : hasDraft ? 'Continue' : 'Start'}
+      </button>
+    </div>
+  )
+}
+
 // ── Classes page ──────────────────────────────────────────────────────────────
+
+type Tab = 'mine' | 'all'
 
 export function Classes() {
   const navigate = useNavigate()
   const { prefs } = usePreferences()
   const programProgress = prefs.programProgress ?? {}
   const [showMethods, setShowMethods] = useState(false)
-  const [showAll, setShowAll] = useState(false)
+  const [infoProgram, setInfoProgram] = useState<FogProgram | null>(null)
+  const [tab, setTab] = useState<Tab>('mine')
 
-  // Determine if a class session is in progress (has at least one completed set)
   const activeDraftProgramId = (() => {
     const d = loadDraft()
     if (!d?.fogProgramId) return null
@@ -375,19 +333,11 @@ export function Classes() {
     return programProgress[programId] ?? 0
   }
 
-  // The program you're currently working through: an unfinished session wins,
-  // otherwise the first program that's partway done. Finished programs don't
-  // count, so completing one returns you to the full list.
   const activeProgramId = useMemo(() => {
     if (activeDraftProgramId) return activeDraftProgramId
     return findActiveProgramId(FOG_PROGRAMS, programProgress, flattenFogProgram)
   }, [activeDraftProgramId, programProgress])
-
-  // Once a class is under way, focus the page on just that one.
-  const focused = !showAll && activeProgramId
-    ? FOG_PROGRAMS.find(p => p.id === activeProgramId) ?? null
-    : null
-  const visiblePrograms = focused ? [focused] : FOG_PROGRAMS
+  const activeProgram = FOG_PROGRAMS.find(p => p.id === activeProgramId) ?? null
 
   function handleStart(program: FogProgram) {
     const flat = flattenFogProgram(program)
@@ -397,47 +347,70 @@ export function Classes() {
   }
 
   return (
-    <div className="flex flex-col min-h-screen px-4 pt-safe">
-      <div className="pt-14 pb-6 flex items-start justify-between">
-        <div>
-          <h1 className="text-4xl font-bold text-stone-900 dark:text-stone-100 tracking-tight">Classes</h1>
-          <p className="text-stone-500 dark:text-stone-400 mt-1 text-sm">Structured programs</p>
-        </div>
-        <button
-          onClick={() => setShowMethods(true)}
-          className="mt-2 w-8 h-8 rounded-full bg-stone-100 dark:bg-stone-700 hover:bg-stone-200 dark:hover:bg-stone-600 flex items-center justify-center text-stone-500 dark:text-stone-400 font-bold transition-colors"
-          aria-label="Training methods"
-        >
-          ?
+    <div className="flex flex-col min-h-screen bg-bg px-[18px] pt-safe">
+      <div className="pt-[26px] pb-5 flex items-start justify-between">
+        <h1 className="font-display font-bold text-[26px] text-ink -tracking-wide">Classes</h1>
+        <button onClick={() => setShowMethods(true)} className="text-[13px] font-semibold text-klass">
+          ? Methods
         </button>
       </div>
 
-      {visiblePrograms.map(program => (
-        <ProgramCard
+      <div className="flex bg-elevated rounded-card p-1 gap-1 mb-4">
+        <button
+          onClick={() => setTab('mine')}
+          className={`flex-1 py-1.5 rounded-control text-[13px] font-semibold transition-colors ${tab === 'mine' ? 'bg-surface text-ink' : 'text-muted'}`}
+        >
+          My program
+        </button>
+        <button
+          onClick={() => setTab('all')}
+          className={`flex-1 py-1.5 rounded-control text-[13px] font-semibold transition-colors ${tab === 'all' ? 'bg-surface text-ink' : 'text-muted'}`}
+        >
+          All programs
+        </button>
+      </div>
+
+      {tab === 'mine' && (
+        activeProgram ? (
+          <>
+            <ActiveProgramCard
+              program={activeProgram}
+              sessionIndex={getIndex(activeProgram.id)}
+              onStart={() => handleStart(activeProgram)}
+              onOpenInfo={() => setInfoProgram(activeProgram)}
+              blocked={activeDraftProgramId !== null && activeDraftProgramId !== activeProgram.id}
+              hasDraft={activeDraftProgramId === activeProgram.id}
+            />
+            <ProgramArc program={activeProgram} sessionIndex={getIndex(activeProgram.id)} />
+          </>
+        ) : (
+          <div className="bg-surface border border-line rounded-panel px-[18px] py-6 text-center mb-4">
+            <p className="text-[15px] font-semibold font-display text-ink mb-1">No program yet</p>
+            <p className="text-[13px] text-muted mb-4">Pick one from All Programs to get started.</p>
+            <button onClick={() => setTab('all')} className="w-full h-11 rounded-card bg-brand text-brand-ink font-bold text-[13.5px]">
+              Browse programs
+            </button>
+          </div>
+        )
+      )}
+
+      {tab === 'all' && FOG_PROGRAMS.map(program => (
+        <CompactProgramCard
           key={program.id}
           program={program}
           sessionIndex={getIndex(program.id)}
           onStart={() => handleStart(program)}
-          onRedo={() => resetFogProgram(program.id)}
+          onOpenInfo={() => setInfoProgram(program)}
           blocked={activeDraftProgramId !== null && activeDraftProgramId !== program.id}
           hasDraft={activeDraftProgramId === program.id}
-          detailed={focused?.id === program.id}
         />
       ))}
 
-      {activeProgramId && (
-        <button
-          onClick={() => setShowAll(v => !v)}
-          className="mb-4 w-full py-2.5 rounded-xl border border-dashed border-stone-200 dark:border-stone-700 text-stone-400 dark:text-stone-500 text-sm font-medium hover:border-stone-400 hover:text-stone-600 dark:hover:text-stone-300 transition-colors"
-        >
-          {showAll ? 'Show only my program' : 'Show all programs'}
-        </button>
+      <div className="h-8" />
+
+      {infoProgram && (
+        <ProgramInfoPanel program={infoProgram} currentIndex={getIndex(infoProgram.id)} onClose={() => setInfoProgram(null)} />
       )}
-
-      {/* DEV — uncomment to test training methods
-      <DevMethodCards />
-      */}
-
       {showMethods && <TrainingMethodsPanel onClose={() => setShowMethods(false)} />}
     </div>
   )
