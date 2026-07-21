@@ -5,31 +5,10 @@ import { usePreferences } from '../hooks/usePreferences'
 import { nanoid } from '../utils/nanoid'
 import { resetFogProgram } from '../db'
 import { loadDraft } from '../utils/draft'
+import { buildClassStartState, findActiveProgramId } from '../utils/classSession'
 import { FOG_PROGRAMS, flattenFogProgram, TRAINING_METHODS } from '../data/fogPrograms'
-import type { FogProgram, FogFlatSession } from '../data/fogPrograms'
+import type { FogProgram } from '../data/fogPrograms'
 import type { SessionExercise } from '../types'
-
-// ── Helpers ───────────────────────────────────────────────────────────────────
-
-const FOCUS_TO_TAGS: Record<string, string[]> = {
-  'Push': ['Push'],
-  'Pull': ['Pull'],
-  'Push/Pull': ['Push', 'Pull'],
-  'Legs': ['Legs'],
-  'Core': ['Core'],
-  'Legs/Core': ['Legs', 'Core'],
-  'Full Body': ['Full Body'],
-}
-
-function makeExercises(session: FogFlatSession, programId: string): SessionExercise[] {
-  return session.exercises.map(name => ({
-    id: nanoid(),
-    exerciseId: `fog_${programId}_${name.replace(/[^a-z0-9]/gi, '_').toLowerCase()}`,
-    exerciseName: name,
-    trackingType: 'reps_only' as const,
-    sets: [{ id: nanoid(), completed: false }],
-  }))
-}
 
 // Panel is now InfoPanel from components
 
@@ -265,7 +244,7 @@ function ProgramCard({
         ) : (
           <div className="px-4 py-3">
             <p className="text-lg font-bold text-stone-900 dark:text-stone-100 leading-tight mb-1">
-              {current ? (FOCUS_TO_TAGS[current.focus] ?? [current.focus]).join(' · ') : program.name}
+              {current ? current.focus.split('/').join(' · ') : program.name}
             </p>
             {current && (
               <div className="mt-1 mb-3">
@@ -401,11 +380,7 @@ export function Classes() {
   // count, so completing one returns you to the full list.
   const activeProgramId = useMemo(() => {
     if (activeDraftProgramId) return activeDraftProgramId
-    const inProgress = FOG_PROGRAMS.find(p => {
-      const i = programProgress[p.id] ?? 0
-      return i > 0 && i < flattenFogProgram(p).length
-    })
-    return inProgress?.id ?? null
+    return findActiveProgramId(FOG_PROGRAMS, programProgress, flattenFogProgram)
   }, [activeDraftProgramId, programProgress])
 
   // Once a class is under way, focus the page on just that one.
@@ -418,18 +393,7 @@ export function Classes() {
     const flat = flattenFogProgram(program)
     const index = getIndex(program.id)
     if (index >= flat.length) return
-    const session = flat[index]
-    const exercises = makeExercises(session, program.id)
-    const tags = FOCUS_TO_TAGS[session.focus] ?? [session.focus]
-    navigate('/session/new', {
-      state: {
-        fogProgramId: program.id,
-        name: tags.join(' · '),
-        tags,
-        method: session.method,
-        repeat: exercises,
-      },
-    })
+    navigate('/session/new', { state: buildClassStartState(program, flat[index]) })
   }
 
   return (

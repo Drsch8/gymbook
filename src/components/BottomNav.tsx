@@ -42,7 +42,7 @@ const tabs = [
 
 export function BottomNav() {
   return (
-    <nav className="shrink-0 bg-white dark:bg-stone-900 border-t border-stone-200 dark:border-stone-700 pb-safe">
+    <nav className="shrink-0 bg-surface border-t border-line pb-safe">
       <div className="flex">
         {tabs.map(tab => (
           <NavLink
@@ -50,8 +50,8 @@ export function BottomNav() {
             to={tab.to}
             end={tab.to === '/'}
             className={({ isActive }) =>
-              `flex-1 flex flex-col items-center justify-center py-2 gap-0.5 text-[10px] font-medium transition-colors ${
-                isActive ? 'text-stone-900 dark:text-stone-100' : 'text-stone-400 dark:text-stone-500 hover:text-stone-600 dark:hover:text-stone-300'
+              `flex-1 flex flex-col items-center justify-center py-2 gap-0.5 text-[10px] font-bold font-body uppercase tracking-wide transition-colors ${
+                isActive ? 'text-brand' : 'text-faint hover:text-muted'
               }`
             }
           >

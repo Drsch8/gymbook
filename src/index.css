@@ -57,8 +57,8 @@
   html, body, #root {
     height: 100%;
     overflow: hidden;
-    background-color: #FAFAF9; /* stone-50 */
-    color: #1C1917;            /* stone-900 */
+    background-color: var(--c-bg);
+    color: var(--c-ink);
     overscroll-behavior: none;
   }
 
