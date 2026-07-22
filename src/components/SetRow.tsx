@@ -101,10 +101,10 @@ export function SetRow({ set, index, trackingType, weightUnit, onChange, onRemov
         className="flex"
         style={{ transform: 'translateX(0)', width: locked ? undefined : `calc(100% + ${REVEAL}px)` }}
       >
-        <div className="flex-1 min-w-0 flex items-center gap-2 py-1 px-1 bg-white dark:bg-stone-800">
-          <span className="w-5 text-center text-xs font-mono text-stone-400 dark:text-stone-500 shrink-0">{index + 1}</span>
+        <div className="flex-1 min-w-0 flex items-center gap-2 py-1 px-1 bg-surface">
+          <span className="w-5 text-center text-xs font-mono text-faint shrink-0">{index + 1}</span>
 
-          <span className="w-12 text-center text-xs text-stone-400 dark:text-stone-500 shrink-0 hidden sm:block">
+          <span className="w-12 text-center text-xs text-faint shrink-0 hidden sm:block">
             {trackingType === 'time'
               ? fmt(previousSet?.duration, 's')
               : previousSet
@@ -133,7 +133,7 @@ export function SetRow({ set, index, trackingType, weightUnit, onChange, onRemov
             <button
               onClick={onStartTimer}
               disabled={locked || !set.duration}
-              className="shrink-0 w-9 h-9 rounded-xl flex items-center justify-center bg-stone-100 dark:bg-stone-700 text-stone-500 dark:text-stone-300 hover:bg-stone-200 dark:hover:bg-stone-600 disabled:opacity-30 transition-colors"
+              className="shrink-0 w-9 h-9 rounded-xl flex items-center justify-center bg-elevated text-muted hover:bg-line disabled:opacity-30 transition-colors"
               aria-label="Start set timer"
             >
               <svg width="11" height="12" viewBox="0 0 11 12" fill="currentColor">
@@ -147,8 +147,8 @@ export function SetRow({ set, index, trackingType, weightUnit, onChange, onRemov
             className={[
               'shrink-0 w-9 h-9 rounded-xl flex items-center justify-center transition-colors',
               locked
-                ? 'bg-stone-900 dark:bg-stone-300 text-white dark:text-stone-900'
-                : 'bg-stone-100 dark:bg-stone-700 text-stone-400 dark:text-stone-500 hover:bg-stone-200 dark:hover:bg-stone-600',
+                ? 'bg-done text-fmbg'
+                : 'bg-elevated text-faint hover:bg-line',
             ].join(' ')}
             aria-label={locked ? 'Mark incomplete' : 'Mark complete'}
           >

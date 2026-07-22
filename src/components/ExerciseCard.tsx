@@ -133,7 +133,7 @@ export function ExerciseCard({ item, weightUnit, previousSets, collapsed, onTogg
   }, [isClassSession])
 
   return (
-    <div className="overflow-hidden rounded-2xl border border-stone-200 dark:border-stone-700 transition-colors">
+    <div className="overflow-hidden rounded-2xl border border-line transition-colors">
       {/* Flex row: card content + delete zone side-by-side. Row is REVEAL_EX wider than
           the container so the delete zone is naturally hidden by overflow-hidden at rest. */}
       <div
@@ -141,19 +141,19 @@ export function ExerciseCard({ item, weightUnit, previousSets, collapsed, onTogg
         className="flex"
         style={{ transform: 'translateX(0)', width: isClassSession ? undefined : `calc(100% + ${REVEAL_EX}px)` }}
       >
-      <div className="flex-1 min-w-0 bg-white dark:bg-stone-800">
+      <div className="flex-1 min-w-0 bg-surface">
       <button
         ref={headerRef}
-        className="w-full flex items-center justify-between px-4 py-3 border-b border-stone-100 dark:border-stone-700 text-left"
+        className="w-full flex items-center justify-between px-4 py-3 border-b border-line text-left"
         onClick={() => { if (swipeXRef.current !== 0) { setSlideX(0, true); return } onToggle() }}
       >
         <div className="flex items-center gap-2 min-w-0">
           <div className="min-w-0">
-            <span className={`font-semibold truncate block ${allDone ? 'text-stone-400 dark:text-stone-500' : 'text-stone-900 dark:text-stone-100'}`}>
+            <span className={`font-semibold truncate block ${allDone ? 'text-faint' : 'text-ink'}`}>
               {item.exerciseName}
             </span>
             {machineAlt && (
-              <span className="text-[10px] text-stone-400 dark:text-stone-500 block leading-tight mt-0.5">
+              <span className="text-[10px] text-faint block leading-tight mt-0.5">
                 {machineAlt}
               </span>
             )}
@@ -162,12 +162,12 @@ export function ExerciseCard({ item, weightUnit, previousSets, collapsed, onTogg
         <div className="flex items-center gap-2.5 shrink-0 ml-2">
           <span className={`px-2 py-0.5 rounded-full text-[11px] font-mono tabular-nums shrink-0 ${
             allDone
-              ? 'bg-stone-900 dark:bg-stone-300 text-white dark:text-stone-900'
-              : 'bg-stone-100 dark:bg-stone-700 text-stone-500 dark:text-stone-400'
+              ? 'bg-ink text-bg'
+              : 'bg-elevated text-muted'
           }`}>
             {completedCount}/{item.sets.length}
           </span>
-          <svg className={`w-4 h-4 text-stone-300 dark:text-stone-600 transition-transform ${collapsed ? '-rotate-90' : ''}`}
+          <svg className={`w-4 h-4 text-faint transition-transform ${collapsed ? '-rotate-90' : ''}`}
             fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
           </svg>
@@ -186,10 +186,10 @@ export function ExerciseCard({ item, weightUnit, previousSets, collapsed, onTogg
           {/* Locked state: timerOnly exercise already completed */}
           {timerOnly && allDone ? (
             <div className="flex items-center justify-between py-2 px-1">
-              <span className="text-sm text-stone-500 dark:text-stone-400">Exercise completed</span>
+              <span className="text-sm text-muted">Exercise completed</span>
               <button
                 onClick={() => completeSet(0)}
-                className="px-3 py-1.5 rounded-lg text-xs font-medium bg-stone-100 dark:bg-stone-700 text-stone-600 dark:text-stone-300 hover:bg-stone-200 dark:hover:bg-stone-600 transition-colors"
+                className="px-3 py-1.5 rounded-lg text-xs font-medium bg-elevated text-muted hover:bg-line transition-colors"
               >
                 Repeat
               </button>
@@ -200,7 +200,7 @@ export function ExerciseCard({ item, weightUnit, previousSets, collapsed, onTogg
 
               {!timerOnly && (
                 <div className="sets-list space-y-1">
-                  <div className="flex items-center gap-2 pb-1 text-[11px] font-medium uppercase tracking-wide text-stone-400 dark:text-stone-500 px-1">
+                  <div className="flex items-center gap-2 pb-1 text-[11px] font-medium uppercase tracking-wide text-faint px-1">
                     <span className="w-5 text-center shrink-0">#</span>
                     <span className="w-12 text-center shrink-0 hidden sm:block">Prev</span>
                     {item.trackingType === 'reps_weight' && (
@@ -230,7 +230,7 @@ export function ExerciseCard({ item, weightUnit, previousSets, collapsed, onTogg
 
                   {!method && (
                     <button onClick={addSet}
-                      className="mt-2 w-full py-2 rounded-xl border border-dashed border-stone-200 dark:border-stone-600 text-stone-400 dark:text-stone-500 text-sm hover:border-stone-400 dark:hover:border-stone-400 hover:text-stone-600 dark:hover:text-stone-300 transition-colors">
+                      className="mt-2 w-full py-2 rounded-xl border border-dashed border-line text-faint text-sm hover:border-faint hover:text-muted transition-colors">
                       + Add set
                     </button>
                   )}
@@ -240,7 +240,7 @@ export function ExerciseCard({ item, weightUnit, previousSets, collapsed, onTogg
               {timerOnly && (
                 <button
                   onClick={() => completeSet(0)}
-                  className="w-full py-2.5 rounded-xl text-sm font-semibold bg-stone-100 dark:bg-stone-700 text-stone-700 dark:text-stone-300 hover:bg-stone-200 dark:hover:bg-stone-600 transition-colors"
+                  className="w-full py-2.5 rounded-xl text-sm font-semibold bg-elevated text-muted hover:bg-line transition-colors"
                 >
                   Complete exercise
                 </button>

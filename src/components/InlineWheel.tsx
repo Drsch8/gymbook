@@ -109,7 +109,7 @@ export function InlineWheel({ value, onChange, step, max, min = 0, disabled, act
     return (
       <div className="relative flex-1 min-w-0 flex items-center justify-center" style={{ height: H }}>
         <span
-          className={`font-mono tabular-nums leading-none ${disabled ? 'text-stone-300 dark:text-stone-600' : 'text-stone-900 dark:text-stone-100'}`}
+          className={`font-mono tabular-nums leading-none ${disabled ? 'text-faint' : 'text-ink'}`}
           style={{ fontSize: 21, fontWeight: 600 }}
         >
           {value == null ? '–' : value.toFixed(decimals)}
@@ -129,7 +129,7 @@ export function InlineWheel({ value, onChange, step, max, min = 0, disabled, act
     >
       {/* Selection band sitting behind the centre value */}
       <div
-        className="absolute inset-x-1 rounded-lg bg-stone-100 dark:bg-stone-700/50 pointer-events-none"
+        className="absolute inset-x-1 rounded-lg bg-elevated pointer-events-none"
         style={{ top: PAD, height: ITEM_H }}
       />
       <div
@@ -147,7 +147,7 @@ export function InlineWheel({ value, onChange, step, max, min = 0, disabled, act
         {options.map((o, i) => (
           <div key={i} style={{ height: ITEM_H, scrollSnapAlign: 'center' }} className="flex items-center justify-center">
             <span
-              className="font-mono tabular-nums leading-none text-stone-900 dark:text-stone-100"
+              className="font-mono tabular-nums leading-none text-ink"
               style={{ fontSize: 21, fontWeight: 600, display: 'inline-block', opacity: 0.18, transform: 'scale(0.55)' }}
             >
               {o.toFixed(decimals)}

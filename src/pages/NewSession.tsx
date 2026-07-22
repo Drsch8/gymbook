@@ -29,7 +29,7 @@ function ElapsedClock({ startedAt }: { startedAt: string }) {
   const m = Math.floor((total % 3600) / 60)
   const s = total % 60
   return (
-    <span className="font-mono tabular-nums text-sm font-semibold text-stone-700 dark:text-stone-200">
+    <span className="font-mono tabular-nums text-sm font-semibold text-muted">
       {h > 0 ? `${h}:${String(m).padStart(2, '0')}` : m}:{String(s).padStart(2, '0')}
     </span>
   )
@@ -65,23 +65,23 @@ function ClassExerciseRow({ item, method, onStart }: {
   const pair = method === 'Supersets' ? parsePair(item.exerciseName) : null
 
   return (
-    <div className={`bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-2xl px-4 py-3 flex items-center justify-between gap-3 ${done ? 'opacity-60' : ''}`}>
+    <div className={`bg-surface border border-line rounded-2xl px-4 py-3 flex items-center justify-between gap-3 ${done ? 'opacity-60' : ''}`}>
       <div className="min-w-0">
         {pair ? (
           <>
-            <p className={`text-sm font-semibold truncate ${done ? 'text-stone-400 dark:text-stone-500' : 'text-stone-900 dark:text-stone-100'}`}>{pair.a}</p>
-            <p className="text-xs text-stone-400 dark:text-stone-500 mt-0.5 truncate">/ {pair.b}</p>
+            <p className={`text-sm font-semibold truncate ${done ? 'text-faint' : 'text-ink'}`}>{pair.a}</p>
+            <p className="text-xs text-faint mt-0.5 truncate">/ {pair.b}</p>
           </>
         ) : (
-          <p className={`text-sm font-semibold truncate ${done ? 'text-stone-400 dark:text-stone-500' : 'text-stone-900 dark:text-stone-100'}`}>{item.exerciseName}</p>
+          <p className={`text-sm font-semibold truncate ${done ? 'text-faint' : 'text-ink'}`}>{item.exerciseName}</p>
         )}
       </div>
       <button
         onClick={onStart}
         className={`shrink-0 px-4 py-2 rounded-xl text-sm font-semibold transition-colors ${
           done
-            ? 'bg-stone-100 dark:bg-stone-700 text-stone-500 dark:text-stone-400 hover:bg-stone-200 dark:hover:bg-stone-600'
-            : 'bg-stone-900 dark:bg-stone-100 text-white dark:text-stone-900 hover:bg-stone-800 dark:hover:bg-white'
+            ? 'bg-elevated text-muted hover:bg-line'
+            : 'bg-ink text-bg'
         }`}
       >
         {done ? 'Edit' : 'Start'}
@@ -175,7 +175,7 @@ function MethodPillRow({ active, phase }: { active: string; phase?: 'work' | 're
 
 // ── Method animations ─────────────────────────────────────────────────────────
 // Small live visuals for the fullscreen class panels. All sit on the dark
-// (stone-950) background and fill in as the method progresses.
+// focus-mode (fmbg) background and fill in as the method progresses.
 
 // Step Intervals: a step pyramid (up, peak, down). All steps are faintly
 // visible from the start; each one solidifies as its time slice elapses.
@@ -210,8 +210,8 @@ function IntervalBlocks({ satz, seconds, setLen }: { satz: number; seconds: numb
       {[1, 2, 3].map(n => {
         const f = n < satz ? 1 : n > satz ? 0 : (setLen - seconds) / setLen
         return (
-          <div key={n} className="w-16 h-2.5 rounded-full bg-stone-800 overflow-hidden">
-            <div className="h-full bg-stone-100 rounded-full" style={{ width: `${f * 100}%`, transition: 'width 0.9s linear' }} />
+          <div key={n} className="w-16 h-2.5 rounded-full bg-fmline overflow-hidden">
+            <div className="h-full bg-fmink rounded-full" style={{ width: `${f * 100}%`, transition: 'width 0.9s linear' }} />
           </div>
         )
       })}
@@ -228,9 +228,9 @@ function SuperBlocks({ block, seconds, numEx, blockLen }: { block: number; secon
       {Array.from({ length: total }, (_, i) => {
         const f = i < block ? 1 : i > block ? 0 : (blockLen - seconds) / blockLen
         return (
-          <div key={i} className="relative w-9 h-7 rounded-lg bg-stone-800 overflow-hidden flex items-center justify-center">
-            <div className="absolute inset-0 bg-stone-100" style={{ opacity: f, transition: 'opacity 0.9s linear' }} />
-            <span className={`relative text-[11px] font-bold transition-colors duration-500 ${f > 0.5 ? 'text-stone-900' : 'text-stone-400'}`}>
+          <div key={i} className="relative w-9 h-7 rounded-lg bg-fmline overflow-hidden flex items-center justify-center">
+            <div className="absolute inset-0 bg-fmink" style={{ opacity: f, transition: 'opacity 0.9s linear' }} />
+            <span className={`relative text-[11px] font-bold transition-colors duration-500 ${f > 0.5 ? 'text-fmbg' : 'text-fmdim'}`}>
               {(i % numEx) + 1}
             </span>
           </div>
@@ -314,7 +314,7 @@ function FlatStufen({ running, onDone, onProgress }: { running: boolean; onDone:
       <BigTime dim={done}>{done ? '0:00' : fmtFlat(seconds)}</BigTime>
       <StepPyramid progress={1 - seconds / 450} />
       {!done && (
-        <p className="text-sm font-semibold uppercase tracking-[0.14em] text-stone-500 mt-3">
+        <p className="text-sm font-semibold font-body uppercase tracking-[0.14em] text-fmdim mt-3">
           {seconds > 225 ? 'Climbing' : 'Descending'}
         </p>
       )}
@@ -364,7 +364,7 @@ function FlatIntervall({ running, onResume, onDone, onProgress }: { running: boo
     <>
       <BigTime dim={done}>{done ? '0:00' : fmtFlat(seconds)}</BigTime>
       <IntervalBlocks satz={satz} seconds={seconds} setLen={180} />
-      {!done && <p className="text-sm font-semibold uppercase tracking-[0.14em] text-stone-500 mt-3">{`Set ${satz} / 3`}</p>}
+      {!done && <p className="text-sm font-semibold font-body uppercase tracking-[0.14em] text-fmdim mt-3">{`Set ${satz} / 3`}</p>}
     </>
   )
 }
@@ -429,36 +429,36 @@ function SuperPanel({ exercises, onClose, onComplete }: {
   const { anim, exit } = usePanelExit()
 
   return (
-    <div className={`fixed inset-0 z-[100] bg-stone-950 flex flex-col select-none ${anim}`}>
+    <div className={`fixed inset-0 z-[100] bg-fmbg flex flex-col select-none ${anim}`}>
       {/* Quit */}
       <div className="flex items-center justify-end px-5 shrink-0" style={{ paddingTop: 'calc(env(safe-area-inset-top) + 12px)', paddingBottom: 10 }}>
-        <button onClick={() => exit(onClose)} className="text-stone-500 hover:text-stone-300 text-sm font-semibold transition-colors">
+        <button onClick={() => exit(onClose)} className="text-fmdim hover:text-fmink text-sm font-semibold transition-colors">
           Quit
         </button>
       </div>
 
       {/* Method label + separator */}
-      <div className="px-5 pb-3 shrink-0 border-b border-stone-800">
-        <p className="text-sm font-bold uppercase tracking-[0.14em] text-stone-500">Supersets</p>
+      <div className="border-b border-fmline">
+        <MethodPillRow active="Supersets" />
       </div>
 
       {/* Exercise rows */}
-      <div className="shrink-0 divide-y divide-stone-800/70">
+      <div className="shrink-0 divide-y divide-fmline">
         {exercises.map((item, i) => {
           const isActive = ready && !timerDone && i === currentExIdx
           return (
             <div key={item.id} className="flex items-center gap-4 px-5 py-3.5">
-              <span className="text-sm font-mono tabular-nums text-stone-600 w-5 shrink-0 text-right">{i + 1}</span>
-              <p className={`text-2xl font-semibold leading-tight transition-colors ${isActive ? 'text-white' : 'text-stone-600'}`}>
+              <span className="text-sm font-mono tabular-nums text-fmdim w-5 shrink-0 text-right">{i + 1}</span>
+              <p className={`text-2xl font-semibold leading-tight transition-colors ${isActive ? 'text-fmink' : 'text-fmdim'}`}>
                 {item.exerciseName}
               </p>
-              {isActive && <span className="ml-auto w-1.5 h-1.5 rounded-full bg-white shrink-0" />}
+              {isActive && <span className="ml-auto w-1.5 h-1.5 rounded-full bg-fmink shrink-0" />}
             </div>
           )
         })}
       </div>
       {ready && !timerDone && (
-        <p className="px-5 pt-2 text-sm font-medium text-stone-600 shrink-0">Round {round} / 2</p>
+        <p className="px-5 pt-2 text-sm font-medium text-fmdim shrink-0">Round {round} / 2</p>
       )}
 
       {/* Timer — centered in remaining space */}
@@ -472,7 +472,7 @@ function SuperPanel({ exercises, onClose, onComplete }: {
         {timerDone ? (
           <button
             onClick={() => exit(() => onCompleteRef.current())}
-            className="w-full py-4 rounded-2xl text-lg font-bold bg-white text-stone-900 hover:bg-stone-100 transition-colors"
+            className="w-full py-4 rounded-2xl text-lg font-bold bg-fmink text-fmbg transition-colors"
           >
             Done
           </button>
@@ -536,11 +536,11 @@ function FlatHoch({ running, onPhaseChange, onDone, onProgress }: { running: boo
         {done ? '0:00' : `0:${String(seconds).padStart(2, '0')}`}
       </BigTime>
       <HiitRounds round={round} phase={phase} done={done} />
-      <p className="text-sm font-semibold uppercase tracking-[0.14em] text-stone-500 mt-3">
+      <p className="text-sm font-semibold font-body uppercase tracking-[0.14em] text-fmdim mt-3">
         {done ? 'Done ✓' : `Round ${round} / 8`}
       </p>
       {!done && (
-        <p className={`text-3xl font-black mt-1 ${isRest ? 'text-blue-400' : 'text-stone-200'}`}>
+        <p className={`text-3xl font-black font-display mt-1 ${isRest ? 'text-rest' : 'text-fmink'}`}>
           {phase === 'work' ? 'Work Out!' : 'Rest'}
         </p>
       )}
@@ -588,26 +588,26 @@ function ClassExercisePanel({ exercise, method, onClose, onComplete }: {
   const onProgressStable = useRef((p: number) => setProgress(p))
 
   const accent = method === 'High Intensity Sets'
-    ? (hochPhase === 'rest' ? 'bg-blue-500' : 'bg-stone-100')
+    ? (hochPhase === 'rest' ? 'bg-rest' : 'bg-work')
     : undefined
 
   return (
-    <div className={`fixed inset-0 z-[100] bg-stone-950 flex flex-col select-none ${anim}`}>
+    <div className={`fixed inset-0 z-[100] bg-fmbg flex flex-col select-none ${anim}`}>
       {/* Quit */}
       <div className="flex items-center justify-end px-5 shrink-0" style={{ paddingTop: 'calc(env(safe-area-inset-top) + 12px)', paddingBottom: 10 }}>
-        <button onClick={() => exit(onClose)} className="text-stone-500 hover:text-stone-300 text-sm font-semibold transition-colors">
+        <button onClick={() => exit(onClose)} className="text-fmdim hover:text-fmink text-sm font-semibold transition-colors">
           Quit
         </button>
       </div>
 
       {/* Method label + separator */}
-      <div className="px-5 pb-3 shrink-0 border-b border-stone-800">
-        <p className="text-sm font-bold uppercase tracking-[0.14em] text-stone-500">{method}</p>
+      <div className="border-b border-fmline">
+        <MethodPillRow active={method} phase={method === 'High Intensity Sets' ? hochPhase : undefined} />
       </div>
 
       {/* Exercise row */}
-      <div className="px-5 py-3.5 shrink-0 border-b border-stone-800/70">
-        <p className="text-2xl font-semibold text-white">{exercise.exerciseName}</p>
+      <div className="px-5 py-3.5 shrink-0 border-b border-fmline">
+        <p className="text-2xl font-semibold text-fmink">{exercise.exerciseName}</p>
       </div>
 
       {/* Timer — centered in remaining space */}
@@ -628,7 +628,7 @@ function ClassExercisePanel({ exercise, method, onClose, onComplete }: {
         {timerDone ? (
           <button
             onClick={() => exit(handleFinish)}
-            className="w-full py-4 rounded-2xl text-lg font-bold bg-white text-stone-900 hover:bg-stone-100 transition-colors"
+            className="w-full py-4 rounded-2xl text-lg font-bold bg-fmink text-fmbg transition-colors"
           >
             Done
           </button>
@@ -697,25 +697,25 @@ function ZirkelPanel({ exercises, onClose, onComplete }: {
   const { anim, exit } = usePanelExit()
 
   return (
-    <div className={`fixed inset-0 z-[100] bg-stone-950 flex flex-col select-none ${anim}`}>
+    <div className={`fixed inset-0 z-[100] bg-fmbg flex flex-col select-none ${anim}`}>
       {/* Quit row */}
       <div className="flex items-center justify-end px-5 shrink-0" style={{ paddingTop: 'calc(env(safe-area-inset-top) + 12px)', paddingBottom: 8 }}>
-        <button onClick={() => exit(onClose)} className="text-stone-500 hover:text-stone-300 text-sm font-semibold transition-colors">
+        <button onClick={() => exit(onClose)} className="text-fmdim hover:text-fmink text-sm font-semibold transition-colors">
           Quit
         </button>
       </div>
 
       {/* Method label + separator */}
-      <div className="px-5 pb-3 shrink-0 border-b border-stone-800">
-        <p className="text-sm font-bold uppercase tracking-[0.14em] text-stone-500">Circuits</p>
+      <div className="border-b border-fmline">
+        <MethodPillRow active="Circuits" />
       </div>
 
       {/* Exercise rows */}
-      <div className="shrink-0 divide-y divide-stone-800/70">
+      <div className="shrink-0 divide-y divide-fmline">
         {exercises.map((item, i) => (
           <div key={item.id} className="flex items-center gap-4 px-5 py-3.5">
-            <span className="text-sm font-mono tabular-nums text-stone-600 w-5 shrink-0 text-right">{i + 1}</span>
-            <p className="text-2xl font-semibold text-stone-300">{item.exerciseName}</p>
+            <span className="text-sm font-mono tabular-nums text-fmdim w-5 shrink-0 text-right">{i + 1}</span>
+            <p className="text-2xl font-semibold text-fmink">{item.exerciseName}</p>
           </div>
         ))}
       </div>
@@ -731,7 +731,7 @@ function ZirkelPanel({ exercises, onClose, onComplete }: {
         {timerDone ? (
           <button
             onClick={() => exit(() => onCompleteRef.current())}
-            className="w-full py-4 rounded-2xl text-lg font-bold bg-white text-stone-900 hover:bg-stone-100 transition-colors"
+            className="w-full py-4 rounded-2xl text-lg font-bold bg-fmink text-fmbg transition-colors"
           >
             Done
           </button>
@@ -969,12 +969,12 @@ export function NewSession() {
     : exercises.length > 0 && exercises.every(e => e.sets.length > 0 && e.sets.every(s => s.completed))
 
   return (
-    <div className="flex flex-col min-h-full bg-stone-50 dark:bg-stone-900">
-      <header className="sticky top-0 z-40 bg-white/90 dark:bg-stone-900/90 backdrop-blur-md border-b border-stone-200/70 dark:border-stone-800">
+    <div className="flex flex-col min-h-full bg-bg">
+      <header className="sticky top-0 z-40 bg-surface backdrop-blur-md border-b border-line">
         <div className="px-3 py-2.5 flex items-center justify-between max-w-lg mx-auto w-full">
           <button
             onClick={() => navigate(-1)}
-            className="w-9 h-9 -ml-1 rounded-full flex items-center justify-center text-stone-400 hover:text-stone-700 dark:hover:text-stone-200 hover:bg-stone-100 dark:hover:bg-stone-800 transition-colors"
+            className="w-9 h-9 -ml-1 rounded-full flex items-center justify-center text-faint hover:text-ink hover:bg-elevated transition-colors"
             aria-label="Back"
           >
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5}>
@@ -984,11 +984,11 @@ export function NewSession() {
           <ElapsedClock startedAt={startedAt.current} />
           <div className="min-w-[4.5rem] flex justify-end">
             {undoItem ? (
-              <button onClick={undoRemove} className="text-sm font-medium text-stone-500 dark:text-stone-400 hover:text-stone-700 dark:hover:text-stone-200 transition-colors">
+              <button onClick={undoRemove} className="text-sm font-medium text-muted hover:text-ink transition-colors">
                 Undo
               </button>
             ) : (
-              <span className="px-2 py-0.5 rounded-full bg-stone-100 dark:bg-stone-800 text-xs font-mono tabular-nums text-stone-500 dark:text-stone-400">
+              <span className="px-2 py-0.5 rounded-full bg-elevated text-xs font-mono tabular-nums text-muted">
                 {totalCompleted}/{totalSets}
               </span>
             )}
@@ -997,7 +997,7 @@ export function NewSession() {
         {/* Overall session progress */}
         <div className="h-0.5 w-full bg-transparent">
           <div
-            className="h-full bg-stone-900 dark:bg-stone-200 transition-all duration-500 ease-out"
+            className="h-full bg-brand transition-all duration-500 ease-out"
             style={{ width: totalSets > 0 ? `${(totalCompleted / totalSets) * 100}%` : '0%' }}
           />
         </div>
@@ -1005,22 +1005,22 @@ export function NewSession() {
 
       <div className="flex-1 px-4 py-5 space-y-3 max-w-lg mx-auto w-full">
         {/* Session title */}
-        <div className="bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-2xl px-4 py-3 space-y-1.5">
+        <div className="bg-surface border border-line rounded-2xl px-4 py-3 space-y-1.5">
           {isClassSession ? (
             <>
               <div className="flex items-start justify-between gap-2">
                 <div className="min-w-0">
-                  <p className="text-xl font-bold text-stone-900 dark:text-stone-100 leading-tight">
+                  <p className="text-xl font-bold text-ink leading-tight">
                     {state?.method ?? 'Session'}
                   </p>
                   {sessionTags.length > 0 && (
-                    <p className="text-sm text-stone-400 dark:text-stone-500 mt-0.5">{sessionTags.join(' · ')}</p>
+                    <p className="text-sm text-faint mt-0.5">{sessionTags.join(' · ')}</p>
                   )}
                 </div>
                 {trainingMethod && (
                   <button
                     onClick={() => setShowMethodInfo(true)}
-                    className="shrink-0 w-7 h-7 rounded-full bg-stone-100 dark:bg-stone-700 text-stone-400 dark:text-stone-500 text-xs font-bold flex items-center justify-center hover:bg-stone-200 dark:hover:bg-stone-600 transition-colors"
+                    className="shrink-0 w-7 h-7 rounded-full bg-elevated text-faint text-xs font-bold flex items-center justify-center hover:bg-line transition-colors"
                   >
                     ?
                   </button>
@@ -1029,7 +1029,7 @@ export function NewSession() {
             </>
           ) : (
             <>
-              <p className="text-lg font-bold text-stone-900 dark:text-stone-100 pb-0.5 leading-tight min-h-7">
+              <p className="text-lg font-bold text-ink pb-0.5 leading-tight min-h-7">
                 {sessionTags.join(' · ')}
               </p>
               <div className="flex flex-wrap gap-1.5">
@@ -1056,8 +1056,8 @@ export function NewSession() {
                       }}
                       className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${
                         active
-                          ? 'bg-stone-900 dark:bg-stone-100 text-white dark:text-stone-900'
-                          : 'bg-stone-100 dark:bg-stone-700 text-stone-600 dark:text-stone-300 hover:bg-stone-200 dark:hover:bg-stone-600'
+                          ? 'bg-ink text-bg'
+                          : 'bg-elevated text-muted hover:bg-line'
                       }`}
                     >
                       {chip}{chipCounts[chip] ? ` (${chipCounts[chip]})` : ''}
@@ -1070,17 +1070,17 @@ export function NewSession() {
         </div>
 
         {variantOptions && (
-          <div key={sessionTags.join(',')} className="bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-2xl overflow-hidden">
+          <div key={sessionTags.join(',')} className="bg-surface border border-line rounded-2xl overflow-hidden">
             <div className="flex items-center justify-between px-4 pt-3 pb-2">
-              <p className="text-xs font-semibold text-stone-400 dark:text-stone-500 uppercase tracking-wider">Choose a session</p>
+              <p className="text-xs font-semibold text-faint uppercase tracking-wider">Choose a session</p>
               <button
                 onClick={() => setVariantOptions(prev => prev?.map(({ variant }) => ({ variant, exercises: rollVariant(variant) })) ?? null)}
-                className="text-xs font-semibold text-stone-400 dark:text-stone-500 hover:text-stone-600 dark:hover:text-stone-300 transition-colors"
+                className="text-xs font-semibold text-faint hover:text-muted transition-colors"
               >
                 ↻ Shuffle
               </button>
             </div>
-            <div className="divide-y divide-stone-100 dark:divide-stone-700">
+            <div className="divide-y divide-line">
               {variantOptions.map(({ variant, exercises: rolled }) => (
                 <button
                   key={variant.name}
@@ -1097,10 +1097,10 @@ export function NewSession() {
                     setShowSearch(false)
                     setVariantOptions(null)
                   }}
-                  className="w-full text-left px-4 py-3 hover:bg-stone-50 dark:hover:bg-stone-700/50 transition-colors"
+                  className="w-full text-left px-4 py-3 hover:bg-elevated transition-colors"
                 >
-                  <p className="text-sm font-semibold text-stone-900 dark:text-stone-100">{variant.name}</p>
-                  <p className="text-xs text-stone-400 dark:text-stone-500 mt-0.5">
+                  <p className="text-sm font-semibold text-ink">{variant.name}</p>
+                  <p className="text-xs text-faint mt-0.5">
                     {rolled.map(e => e.exerciseName).join(' · ')}
                   </p>
                 </button>
@@ -1113,22 +1113,22 @@ export function NewSession() {
           <>
             <div className="space-y-1.5 mb-2">
               {exercises.map((item, i) => (
-                <div key={item.id} className="bg-white dark:bg-stone-800 border border-stone-100 dark:border-stone-700 rounded-2xl px-4 py-2.5 flex items-center gap-3">
-                  <span className="w-1.5 h-1.5 rounded-full bg-stone-300 dark:bg-stone-600 shrink-0" />
-                  <p className="text-sm text-stone-700 dark:text-stone-300">
+                <div key={item.id} className="bg-surface border border-line rounded-2xl px-4 py-2.5 flex items-center gap-3">
+                  <span className="w-1.5 h-1.5 rounded-full bg-faint shrink-0" />
+                  <p className="text-sm text-muted">
                     {isSuper ? `${i + 1}. ` : ''}{item.exerciseName}
                   </p>
                 </div>
               ))}
             </div>
             {isSuper && exercises.length > 0 && (
-              <p className="text-xs text-stone-400 dark:text-stone-500 text-center pb-1">
+              <p className="text-xs text-faint text-center pb-1">
                 4 min per exercise · 2 rounds · {exercises.length * 2} blocks
               </p>
             )}
             <button
               onClick={() => isSuper ? setShowSuperPanel(true) : setShowZirkelPanel(true)}
-              className="w-full py-3 rounded-2xl bg-stone-900 dark:bg-stone-100 text-white dark:text-stone-900 font-semibold text-sm hover:bg-stone-800 dark:hover:bg-white active:scale-[0.98] transition-all"
+              className="w-full py-3 rounded-2xl bg-ink text-bg font-semibold text-sm hover:opacity-90 active:scale-[0.98] transition-all"
             >
               Start Circuit
             </button>
@@ -1188,15 +1188,15 @@ export function NewSession() {
         })() : null}
 
         {!isClassSession && (showSearch ? (
-          <div ref={bottomRef} className="bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-2xl p-4">
+          <div ref={bottomRef} className="bg-surface border border-line rounded-2xl p-4">
             <div className="flex items-center justify-between mb-3">
-              <p className="text-xs font-medium text-stone-400 dark:text-stone-500 uppercase tracking-wider">
+              <p className="text-xs font-medium text-faint uppercase tracking-wider">
                 {exercises.length === 0 ? 'Choose your first exercise' : 'Add exercise'}
               </p>
               {exercises.length > 0 && (
                 <button
                   onClick={() => setShowSearch(false)}
-                  className="w-6 h-6 flex items-center justify-center rounded-full bg-stone-100 dark:bg-stone-700 text-stone-400 dark:text-stone-500 hover:bg-stone-200 dark:hover:bg-stone-600 hover:text-stone-600 dark:hover:text-stone-300 transition-colors text-xs"
+                  className="w-6 h-6 flex items-center justify-center rounded-full bg-elevated text-faint hover:bg-line hover:text-muted transition-colors text-xs"
                   aria-label="Close"
                 >
                   ✕
@@ -1211,7 +1211,7 @@ export function NewSession() {
               setShowSearch(true)
               setTimeout(() => bottomRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 150)
             }}
-            className="w-full py-3 rounded-2xl border border-dashed border-stone-300 dark:border-stone-600 text-stone-400 dark:text-stone-500 text-sm font-medium hover:border-stone-400 hover:text-stone-600 dark:hover:text-stone-300 bg-white/50 dark:bg-stone-800/50 transition-colors"
+            className="w-full py-3 rounded-2xl border border-dashed border-line text-faint text-sm font-medium hover:text-muted transition-colors"
           >
             + Add Exercise
           </button>
@@ -1221,7 +1221,7 @@ export function NewSession() {
           <button
             onClick={finish}
             disabled={finishing}
-            className="w-full py-4 rounded-2xl bg-stone-900 dark:bg-stone-100 hover:bg-stone-800 dark:hover:bg-white active:scale-[0.98] disabled:opacity-50 text-white dark:text-stone-900 font-bold text-base transition-all"
+            className="w-full py-4 rounded-2xl bg-ink hover:opacity-90 active:scale-[0.98] disabled:opacity-50 text-bg font-bold text-base transition-all"
           >
             Finish
           </button>
@@ -1263,7 +1263,7 @@ export function NewSession() {
         <InfoPanel title={trainingMethod.name} onClose={() => setShowMethodInfo(false)}>
           <div className="space-y-3">
             {trainingMethod.description.split('\n\n').map((para, i) => (
-              <p key={i} className="text-sm text-stone-600 dark:text-stone-300 leading-relaxed">{para}</p>
+              <p key={i} className="text-sm text-muted leading-relaxed">{para}</p>
             ))}
           </div>
         </InfoPanel>

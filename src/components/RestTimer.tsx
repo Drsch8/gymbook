@@ -30,15 +30,13 @@ export function RestTimer({ defaultSeconds, lastCompleted }: Props) {
     <div
       className={`rounded-2xl px-4 py-3 border transition-colors duration-300 ${
         live
-          ? 'bg-stone-900 dark:bg-stone-100 border-stone-900 dark:border-stone-100'
-          : 'bg-white dark:bg-stone-800 border-stone-200 dark:border-stone-700'
+          ? 'bg-rest border-rest'
+          : 'bg-surface border-line'
       }`}
       style={{ animation: 'timer-slide-in 0.25s ease forwards' }}
     >
       <div className="flex items-baseline justify-between mb-2">
-        <span className={`text-[11px] font-semibold uppercase tracking-[0.12em] ${
-          live ? 'text-stone-400 dark:text-stone-500' : 'text-stone-400 dark:text-stone-500'
-        }`}>
+        <span className="text-[11px] font-semibold font-body uppercase tracking-[0.12em] text-faint">
           Rest
         </span>
         <div className="flex items-baseline gap-3">
@@ -46,28 +44,28 @@ export function RestTimer({ defaultSeconds, lastCompleted }: Props) {
             <button
               onClick={stop}
               disabled={!active}
-              className="text-[11px] font-medium text-stone-500 dark:text-stone-400 hover:text-stone-300 dark:hover:text-stone-600 transition-colors"
+              className="text-[11px] font-medium text-muted hover:text-faint transition-colors"
             >
               Skip
             </button>
           )}
           <span className={`font-mono tabular-nums text-2xl font-bold leading-none ${
             live
-              ? low ? 'text-red-400 dark:text-red-500' : 'text-white dark:text-stone-900'
-              : 'text-stone-300 dark:text-stone-600'
+              ? low ? 'text-danger' : 'text-fmbg'
+              : 'text-faint'
           }`}>
             {live ? `${pad(mins)}:${pad(secs)}` : (defaultSeconds >= 60 ? `${defaultSeconds / 60}:${pad(defaultSeconds % 60)}` : `0:${pad(defaultSeconds)}`)}
           </span>
         </div>
       </div>
       <div className={`h-1 w-full rounded-full overflow-hidden ${
-        live ? 'bg-white/15 dark:bg-stone-900/15' : 'bg-stone-100 dark:bg-stone-700'
+        live ? 'bg-white/20' : 'bg-elevated'
       }`}>
         <div
           className={`h-full rounded-full transition-all duration-1000 ease-linear ${
             live
-              ? low ? 'bg-red-400 dark:bg-red-500' : 'bg-white dark:bg-stone-900'
-              : 'bg-stone-200 dark:bg-stone-600'
+              ? low ? 'bg-danger' : 'bg-fmbg'
+              : 'bg-line'
           }`}
           style={{ width: live ? `${pct}%` : '100%' }}
         />

@@ -52,7 +52,7 @@ export function ExerciseSearch({ onSelect, autoFocus }: Props) {
   return (
     <div className="relative">
       <div className="relative">
-        <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-400 pointer-events-none"
+        <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-faint pointer-events-none"
           fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
           <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z" />
         </svg>
@@ -61,7 +61,7 @@ export function ExerciseSearch({ onSelect, autoFocus }: Props) {
           type="text"
           value={query}
           placeholder="Search exercise…"
-          className="w-full bg-white border border-stone-200 rounded-xl pl-9 pr-4 py-3 text-sm text-stone-900 placeholder-stone-400 focus:outline-none focus:border-stone-400 focus:ring-2 focus:ring-stone-900/10 transition"
+          className="w-full bg-surface border border-line rounded-xl pl-9 pr-4 py-3 text-sm text-ink placeholder-faint focus:outline-none focus:border-brand focus:ring-2 focus:ring-brand transition"
           onChange={e => { setQuery(e.target.value); setOpen(true) }}
           onFocus={() => setOpen(true)}
           onBlur={() => setTimeout(() => setOpen(false), 150)}
@@ -70,18 +70,18 @@ export function ExerciseSearch({ onSelect, autoFocus }: Props) {
       </div>
 
       {open && results.length > 0 && (
-        <ul className="absolute z-50 mt-1 w-full bg-white border border-stone-200 rounded-xl shadow-lg overflow-hidden">
+        <ul className="absolute z-50 mt-1 w-full bg-elevated border border-line rounded-xl shadow-lg overflow-hidden">
           {results.map((ex, i) => (
             <li
               key={ex.id}
               className={`flex items-center justify-between px-4 py-3 cursor-pointer transition-colors text-sm ${
-                i === highlighted ? 'bg-stone-100' : 'hover:bg-stone-50'
+                i === highlighted ? 'bg-line' : 'hover:bg-elevated'
               }`}
               onMouseDown={() => select(ex)}
               onMouseEnter={() => setHighlighted(i)}
             >
-              <span className="font-medium text-stone-900">{ex.name}</span>
-              <span className="text-xs text-stone-400 ml-2 shrink-0">{CATEGORY_LABELS[ex.category]}</span>
+              <span className="font-medium text-ink">{ex.name}</span>
+              <span className="text-xs text-faint ml-2 shrink-0">{CATEGORY_LABELS[ex.category]}</span>
             </li>
           ))}
         </ul>

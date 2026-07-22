@@ -33,31 +33,31 @@ export function SetTimer({ seconds, label, onDone, onStop }: Props) {
 
   return (
     <div
-      className="rounded-2xl px-4 py-3 border bg-stone-900 dark:bg-stone-100 border-stone-900 dark:border-stone-100"
+      className="rounded-2xl px-4 py-3 border bg-work border-work"
       style={{ animation: 'timer-slide-in 0.25s ease forwards' }}
     >
       <div className="flex items-baseline justify-between mb-2 gap-3">
-        <span className="text-[11px] font-semibold uppercase tracking-[0.12em] text-stone-400 dark:text-stone-500 truncate">
+        <span className="text-[11px] font-semibold font-body uppercase tracking-[0.12em] text-black/60 truncate">
           {label}
         </span>
         <div className="flex items-baseline gap-3 shrink-0">
           <button
             onClick={onStop}
-            className="text-[11px] font-medium text-stone-500 dark:text-stone-400 hover:text-stone-300 dark:hover:text-stone-600 transition-colors"
+            className="text-[11px] font-medium text-black/60 hover:text-fmbg transition-colors"
           >
             Stop
           </button>
           <span className={`font-mono tabular-nums text-2xl font-bold leading-none ${
-            low ? 'text-red-400 dark:text-red-500' : 'text-white dark:text-stone-900'
+            low ? 'text-danger' : 'text-fmbg'
           }`}>
             {pad(mins)}:{pad(secs)}
           </span>
         </div>
       </div>
-      <div className="h-1 w-full rounded-full overflow-hidden bg-white/15 dark:bg-stone-900/15">
+      <div className="h-1 w-full rounded-full overflow-hidden bg-black/15">
         <div
           className={`h-full rounded-full transition-all duration-1000 ease-linear ${
-            low ? 'bg-red-400 dark:bg-red-500' : 'bg-white dark:bg-stone-900'
+            low ? 'bg-danger' : 'bg-fmbg'
           }`}
           style={{ width: `${pct}%` }}
         />
