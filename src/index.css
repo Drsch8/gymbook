@@ -32,6 +32,8 @@
   /* Focus mode — always-dark timer, its own tokens */
   --c-focus-bg:   oklch(0.17 0.022 250);
   --c-focus-ink:  oklch(0.92 0.018 230);
+  --c-focus-dim:  oklch(0.55 0.02 250);
+  --c-focus-line: oklch(0.28 0.022 250);
 }
 
 .dark {

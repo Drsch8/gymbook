@@ -102,7 +102,7 @@ const TIMER_SIZE = { fontSize: 'min(28vw, 128px)', fontVariantNumeric: 'tabular-
 function BigTime({ children, dim, blue }: { children: React.ReactNode; dim?: boolean; blue?: boolean }) {
   return (
     <span
-      className={`font-black leading-none tabular-nums ${dim ? 'text-stone-600' : blue ? 'text-blue-400' : 'text-stone-100'}`}
+      className={`font-mono font-black leading-none tabular-nums ${dim ? 'text-fmdim' : blue ? 'text-rest' : 'text-fmink'}`}
       style={TIMER_SIZE}
     >
       {children}
@@ -115,7 +115,7 @@ function PauseBtn({ running, onToggle, disabled }: { running: boolean; onToggle:
     <button
       onClick={onToggle}
       disabled={disabled}
-      className="text-stone-400 hover:text-stone-200 transition-colors disabled:opacity-30 p-1.5"
+      className="text-fmdim hover:text-fmink transition-colors disabled:opacity-30 p-1.5"
       aria-label={running ? 'Pause' : 'Resume'}
     >
       {running ? (
@@ -134,11 +134,41 @@ function PauseBtn({ running, onToggle, disabled }: { running: boolean; onToggle:
 
 function ProgressStrip({ progress, accent }: { progress: number; accent?: string }) {
   return (
-    <div className="w-full h-1 bg-stone-800 rounded-full overflow-hidden">
+    <div className="w-full h-1 bg-fmline rounded-full overflow-hidden">
       <div
-        className={`h-1 rounded-full transition-all duration-[10ms] ${accent ?? 'bg-stone-400'}`}
+        className={`h-1 rounded-full transition-all duration-[10ms] ${accent ?? 'bg-fmdim'}`}
         style={{ width: `${Math.min(progress, 1) * 100}%` }}
       />
+    </div>
+  )
+}
+
+// Method-indicator row — marks which class method is currently active. Shown
+// at the top of every fullscreen timer panel so the protocol is unmistakable
+// at a glance; Tabata's pill additionally reflects the live work/rest phase.
+const METHOD_PILLS = [
+  { method: 'Step Intervals', label: 'STEP' },
+  { method: 'Interval Sets', label: 'INTERVAL' },
+  { method: 'Supersets', label: 'SUPERSET' },
+  { method: 'Circuits', label: 'CIRCUIT' },
+  { method: 'High Intensity Sets', label: 'TABATA' },
+] as const
+
+function MethodPillRow({ active, phase }: { active: string; phase?: 'work' | 'rest' }) {
+  return (
+    <div className="flex gap-1.5 px-5 pb-3 shrink-0 flex-wrap">
+      {METHOD_PILLS.map(({ method, label }) => {
+        const isActive = method === active
+        const activeClass = phase === 'work' ? 'bg-work text-fmbg' : phase === 'rest' ? 'bg-rest text-fmbg' : 'bg-fmink text-fmbg'
+        return (
+          <span
+            key={method}
+            className={`px-2.5 py-1 rounded-full text-[10px] font-bold font-body tracking-wide ${isActive ? activeClass : 'bg-fmline text-fmdim'}`}
+          >
+            {label}
+          </span>
+        )
+      })}
     </div>
   )
 }
@@ -238,10 +268,10 @@ function HiitRounds({ round, phase, done }: { round: number; phase: 'work' | 're
         const state = done || n < round ? 'done' : n === round ? phase : 'todo'
         return (
           <div key={i} className={`w-7 h-2.5 rounded-full transition-colors duration-300 ${
-            state === 'done' ? 'bg-stone-100'
-              : state === 'work' ? 'bg-stone-100 animate-pulse'
-              : state === 'rest' ? 'bg-blue-500 animate-pulse'
-              : 'bg-stone-800'
+            state === 'done' ? 'bg-fmink'
+              : state === 'work' ? 'bg-work animate-pulse'
+              : state === 'rest' ? 'bg-rest animate-pulse'
+              : 'bg-fmline'
           }`} />
         )
       })}

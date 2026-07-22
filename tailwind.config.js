@@ -35,6 +35,11 @@ export default {
         'focus-pull': 'var(--c-focus-pull)',
         'focus-legs': 'var(--c-focus-legs)',
         'focus-core': 'var(--c-focus-core)',
+        // Workout timer "focus mode" — always-dark, theme-invariant
+        fmbg: 'var(--c-focus-bg)',
+        fmink: 'var(--c-focus-ink)',
+        fmdim: 'var(--c-focus-dim)',
+        fmline: 'var(--c-focus-line)',
       },
       borderRadius: {
         control: '4px',
