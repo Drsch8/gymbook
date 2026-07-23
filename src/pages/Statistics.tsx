@@ -1,4 +1,5 @@
 import { Fragment, useEffect, useMemo, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { getSessions, getBodyweightEntries, saveBodyweight } from '../db'
 import { usePreferences } from '../hooks/usePreferences'
 import type { Session, BodyweightEntry, WeightUnit } from '../types'
@@ -271,6 +272,7 @@ function StatTile({ label, value }: { label: string; value: string | number }) {
 
 export function Statistics() {
   const { prefs } = usePreferences()
+  const navigate = useNavigate()
   const [sessions, setSessions] = useState<Session[]>([])
   const [loading, setLoading] = useState(true)
 
@@ -297,8 +299,9 @@ export function Statistics() {
 
   return (
     <div className="bg-bg px-[18px] pt-safe">
-      <div className="pt-[26px] pb-5">
+      <div className="pt-[26px] pb-5 flex items-start justify-between">
         <h1 className="font-display text-[26px] font-bold text-ink -tracking-wide">Stats</h1>
+        <button onClick={() => navigate('/library')} className="text-[13px] font-semibold text-brand mt-1">Library ›</button>
       </div>
 
       <div className="space-y-4 pb-8">

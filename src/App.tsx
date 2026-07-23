@@ -10,11 +10,12 @@ import { History } from './pages/History'
 import { Recent } from './pages/Recent'
 import { Statistics } from './pages/Statistics'
 import { Settings } from './pages/Settings'
+import { Library, ExerciseDetail } from './pages/Library'
 import { Login } from './pages/Login'
 import { auth } from './lib/firebase'
 import { syncFromFirebase } from './db'
 
-const SHELL_ROUTES = ['/', '/classes', '/recent', '/history', '/statistics', '/settings']
+const SHELL_ROUTES = ['/', '/classes', '/recent', '/history', '/statistics', '/settings', '/library']
 const INACTIVITY_MS = 60 * 60 * 1000 // 60 minutes
 const LAST_ACTIVE_KEY = 'gymbook_last_active'
 // sessionStorage survives reloads + backgrounding but is wiped when the app is
@@ -168,6 +169,8 @@ export function App() {
             <Route path="/recent" element={<Recent />} />
             <Route path="/history" element={<History />} />
             <Route path="/statistics" element={<Statistics />} />
+            <Route path="/library" element={<Library />} />
+            <Route path="/library/:id" element={<ExerciseDetail />} />
             <Route path="/settings" element={<Settings />} />
           </>}
         </Routes>
