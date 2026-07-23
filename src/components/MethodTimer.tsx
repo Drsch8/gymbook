@@ -10,10 +10,10 @@ function fmt(s: number) {
   return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`
 }
 
-const BOX = 'w-36 h-28 rounded-3xl bg-stone-100 dark:bg-stone-800'
+const BOX = 'w-36 h-28 rounded-panel bg-elevated'
 const BOX_NUM = 'text-5xl font-bold font-mono leading-none tabular-nums'
 
-function DisplayBox({ children, label, colorClass = 'text-stone-900 dark:text-stone-100' }: {
+function DisplayBox({ children, label, colorClass = 'text-ink' }: {
   children: React.ReactNode
   label?: string
   colorClass?: string
@@ -25,7 +25,7 @@ function DisplayBox({ children, label, colorClass = 'text-stone-900 dark:text-st
         <span className={`${BOX_NUM} ${colorClass}`}>{children}</span>
       </div>
       <span className="text-xs leading-none invisible">▼</span>
-      {label && <span className="text-xs text-stone-400 dark:text-stone-500 mt-1">{label}</span>}
+      {label && <span className="text-xs text-faint mt-1">{label}</span>}
     </div>
   )
 }
@@ -58,11 +58,11 @@ function StufenintervallTimer({ autoStart, onDone }: { autoStart?: boolean; onDo
   }, [done])
 
   return (
-    <div className="bg-stone-50 dark:bg-stone-900 rounded-xl p-4 space-y-3">
-      <span className="text-xs font-semibold text-stone-400 dark:text-stone-500 uppercase tracking-wider">Step Interval</span>
+    <div className="bg-bg rounded-panel p-4 space-y-3">
+      <span className="text-[11px] font-bold font-body text-faint uppercase tracking-wider">Step Interval</span>
 
       <div className="flex items-start justify-center py-1">
-        <DisplayBox label="Time" colorClass={done ? 'text-red-500' : 'text-stone-900 dark:text-stone-100'}>
+        <DisplayBox label="Time" colorClass={done ? 'text-danger' : 'text-ink'}>
           {done ? '0:00' : fmt(seconds)}
         </DisplayBox>
       </div>
@@ -70,7 +70,7 @@ function StufenintervallTimer({ autoStart, onDone }: { autoStart?: boolean; onDo
       <button
         onClick={() => setRunning(r => !r)}
         disabled={done}
-        className="w-full py-2.5 rounded-xl text-sm font-semibold bg-stone-900 dark:bg-stone-100 text-white dark:text-stone-900 hover:bg-stone-800 dark:hover:bg-white disabled:opacity-30 transition-colors"
+        className="w-full py-2.5 rounded-xl text-sm font-semibold bg-ink text-bg hover:opacity-90 disabled:opacity-30 transition-colors"
       >
         {running ? '⏸ Pause' : '▶ Start'}
       </button>
@@ -78,7 +78,7 @@ function StufenintervallTimer({ autoStart, onDone }: { autoStart?: boolean; onDo
       {done && (
         <button
           onClick={() => { setSeconds(450); setRunning(false) }}
-          className="w-full py-1.5 rounded-xl text-xs text-stone-400 dark:text-stone-500 border border-dashed border-stone-200 dark:border-stone-700 hover:border-stone-400 transition-colors"
+          className="w-full py-1.5 rounded-xl text-xs text-faint border border-dashed border-line hover:border-faint transition-colors"
         >
           Restart
         </button>
@@ -135,15 +135,15 @@ function IntervallsätzeTimer({ autoStart, onDone }: { autoStart?: boolean; onDo
   }
 
   return (
-    <div className="bg-stone-50 dark:bg-stone-900 rounded-xl p-4 space-y-3">
-      <span className="text-xs font-semibold text-stone-400 dark:text-stone-500 uppercase tracking-wider">
+    <div className="bg-bg rounded-panel p-4 space-y-3">
+      <span className="text-[11px] font-bold font-body text-faint uppercase tracking-wider">
         {done ? 'Interval Sets done ✓' : `Interval Set ${satz}/3`}
       </span>
 
       {!done && (
         <>
           <div className="flex items-start justify-center gap-3 py-1">
-            <DisplayBox label="Time" colorClass={seconds === 0 ? 'text-red-500' : 'text-stone-900 dark:text-stone-100'}>
+            <DisplayBox label="Time" colorClass={seconds === 0 ? 'text-danger' : 'text-ink'}>
               {fmt(seconds)}
             </DisplayBox>
             <DisplayBox label="Set">{satz}</DisplayBox>
@@ -152,13 +152,13 @@ function IntervallsätzeTimer({ autoStart, onDone }: { autoStart?: boolean; onDo
             <button
               onClick={() => setRunning(r => !r)}
               disabled={seconds === 0}
-              className="flex-1 py-2.5 rounded-xl text-sm font-semibold bg-stone-900 dark:bg-stone-100 text-white dark:text-stone-900 hover:bg-stone-800 dark:hover:bg-white disabled:opacity-30 transition-colors"
+              className="flex-1 py-2.5 rounded-xl text-sm font-semibold bg-ink text-bg hover:opacity-90 disabled:opacity-30 transition-colors"
             >
               {running ? '⏸ Pause' : '▶ Start'}
             </button>
             <button
               onClick={nextSatz}
-              className="flex-1 py-2.5 rounded-xl text-sm font-semibold bg-stone-100 dark:bg-stone-700 text-stone-700 dark:text-stone-300 hover:bg-stone-200 dark:hover:bg-stone-600 transition-colors"
+              className="flex-1 py-2.5 rounded-xl text-sm font-semibold bg-elevated text-muted hover:bg-line transition-colors"
             >
               {satz < 3 ? 'Next →' : 'Done ✓'}
             </button>
@@ -169,7 +169,7 @@ function IntervallsätzeTimer({ autoStart, onDone }: { autoStart?: boolean; onDo
       {done && (
         <button
           onClick={() => { setSatz(1); setSeconds(180); setRunning(false) }}
-          className="w-full py-1.5 rounded-xl text-xs text-stone-400 dark:text-stone-500 border border-dashed border-stone-200 dark:border-stone-700 hover:border-stone-400 transition-colors"
+          className="w-full py-1.5 rounded-xl text-xs text-faint border border-dashed border-line hover:border-faint transition-colors"
         >
           Restart
         </button>
@@ -225,12 +225,12 @@ function SupersatzTimer({ autoStart, onDone }: { autoStart?: boolean; onDone?: (
   }, [done])
 
   return (
-    <div className="bg-stone-50 dark:bg-stone-900 rounded-xl p-3 space-y-2.5">
+    <div className="bg-bg rounded-panel p-3 space-y-2.5">
       <div className="flex items-center justify-between">
-        <span className="text-xs font-semibold text-stone-400 dark:text-stone-500 uppercase tracking-wider">
+        <span className="text-[11px] font-bold font-body text-faint uppercase tracking-wider">
           {done ? 'Supersets done ✓' : `Pair ${pair}/3 · Set ${setInPair}/2`}
         </span>
-        <span className={`font-mono text-lg font-bold ${seconds === 0 && !done ? 'text-red-500' : 'text-stone-900 dark:text-stone-100'}`}>
+        <span className={`font-mono text-lg font-bold ${seconds === 0 && !done ? 'text-danger' : 'text-ink'}`}>
           {done ? '—' : fmt(seconds)}
         </span>
       </div>
@@ -240,13 +240,13 @@ function SupersatzTimer({ autoStart, onDone }: { autoStart?: boolean; onDone?: (
           <button
             onClick={() => setRunning(r => !r)}
             disabled={seconds === 0}
-            className="flex-1 py-2 rounded-xl text-xs font-semibold bg-stone-900 dark:bg-stone-100 text-white dark:text-stone-900 hover:bg-stone-800 dark:hover:bg-white disabled:opacity-30 transition-colors"
+            className="flex-1 py-2 rounded-xl text-xs font-semibold bg-ink text-bg hover:opacity-90 disabled:opacity-30 transition-colors"
           >
             {running ? '⏸ Pause' : '▶ Start'}
           </button>
           <button
             onClick={() => { if (count >= 6) { setCount(7) } else { setCount(c => c + 1); setSeconds(240); setRunning(true) } }}
-            className="flex-1 py-2 rounded-xl text-xs font-semibold bg-stone-100 dark:bg-stone-700 text-stone-700 dark:text-stone-300 hover:bg-stone-200 dark:hover:bg-stone-600 transition-colors"
+            className="flex-1 py-2 rounded-xl text-xs font-semibold bg-elevated text-muted hover:bg-line transition-colors"
           >
             {count < 6 ? 'Next →' : 'Done ✓'}
           </button>
@@ -256,7 +256,7 @@ function SupersatzTimer({ autoStart, onDone }: { autoStart?: boolean; onDone?: (
       {done && (
         <button
           onClick={() => { setCount(1); setSeconds(240); setRunning(false) }}
-          className="w-full py-1.5 rounded-xl text-xs text-stone-400 dark:text-stone-500 border border-dashed border-stone-200 dark:border-stone-700 hover:border-stone-400 transition-colors"
+          className="w-full py-1.5 rounded-xl text-xs text-faint border border-dashed border-line hover:border-faint transition-colors"
         >
           Restart
         </button>
@@ -299,11 +299,11 @@ function HochintensitaetsTimer({ autoStart, onDone }: { autoStart?: boolean; onD
 
   const reset = () => { setRound(1); setPhase('work'); setSeconds(20); setRunning(false); setDone(false) }
 
-  const timerColor = done ? 'text-green-500' : phase === 'rest' ? 'text-blue-500' : 'text-stone-900 dark:text-stone-100'
+  const timerColor = done ? 'text-done' : phase === 'rest' ? 'text-rest' : 'text-ink'
 
   return (
-    <div className="bg-stone-50 dark:bg-stone-900 rounded-xl p-4 space-y-3">
-      <span className="text-xs font-semibold text-stone-400 dark:text-stone-500 uppercase tracking-wider">High Intensity</span>
+    <div className="bg-bg rounded-panel p-4 space-y-3">
+      <span className="text-[11px] font-bold font-body text-faint uppercase tracking-wider">High Intensity</span>
 
       <div className="flex items-start justify-center gap-3 py-1">
         <DisplayBox label="Zeit" colorClass={timerColor}>
@@ -312,15 +312,15 @@ function HochintensitaetsTimer({ autoStart, onDone }: { autoStart?: boolean; onD
         <DisplayBox label={`Round ${round}/8`}>{round}</DisplayBox>
       </div>
 
-      <div className="w-full bg-stone-200 dark:bg-stone-700 rounded-full h-1.5">
+      <div className="w-full bg-elevated rounded-full h-1.5">
         <div
-          className={`h-1.5 rounded-full transition-all duration-1000 ${phase === 'work' ? 'bg-stone-900 dark:bg-stone-300' : 'bg-blue-400'}`}
+          className={`h-1.5 rounded-full transition-all duration-1000 ${phase === 'work' ? 'bg-work' : 'bg-rest'}`}
           style={{ width: done ? '100%' : `${((round - 1) / 8 + (phase === 'rest' ? 0.5 : 0) / 8) * 100}%` }}
         />
       </div>
 
       {!done && (
-        <p className="text-center text-xs font-semibold text-stone-400 dark:text-stone-500 uppercase tracking-wider">
+        <p className="text-center text-[11px] font-bold font-body text-faint uppercase tracking-wider">
           {phase === 'work' ? 'Work' : 'Rest'}
         </p>
       )}
@@ -329,13 +329,13 @@ function HochintensitaetsTimer({ autoStart, onDone }: { autoStart?: boolean; onD
         <button
           onClick={() => setRunning(r => !r)}
           disabled={done}
-          className="flex-1 py-2.5 rounded-xl text-sm font-semibold bg-stone-900 dark:bg-stone-100 text-white dark:text-stone-900 hover:bg-stone-800 dark:hover:bg-white disabled:opacity-30 transition-colors"
+          className="flex-1 py-2.5 rounded-xl text-sm font-semibold bg-ink text-bg hover:opacity-90 disabled:opacity-30 transition-colors"
         >
           {running ? '⏸ Pause' : '▶ Start'}
         </button>
         <button
           onClick={reset}
-          className="px-4 py-2.5 rounded-xl text-sm text-stone-400 dark:text-stone-500 border border-stone-200 dark:border-stone-600 hover:border-stone-400 transition-colors"
+          className="px-4 py-2.5 rounded-xl text-sm text-faint border border-line hover:border-faint transition-colors"
         >
           Reset
         </button>
@@ -366,13 +366,13 @@ export function ZirkelTimer({ autoStart }: { autoStart?: boolean } = {}) {
   const done = seconds === 0
 
   return (
-    <div className="bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-2xl px-4 py-3">
+    <div className="bg-surface border border-line rounded-panel px-4 py-3">
       <div className="flex items-center justify-between mb-2">
         <div>
-          <p className="text-xs font-semibold text-stone-500 dark:text-stone-400">Circuit</p>
-          <p className="text-xs text-stone-400 dark:text-stone-500">As many rounds as possible in 20 min</p>
+          <p className="text-xs font-semibold text-muted">Circuit</p>
+          <p className="text-xs text-faint">As many rounds as possible in 20 min</p>
         </div>
-        <span className={`font-mono text-xl font-bold ${done ? 'text-red-500' : 'text-stone-900 dark:text-stone-100'}`}>
+        <span className={`font-mono text-xl font-bold ${done ? 'text-danger' : 'text-ink'}`}>
           {fmt(seconds)}
         </span>
       </div>
@@ -380,14 +380,14 @@ export function ZirkelTimer({ autoStart }: { autoStart?: boolean } = {}) {
         <button
           onClick={() => setRunning(r => !r)}
           disabled={done}
-          className="flex-1 py-2 rounded-xl text-xs font-semibold bg-stone-900 dark:bg-stone-100 text-white dark:text-stone-900 hover:bg-stone-800 dark:hover:bg-white disabled:opacity-30 transition-colors"
+          className="flex-1 py-2 rounded-xl text-xs font-semibold bg-ink text-bg hover:opacity-90 disabled:opacity-30 transition-colors"
         >
           {running ? '⏸ Pause' : '▶ Start'}
         </button>
         {done && (
           <button
             onClick={() => { setSeconds(1200); setRunning(false) }}
-            className="flex-1 py-2 rounded-xl text-xs font-medium border border-stone-200 dark:border-stone-600 text-stone-500 dark:text-stone-400 hover:border-stone-400 transition-colors"
+            className="flex-1 py-2 rounded-xl text-xs font-medium border border-line text-muted hover:border-faint transition-colors"
           >
             Restart
           </button>

@@ -25,6 +25,9 @@ function errorMessage(code: string): string {
   }
 }
 
+const FIELD = 'w-full bg-elevated border border-line rounded-card px-4 h-12 text-sm text-ink outline-none focus:border-brand placeholder:text-faint transition-colors'
+const LABEL = 'block text-[11px] font-bold font-body text-muted uppercase tracking-wider mb-1.5'
+
 export function Login() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -68,66 +71,52 @@ export function Login() {
     }
   }
 
-  return (
-    <div className="min-h-screen bg-stone-950 flex flex-col items-center justify-center px-6">
-      <div className="w-full max-w-sm">
-        <h1 className="text-3xl font-bold text-stone-100 mb-2">GymBook</h1>
-        <p className="text-stone-400 text-sm mb-10">Your personal training journal</p>
+  const title = mode === 'signin' ? 'Sign in' : mode === 'signup' ? 'Create account' : 'Send link'
 
-        {mode === 'verify' ? (
-          <div className="bg-stone-800 rounded-2xl p-6 text-center">
-            <p className="text-stone-100 font-medium mb-2">Confirmation link sent</p>
-            <p className="text-stone-400 text-sm mb-4">
-              Check your inbox for <span className="text-stone-200">{email}</span> and click the confirmation link. Then you can sign in.
+  return (
+    <div className="dark min-h-screen bg-bg flex flex-col px-6 pt-safe">
+      <div className="w-full max-w-sm mx-auto flex-1 flex flex-col justify-center pb-16 pt-24">
+        <h1 className="font-display text-[26px] font-bold text-ink -tracking-wide mb-1">GymBook</h1>
+        <p className="text-muted text-[13px] mb-9">Sign in to sync your training.</p>
+
+        {mode === 'verify' || resetSent ? (
+          <div className="bg-surface border border-line rounded-panel p-6">
+            <p className="text-[11px] font-bold font-body text-pr uppercase tracking-wider mb-1.5">
+              {mode === 'verify' ? 'Verify your email' : 'Reset link sent'}
             </p>
-            <button onClick={() => switchMode('signin')} className="text-stone-400 text-sm underline">
-              Go to sign in
-            </button>
-          </div>
-        ) : resetSent ? (
-          <div className="bg-stone-800 rounded-2xl p-6 text-center">
-            <p className="text-stone-100 font-medium mb-2">Email sent</p>
-            <p className="text-stone-400 text-sm mb-4">
-              Check your inbox for <span className="text-stone-200">{email}</span> and follow the reset link.
+            <p className="text-muted text-[13px] leading-relaxed mb-4">
+              We sent a link to <span className="text-ink font-medium">{email}</span>.{' '}
+              {mode === 'verify'
+                ? "Once verified you'll drop straight into your program — nothing to redo."
+                : 'Follow the link to set a new password.'}
             </p>
-            <button onClick={() => switchMode('signin')} className="text-stone-400 text-sm underline">
-              Back to sign in
+            <button onClick={() => switchMode('signin')} className="text-brand text-[13px] font-semibold">
+              ← Back to sign in
             </button>
           </div>
         ) : (
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} className="flex flex-col gap-4">
             <div>
-              <label className="block text-stone-400 text-xs mb-1.5 uppercase tracking-wide">Email</label>
+              <label className={LABEL}>Email</label>
               <input
-                type="email"
-                value={email}
-                onChange={e => setEmail(e.target.value)}
-                placeholder="you@example.com"
-                required
-                autoCapitalize="none"
-                autoCorrect="off"
-                className="w-full bg-stone-800 text-stone-100 rounded-xl px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-stone-500 placeholder:text-stone-600"
+                type="email" value={email} onChange={e => setEmail(e.target.value)}
+                placeholder="you@domain.com" required autoCapitalize="none" autoCorrect="off"
+                style={{ fontSize: '16px' }} className={FIELD}
               />
             </div>
 
             {mode !== 'reset' && (
               <div>
-                <label className="block text-stone-400 text-xs mb-1.5 uppercase tracking-wide">Password</label>
+                <label className={LABEL}>Password</label>
                 <div className="relative">
                   <input
-                    type={showPassword ? 'text' : 'password'}
-                    value={password}
-                    onChange={e => setPassword(e.target.value)}
-                    placeholder="••••••••"
-                    required
-                    className="w-full bg-stone-800 text-stone-100 rounded-xl px-4 py-3 pr-12 text-sm outline-none focus:ring-2 focus:ring-stone-500 placeholder:text-stone-600"
+                    type={showPassword ? 'text' : 'password'} value={password}
+                    onChange={e => setPassword(e.target.value)} placeholder="••••••••" required
+                    style={{ fontSize: '16px' }} className={`${FIELD} pr-12`}
                   />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(v => !v)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-stone-500 hover:text-stone-300 transition-colors p-1"
-                    aria-label={showPassword ? 'Hide password' : 'Show password'}
-                  >
+                  <button type="button" onClick={() => setShowPassword(v => !v)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-faint hover:text-ink transition-colors p-1"
+                    aria-label={showPassword ? 'Hide password' : 'Show password'}>
                     {showPassword ? (
                       <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                         <path strokeLinecap="round" strokeLinejoin="round" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />
@@ -143,38 +132,29 @@ export function Login() {
               </div>
             )}
 
-            {error && <p className="text-red-400 text-xs">{error}</p>}
+            {error && <p className="text-danger text-xs">{error}</p>}
 
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full bg-stone-100 text-stone-900 font-semibold rounded-xl py-3 text-sm disabled:opacity-50">
-              {loading ? '…' : mode === 'signin' ? 'Sign in' : mode === 'signup' ? 'Sign up' : 'Send link'}
+            <button type="submit" disabled={loading}
+              className="w-full h-12 bg-brand text-brand-ink font-bold rounded-card text-[14.5px] disabled:opacity-50 transition-opacity">
+              {loading ? '…' : title}
             </button>
           </form>
         )}
 
         {!resetSent && mode !== 'verify' && (
-          <div className="mt-4 flex flex-col items-center gap-1">
+          <p className="text-center text-[12.5px] text-muted mt-6">
             {mode === 'signin' && <>
-              <button onClick={() => switchMode('signup')} className="text-stone-500 text-sm py-1">
-                No account? Sign up
-              </button>
-              <button onClick={() => switchMode('reset')} className="text-stone-600 text-xs py-1">
-                Forgot password
-              </button>
+              No account? <button onClick={() => switchMode('signup')} className="text-brand font-semibold">Create one</button>
+              {' · '}
+              <button onClick={() => switchMode('reset')} className="text-faint">Forgot password</button>
             </>}
-            {mode === 'signup' && (
-              <button onClick={() => switchMode('signin')} className="text-stone-500 text-sm py-1">
-                Already registered? Sign in
-              </button>
-            )}
+            {mode === 'signup' && <>
+              Already registered? <button onClick={() => switchMode('signin')} className="text-brand font-semibold">Sign in</button>
+            </>}
             {mode === 'reset' && (
-              <button onClick={() => switchMode('signin')} className="text-stone-500 text-sm py-1">
-                Back to sign in
-              </button>
+              <button onClick={() => switchMode('signin')} className="text-brand font-semibold">← Back to sign in</button>
             )}
-          </div>
+          </p>
         )}
       </div>
     </div>

@@ -32,14 +32,14 @@ export function Recent() {
   const sessions = useLiveQuery(() => getSessions(100), []) ?? []
 
   return (
-    <div className="px-4 pt-safe">
-      <div className="pt-14 pb-6">
-        <h1 className="text-4xl font-bold text-stone-900 dark:text-stone-100 tracking-tight">Recent</h1>
-        <p className="text-stone-500 dark:text-stone-400 mt-1 text-sm">Your training history</p>
+    <div className="bg-bg px-[18px] pt-safe">
+      <div className="pt-[26px] pb-6">
+        <h1 className="font-display text-[26px] font-bold text-ink -tracking-wide">Recent</h1>
+        <p className="text-muted mt-1 text-sm">Your training history</p>
       </div>
 
       {sessions.length === 0 && (
-        <p className="text-center text-stone-400 dark:text-stone-500 text-sm mt-8">No sessions yet.</p>
+        <p className="text-center text-faint text-sm mt-8">No sessions yet.</p>
       )}
 
       <div className="space-y-2 pb-8">
@@ -47,19 +47,19 @@ export function Recent() {
           const completedSets = session.exercises.reduce((n, e) => n + e.sets.filter(s => s.completed).length, 0)
           const dur = formatDuration(session)
           return (
-            <div key={session.id} className="bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-2xl overflow-hidden hover:border-stone-300 dark:hover:border-stone-600 transition-colors">
+            <div key={session.id} className="bg-surface border border-line rounded-panel overflow-hidden hover:border-faint transition-colors">
               <div className="flex items-start gap-2 px-4 pt-3 pb-3">
                 <Link to={`/session/${session.id}`} className="flex-1 min-w-0">
-                  <p className="text-stone-900 dark:text-stone-100 font-semibold text-sm truncate">
+                  <p className="text-ink font-semibold text-sm truncate">
                     {session.name ? `${formatDate(session.startedAt)}, ${session.name}` : formatDate(session.startedAt)}
                   </p>
-                  <p className="text-stone-400 dark:text-stone-500 text-xs mt-0.5">
+                  <p className="text-faint text-xs mt-0.5">
                     {session.exercises.length} exercise{session.exercises.length !== 1 ? 's' : ''}
                     {' · '}{completedSets} set{completedSets !== 1 ? 's' : ''}
                     {dur && ` · ${dur}`}
                   </p>
                   {session.exercises.length > 0 && (
-                    <p className="mt-1.5 text-[11px] text-stone-400 dark:text-stone-500 leading-relaxed">
+                    <p className="mt-1.5 text-[11px] text-faint leading-relaxed">
                       {session.exercises.map(e => e.exerciseName).join(' · ')}
                     </p>
                   )}
@@ -67,7 +67,7 @@ export function Recent() {
                 {session.exercises.length > 0 && (
                   <button
                     onClick={() => navigate('/session/new', { state: { repeat: buildRepeatExercises(session) } })}
-                    className="shrink-0 flex items-center gap-1 text-xs font-medium text-stone-400 hover:text-stone-900 dark:hover:text-stone-100 transition-colors pt-0.5"
+                    className="shrink-0 flex items-center gap-1 text-xs font-medium text-faint hover:text-ink transition-colors pt-0.5"
                   >
                     <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                       <path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />

@@ -160,7 +160,7 @@ export function SetRow({ set, index, trackingType, weightUnit, onChange, onRemov
 
         {!locked && (
           <button
-            className="flex-shrink-0 flex items-center justify-center bg-red-500 text-white text-xs font-semibold"
+            className="flex-shrink-0 flex items-center justify-center bg-danger text-white text-xs font-semibold"
             style={{ width: REVEAL }}
             onClick={() => { setSlideX(0, true); onRemove() }}
             aria-label="Remove set"
