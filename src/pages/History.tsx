@@ -50,13 +50,13 @@ function SegmentedControl({ value, onChange }: { value: View; onChange: (v: View
     { label: 'Records',  value: 'records' },
   ]
   return (
-    <div className="flex bg-stone-100 rounded-xl p-1 gap-1">
+    <div className="flex bg-elevated rounded-card p-1 gap-1">
       {opts.map(o => (
         <button
           key={o.value}
           onClick={() => onChange(o.value)}
           className={`flex-1 py-1.5 rounded-lg text-sm font-medium transition-colors ${
-            value === o.value ? 'bg-white text-stone-900 shadow-sm' : 'text-stone-500 hover:text-stone-700'
+            value === o.value ? 'bg-surface text-ink' : 'text-muted hover:text-ink'
           }`}
         >
           {o.label}
@@ -131,15 +131,15 @@ function CalendarView({ sessions, navigate: navigateTo }: { sessions: Session[];
 
   return (
     <div className="space-y-4">
-      <div className="bg-white border border-stone-200 rounded-2xl overflow-hidden">
-        <div className="flex items-center justify-between px-4 py-3 border-b border-stone-100">
+      <div className="bg-surface border border-line rounded-panel overflow-hidden">
+        <div className="flex items-center justify-between px-4 py-3 border-b border-line">
           <button onClick={() => setViewDate(v => { const d = new Date(v.year, v.month - 1, 1); return { year: d.getFullYear(), month: d.getMonth() } })}
-            className="w-8 h-8 flex items-center justify-center text-stone-400 hover:text-stone-700 hover:bg-stone-100 rounded-lg transition-colors text-lg">‹</button>
-          <span className="text-sm font-semibold text-stone-900">{monthLabel}</span>
+            className="w-8 h-8 flex items-center justify-center text-faint hover:text-ink hover:bg-elevated rounded-card transition-colors text-lg">‹</button>
+          <span className="text-sm font-semibold text-ink">{monthLabel}</span>
           <div className="flex items-center gap-1">
             <button
               onClick={() => { const d = new Date(); setViewDate({ year: d.getFullYear(), month: d.getMonth() }); setSelected(today) }}
-              className="w-8 h-8 flex items-center justify-center text-stone-400 hover:text-stone-700 hover:bg-stone-100 rounded-lg transition-colors"
+              className="w-8 h-8 flex items-center justify-center text-faint hover:text-ink hover:bg-elevated rounded-card transition-colors"
               aria-label="Heute"
               title="Heute"
             >
@@ -148,12 +148,12 @@ function CalendarView({ sessions, navigate: navigateTo }: { sessions: Session[];
               </svg>
             </button>
             <button onClick={() => setViewDate(v => { const d = new Date(v.year, v.month + 1, 1); return { year: d.getFullYear(), month: d.getMonth() } })}
-              className="w-8 h-8 flex items-center justify-center text-stone-400 hover:text-stone-700 hover:bg-stone-100 rounded-lg transition-colors text-lg">›</button>
+              className="w-8 h-8 flex items-center justify-center text-faint hover:text-ink hover:bg-elevated rounded-card transition-colors text-lg">›</button>
           </div>
         </div>
         <div className="px-3 pb-3 pt-2">
           <div className="grid grid-cols-7 mb-1">
-            {DOW.map(d => <div key={d} className="text-center text-[10px] font-medium text-stone-400 py-1">{d}</div>)}
+            {DOW.map(d => <div key={d} className="text-center text-[10px] font-medium text-faint py-1">{d}</div>)}
           </div>
           <div className="grid grid-cols-7 gap-y-1">
             {days.map((day, i) => {
@@ -169,21 +169,21 @@ function CalendarView({ sessions, navigate: navigateTo }: { sessions: Session[];
                 <button key={dateStr} onClick={() => handleDayClick(dateStr)}
                   className={[
                     'relative flex flex-col items-center justify-center py-1.5 rounded-xl transition-colors text-sm',
-                    isSelected ? 'bg-stone-900 text-white font-semibold' : '',
-                    !isSelected && hasSession ? 'text-stone-700 hover:bg-stone-100 font-medium' : '',
-                    !isSelected && !hasSession && hasPlan ? 'text-stone-600 hover:bg-stone-100 font-medium' : '',
-                    !isSelected && !hasSession && !hasPlan && isPast ? 'text-stone-300' : '',
-                    !isSelected && !hasSession && !hasPlan && !isPast && !isToday ? 'text-stone-400 hover:bg-stone-50' : '',
-                    isToday && !isSelected ? 'ring-1 ring-stone-400' : '',
+                    isSelected ? 'bg-brand text-brand-ink font-semibold' : '',
+                    !isSelected && hasSession ? 'text-ink hover:bg-elevated font-medium' : '',
+                    !isSelected && !hasSession && hasPlan ? 'text-muted hover:bg-elevated font-medium' : '',
+                    !isSelected && !hasSession && !hasPlan && isPast ? 'text-faint opacity-60' : '',
+                    !isSelected && !hasSession && !hasPlan && !isPast && !isToday ? 'text-faint hover:bg-elevated' : '',
+                    isToday && !isSelected ? 'ring-1 ring-brand' : '',
                   ].join(' ')}
                 >
                   {day}
                   {hasSession && (
-                    <span className={`absolute bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full ${isSelected ? 'bg-white' : 'bg-stone-900'}`} />
+                    <span className={`absolute bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full ${isSelected ? 'bg-brand-ink' : 'bg-brand'}`} />
                   )}
                   {!hasSession && hasPlan && (
                     <span className={`absolute bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full border ${
-                      isSelected ? 'border-white' : isMissed ? 'border-stone-300' : 'border-stone-400'
+                      isSelected ? 'border-brand-ink' : isMissed ? 'border-faint' : 'border-muted'
                     }`} />
                   )}
                 </button>
@@ -195,19 +195,19 @@ function CalendarView({ sessions, navigate: navigateTo }: { sessions: Session[];
         {/* Legend */}
         <div className="flex items-center gap-4 px-4 pb-3 pt-0">
           <div className="flex items-center gap-1.5">
-            <span className="w-1.5 h-1.5 rounded-full bg-stone-900 inline-block" />
-            <span className="text-[10px] text-stone-400">Logged</span>
+            <span className="w-1.5 h-1.5 rounded-full bg-brand inline-block" />
+            <span className="text-[10px] text-faint">Logged</span>
           </div>
           <div className="flex items-center gap-1.5">
-            <span className="w-1.5 h-1.5 rounded-full border border-stone-400 inline-block" />
-            <span className="text-[10px] text-stone-400">Planned</span>
+            <span className="w-1.5 h-1.5 rounded-full border border-muted inline-block" />
+            <span className="text-[10px] text-faint">Planned</span>
           </div>
         </div>
       </div>
 
       {selected && (
         <div className="space-y-3">
-          <p className="text-xs font-medium text-stone-400 uppercase tracking-wider">
+          <p className="text-xs font-bold font-body text-faint uppercase tracking-wider">
             {new Date(selected + 'T12:00:00').toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric' })}
           </p>
 
@@ -218,28 +218,28 @@ function CalendarView({ sessions, navigate: navigateTo }: { sessions: Session[];
           {selectedSessions.length === 0 && !selectedPlan && !planning && (
             <button
               onClick={() => setPlanning(true)}
-              className="w-full py-3 rounded-2xl border border-dashed border-stone-200 text-stone-400 text-sm hover:border-stone-400 hover:text-stone-600 bg-white transition-colors"
+              className="w-full py-3 rounded-2xl border border-dashed border-line text-faint text-sm hover:border-faint hover:text-muted bg-surface transition-colors"
             >
               + Plan a workout
             </button>
           )}
 
           {planning && (
-            <div className="bg-white border border-stone-200 rounded-2xl px-4 py-3 space-y-3">
-              <p className="text-xs font-semibold text-stone-400 uppercase tracking-wider">Plan workout</p>
+            <div className="bg-surface border border-line rounded-panel px-4 py-3 space-y-3">
+              <p className="text-xs font-bold font-body text-faint uppercase tracking-wider">Plan workout</p>
               <input
                 type="text"
                 value={planTitle}
                 onChange={e => setPlanTitle(e.target.value)}
                 placeholder="Title (optional)"
                 style={{ fontSize: '16px' }}
-                className="w-full bg-stone-50 border border-stone-200 rounded-xl px-3 py-2 text-sm text-stone-900 placeholder-stone-400 focus:outline-none focus:border-stone-400"
+                className="w-full bg-bg border border-line rounded-card px-3 py-2 text-sm text-ink placeholder-faint focus:outline-none focus:border-brand"
               />
               <div className="flex flex-wrap gap-1.5">
                 {PLAN_CHIPS.map(chip => (
                   <button key={chip} onClick={() => setPlanTitle(prev => prev === chip ? '' : chip)}
                     className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${
-                      planTitle === chip ? 'bg-stone-900 text-white' : 'bg-stone-100 text-stone-600 hover:bg-stone-200'
+                      planTitle === chip ? 'bg-ink text-bg' : 'bg-elevated text-muted hover:bg-line'
                     }`}>
                     {chip}
                   </button>
@@ -247,11 +247,11 @@ function CalendarView({ sessions, navigate: navigateTo }: { sessions: Session[];
               </div>
               <div className="flex gap-2">
                 <button onClick={savePlan}
-                  className="flex-1 py-2 rounded-xl bg-stone-900 text-white text-sm font-semibold hover:bg-stone-800 transition-colors">
+                  className="flex-1 py-2 rounded-card bg-brand text-brand-ink text-sm font-semibold transition-colors">
                   Save plan
                 </button>
                 <button onClick={() => { setPlanning(false); setPlanTitle('') }}
-                  className="px-4 py-2 rounded-xl border border-stone-200 text-stone-500 text-sm hover:bg-stone-50 transition-colors">
+                  className="px-4 py-2 rounded-xl border border-line text-muted text-sm hover:bg-elevated transition-colors">
                   Cancel
                 </button>
               </div>
@@ -259,22 +259,22 @@ function CalendarView({ sessions, navigate: navigateTo }: { sessions: Session[];
           )}
 
           {selectedPlan && selectedSessions.length === 0 && (
-            <div className="bg-white border border-stone-200 rounded-2xl px-4 py-3">
+            <div className="bg-surface border border-line rounded-panel px-4 py-3">
               <div className="flex items-center justify-between mb-3">
                 <div>
-                  <p className="text-sm font-semibold text-stone-900">
+                  <p className="text-sm font-semibold text-ink">
                     {selectedPlan.title ?? 'Planned workout'}
                   </p>
-                  <p className="text-xs text-stone-400 mt-0.5">{selected! < today ? 'Missed' : 'Scheduled'}</p>
+                  <p className="text-xs text-faint mt-0.5">{selected! < today ? 'Missed' : 'Scheduled'}</p>
                 </div>
                 <button onClick={() => removePlan(selectedPlan.id)}
-                  className="text-xs text-stone-400 hover:text-red-500 transition-colors">
+                  className="text-xs text-faint hover:text-danger transition-colors">
                   Remove
                 </button>
               </div>
               <button
                 onClick={() => navigate('/session/new', { state: { name: selectedPlan.title } })}
-                className="w-full py-2.5 rounded-xl bg-stone-900 text-white text-sm font-semibold hover:bg-stone-800 transition-colors"
+                className="w-full py-2.5 rounded-card bg-brand text-brand-ink text-sm font-semibold transition-colors"
               >
                 {selected! < today ? 'Log this workout' : 'Start this workout'}
               </button>
@@ -283,11 +283,11 @@ function CalendarView({ sessions, navigate: navigateTo }: { sessions: Session[];
 
           {selectedPlan && selectedSessions.length > 0 && (
             <div className="flex items-center justify-between px-1">
-              <span className="text-xs text-stone-400">
+              <span className="text-xs text-faint">
                 Plan: {selectedPlan.title ?? 'Workout'} ✓
               </span>
               <button onClick={() => removePlan(selectedPlan.id)}
-                className="text-xs text-stone-400 hover:text-red-500 transition-colors">
+                className="text-xs text-faint hover:text-danger transition-colors">
                 Remove plan
               </button>
             </div>
@@ -321,8 +321,8 @@ function FeedView({ sessions, navigate }: { sessions: Session[]; navigate: (id: 
         return (
           <div key={key}>
             <div className="flex items-center justify-between mb-2">
-              <span className="text-xs font-semibold text-stone-400 uppercase tracking-widest">{label}</span>
-              <span className="text-xs text-stone-400">{grouped[key].length} session{grouped[key].length !== 1 ? 's' : ''}</span>
+              <span className="text-xs font-bold font-body text-faint uppercase tracking-widest">{label}</span>
+              <span className="text-xs text-faint">{grouped[key].length} session{grouped[key].length !== 1 ? 's' : ''}</span>
             </div>
             <div className="space-y-2">
               {grouped[key].map(s => <SessionCard key={s.id} session={s} onClick={() => navigate(s.id)} />)}
@@ -398,7 +398,7 @@ function SwipeableSessionCard({ session, onOpen, onDelete }: { session: Session;
           <SessionCard session={session} onClick={onOpen} />
         </div>
         <button
-          className="flex-shrink-0 flex items-center justify-center bg-red-500 text-white text-xs font-semibold"
+          className="flex-shrink-0 flex items-center justify-center bg-danger text-white text-xs font-semibold"
           style={{ width: SWIPE_REVEAL }}
           onClick={() => { setSlideX(0, true); onDelete() }}
           aria-label="Delete session"
@@ -427,40 +427,40 @@ function SessionCard({ session, onClick }: { session: Session; onClick: () => vo
 
   return (
     <button onClick={onClick}
-      className="w-full bg-white border border-stone-200 rounded-2xl px-4 py-3 text-left hover:border-stone-300 transition-colors">
+      className="w-full bg-surface border border-line rounded-panel px-4 py-3 text-left hover:border-faint transition-colors">
       <div className="flex items-start justify-between gap-2">
         <div className="min-w-0">
-          <p className="font-semibold text-stone-900 text-sm truncate">
+          <p className="font-semibold text-ink text-sm truncate">
             {session.name ? `${dateLabel}, ${session.name}` : dateLabel}
           </p>
           <div className="flex items-center gap-1.5 mt-1 flex-wrap">
             <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold uppercase tracking-wide ${
-              isClass ? 'bg-stone-900 text-white' : 'bg-stone-100 text-stone-500'
+              isClass ? 'bg-klass text-white' : 'bg-elevated text-muted'
             }`}>
               {isClass ? 'Class' : 'Training'}
             </span>
             {isClass && classDetail && (
-              <span className="text-[11px] text-stone-500 truncate">{classDetail}</span>
+              <span className="text-[11px] text-muted truncate">{classDetail}</span>
             )}
             {isClass && position && (
-              <span className="text-[11px] font-mono text-stone-400">{position}</span>
+              <span className="text-[11px] font-mono text-faint">{position}</span>
             )}
           </div>
-          <div className="flex items-center gap-3 mt-1 text-xs text-stone-400 flex-wrap">
+          <div className="flex items-center gap-3 mt-1 text-xs text-faint flex-wrap">
             <span>{session.exercises.length} exercise{session.exercises.length !== 1 ? 's' : ''}</span>
             <span>{sets} set{sets !== 1 ? 's' : ''}</span>
             {dur && <span>{dur}</span>}
             {vol > 0 && <span>{(vol / 1000).toFixed(1)}t vol.</span>}
           </div>
         </div>
-        <svg className="w-4 h-4 text-stone-300 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <svg className="w-4 h-4 text-faint shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
         </svg>
       </div>
       {session.exercises.length > 0 && (
         <div className="mt-2 flex flex-wrap gap-1">
           {session.exercises.map(ex => (
-            <span key={ex.id} className="text-xs bg-stone-100 text-stone-600 px-2 py-0.5 rounded-full">
+            <span key={ex.id} className="text-xs bg-elevated text-muted px-2 py-0.5 rounded-full">
               {ex.exerciseName}
             </span>
           ))}
@@ -518,36 +518,36 @@ function RecordsView({ sessions }: { sessions: Session[] }) {
   return (
     <div className="space-y-3">
       <div className="relative">
-        <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-400 pointer-events-none"
+        <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-faint pointer-events-none"
           fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
           <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z" />
         </svg>
         <input type="text" value={filter} onChange={e => setFilter(e.target.value)}
           placeholder="Filter exercises…" style={{ fontSize: '16px' }}
-          className="w-full bg-white border border-stone-200 rounded-xl pl-9 pr-4 py-2.5 text-sm text-stone-900 placeholder-stone-400 focus:outline-none focus:border-stone-400 transition-colors" />
+          className="w-full bg-surface border border-line rounded-card pl-9 pr-4 py-2.5 text-sm text-ink placeholder-faint focus:outline-none focus:border-brand transition-colors" />
       </div>
 
       {filtered.length === 0
-        ? <p className="text-center text-stone-400 text-sm py-8">No records yet.</p>
+        ? <p className="text-center text-faint text-sm py-8">No records yet.</p>
         : (
           <div className="space-y-2">
             {filtered.map(pr => (
-              <div key={pr.exerciseId} className="bg-white border border-stone-200 rounded-2xl px-4 py-3 flex items-center justify-between gap-4">
+              <div key={pr.exerciseId} className="bg-surface border border-line rounded-panel px-4 py-3 flex items-center justify-between gap-4">
                 <div className="min-w-0">
-                  <p className="font-medium text-stone-900 text-sm truncate">{pr.exerciseName}</p>
-                  <p className="text-xs text-stone-400 mt-0.5">
+                  <p className="font-medium text-ink text-sm truncate">{pr.exerciseName}</p>
+                  <p className="text-xs text-faint mt-0.5">
                     {new Date(pr.achievedAt + 'T12:00:00').toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
                   </p>
                 </div>
                 <div className="text-right shrink-0">
                   {pr.trackingType === 'reps_weight' && pr.maxWeight != null && (
-                    <p className="font-semibold text-stone-900 text-sm font-mono">{pr.maxWeight} kg</p>
+                    <p className="font-semibold text-ink text-sm font-mono">{pr.maxWeight} kg</p>
                   )}
                   {pr.maxReps != null && (
-                    <p className="text-xs text-stone-500 font-mono">{pr.maxReps} reps</p>
+                    <p className="text-xs text-muted font-mono">{pr.maxReps} reps</p>
                   )}
                   {pr.trackingType === 'time' && pr.maxDuration != null && (
-                    <p className="font-semibold text-stone-900 text-sm font-mono">{pr.maxDuration}s</p>
+                    <p className="font-semibold text-ink text-sm font-mono">{pr.maxDuration}s</p>
                   )}
                 </div>
               </div>
@@ -567,21 +567,21 @@ export function History() {
   const [view, setView] = useState<View>('calendar')
 
   if (!sessions) {
-    return <div className="flex items-center justify-center h-64 text-stone-400 text-sm">Loading…</div>
+    return <div className="flex items-center justify-center h-64 text-faint text-sm">Loading…</div>
   }
 
   return (
     <div className="px-4 py-6 max-w-lg mx-auto space-y-4">
-      <h1 className="text-2xl font-bold text-stone-900">Calendar</h1>
+      <h1 className="font-display text-[26px] font-bold text-ink">Calendar</h1>
 
       <SegmentedControl value={view} onChange={setView} />
 
       {view === 'calendar' && <CalendarView sessions={sessions} navigate={id => navigate(`/session/${id}`)} />}
       {view === 'feed'     && (sessions.length === 0
-        ? <p className="text-center text-stone-400 text-sm py-16">No sessions logged yet.</p>
+        ? <p className="text-center text-faint text-sm py-16">No sessions logged yet.</p>
         : <FeedView sessions={sessions} navigate={id => navigate(`/session/${id}`)} />)}
       {view === 'records'  && (sessions.length === 0
-        ? <p className="text-center text-stone-400 text-sm py-16">No records yet.</p>
+        ? <p className="text-center text-faint text-sm py-16">No records yet.</p>
         : <RecordsView sessions={sessions} />)}
     </div>
   )
