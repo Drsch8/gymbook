@@ -56,15 +56,43 @@
 }
 
 /* ── Base colour themes ─────────────────────────────────────────────────────
-   Selected in Settings via a data-theme attribute on <html>. The four colour
-   themes only re-point the brand accent; `mono` restores the original warm-grey
-   + monochrome look. Light rule first, dark rule after (equal specificity). */
-:root[data-theme='red']    { --c-brand: oklch(0.55 0.19 25); }
-.dark[data-theme='red']    { --c-brand: oklch(0.64 0.19 25); }
-:root[data-theme='green']  { --c-brand: oklch(0.52 0.13 150); }
-.dark[data-theme='green']  { --c-brand: oklch(0.64 0.14 150); }
-:root[data-theme='yellow'] { --c-brand: oklch(0.72 0.14 85); --c-brand-ink: oklch(0.25 0.03 85); }
-.dark[data-theme='yellow'] { --c-brand: oklch(0.80 0.15 85); --c-brand-ink: oklch(0.22 0.03 85); }
+   Selected in Settings via a data-theme attribute on <html>. Each theme rotates
+   the whole neutral scale to its hue (same L/C as the steel default, so contrast
+   is preserved) plus the brand accent — not just the accent alone, otherwise the
+   app still reads as steel-blue with a colour dot. `mono` is the same idea taken
+   to near-zero chroma, restoring the original warm-grey + monochrome look.
+   Light rule first, dark rule after (equal specificity). Semantic tokens
+   (work/rest/class/training/pr/done/danger, focus-mode) stay theme-invariant. */
+:root[data-theme='red'] {
+  --c-bg: oklch(0.93 0.02 25); --c-surface: oklch(0.97 0.01 25); --c-elevated: oklch(0.99 0.004 25);
+  --c-line: oklch(0.84 0.025 25); --c-ink: oklch(0.34 0.035 25); --c-muted: oklch(0.50 0.03 25); --c-faint: oklch(0.62 0.025 25);
+  --c-brand: oklch(0.55 0.19 25); --c-brand-ink: oklch(0.98 0.008 25);
+}
+.dark[data-theme='red'] {
+  --c-bg: oklch(0.20 0.032 25); --c-surface: oklch(0.24 0.03 25); --c-elevated: oklch(0.29 0.03 25);
+  --c-line: oklch(0.44 0.03 25); --c-ink: oklch(0.92 0.018 25); --c-muted: oklch(0.75 0.02 25); --c-faint: oklch(0.60 0.02 25);
+  --c-brand: oklch(0.64 0.19 25);
+}
+:root[data-theme='green'] {
+  --c-bg: oklch(0.93 0.02 150); --c-surface: oklch(0.97 0.01 150); --c-elevated: oklch(0.99 0.004 150);
+  --c-line: oklch(0.84 0.025 150); --c-ink: oklch(0.34 0.035 150); --c-muted: oklch(0.50 0.03 150); --c-faint: oklch(0.62 0.025 150);
+  --c-brand: oklch(0.52 0.13 150); --c-brand-ink: oklch(0.98 0.008 150);
+}
+.dark[data-theme='green'] {
+  --c-bg: oklch(0.20 0.032 150); --c-surface: oklch(0.24 0.03 150); --c-elevated: oklch(0.29 0.03 150);
+  --c-line: oklch(0.44 0.03 150); --c-ink: oklch(0.92 0.018 150); --c-muted: oklch(0.75 0.02 150); --c-faint: oklch(0.60 0.02 150);
+  --c-brand: oklch(0.64 0.14 150);
+}
+:root[data-theme='yellow'] {
+  --c-bg: oklch(0.93 0.02 85); --c-surface: oklch(0.97 0.01 85); --c-elevated: oklch(0.99 0.004 85);
+  --c-line: oklch(0.84 0.025 85); --c-ink: oklch(0.34 0.035 85); --c-muted: oklch(0.50 0.03 85); --c-faint: oklch(0.62 0.025 85);
+  --c-brand: oklch(0.72 0.14 85); --c-brand-ink: oklch(0.25 0.03 85);
+}
+.dark[data-theme='yellow'] {
+  --c-bg: oklch(0.20 0.032 85); --c-surface: oklch(0.24 0.03 85); --c-elevated: oklch(0.29 0.03 85);
+  --c-line: oklch(0.44 0.03 85); --c-ink: oklch(0.92 0.018 85); --c-muted: oklch(0.75 0.02 85); --c-faint: oklch(0.60 0.02 85);
+  --c-brand: oklch(0.80 0.15 85); --c-brand-ink: oklch(0.22 0.03 85);
+}
 
 :root[data-theme='mono'] {
   --c-bg:      oklch(0.96 0.003 70);

@@ -177,9 +177,9 @@ export function App() {
       </main>
       {showNav && authed && <BottomNav />}
       {wellDone && (
-        <div className={`fixed inset-0 z-[300] flex items-center justify-center bg-[oklch(0.17_0.022_250)] transition-opacity duration-500 pointer-events-none ${wellDoneShown ? 'opacity-100' : 'opacity-0'}`}>
+        <div className={`fixed inset-0 z-[300] flex items-center justify-center bg-fmbg transition-opacity duration-500 pointer-events-none ${wellDoneShown ? 'opacity-100' : 'opacity-0'}`}>
           <div className="text-center animate-scaleIn">
-            <p className="text-5xl font-black font-display text-[oklch(0.92_0.018_230)] mb-2">Well done!</p>
+            <p className="text-5xl font-black font-display text-fmink mb-2">Well done!</p>
           </div>
         </div>
       )}
