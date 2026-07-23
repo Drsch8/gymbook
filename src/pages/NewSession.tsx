@@ -143,36 +143,6 @@ function ProgressStrip({ progress, accent }: { progress: number; accent?: string
   )
 }
 
-// Method-indicator row — marks which class method is currently active. Shown
-// at the top of every fullscreen timer panel so the protocol is unmistakable
-// at a glance; Tabata's pill additionally reflects the live work/rest phase.
-const METHOD_PILLS = [
-  { method: 'Step Intervals', label: 'STEP' },
-  { method: 'Interval Sets', label: 'INTERVAL' },
-  { method: 'Supersets', label: 'SUPERSET' },
-  { method: 'Circuits', label: 'CIRCUIT' },
-  { method: 'High Intensity Sets', label: 'TABATA' },
-] as const
-
-function MethodPillRow({ active, phase }: { active: string; phase?: 'work' | 'rest' }) {
-  return (
-    <div className="flex gap-1.5 px-5 pb-3 shrink-0 flex-wrap">
-      {METHOD_PILLS.map(({ method, label }) => {
-        const isActive = method === active
-        const activeClass = phase === 'work' ? 'bg-work text-fmbg' : phase === 'rest' ? 'bg-rest text-fmbg' : 'bg-fmink text-fmbg'
-        return (
-          <span
-            key={method}
-            className={`px-2.5 py-1 rounded-full text-[10px] font-bold font-body tracking-wide ${isActive ? activeClass : 'bg-fmline text-fmdim'}`}
-          >
-            {label}
-          </span>
-        )
-      })}
-    </div>
-  )
-}
-
 // ── Method animations ─────────────────────────────────────────────────────────
 // Small live visuals for the fullscreen class panels. All sit on the dark
 // (stone-950) background and fill in as the method progresses.
