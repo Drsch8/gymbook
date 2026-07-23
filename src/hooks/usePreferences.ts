@@ -6,6 +6,7 @@ const DEFAULT: UserPreferences = {
   weightUnit: 'kg',
   restTimerDefault: 90,
   darkMode: true,
+  theme: 'blue',
   planSessionIndex: 0,
   programProgress: {},
 }

@@ -55,6 +55,40 @@
   --c-danger:    oklch(0.62 0.19 15);
 }
 
+/* ── Base colour themes ─────────────────────────────────────────────────────
+   Selected in Settings via a data-theme attribute on <html>. The four colour
+   themes only re-point the brand accent; `mono` restores the original warm-grey
+   + monochrome look. Light rule first, dark rule after (equal specificity). */
+:root[data-theme='red']    { --c-brand: oklch(0.55 0.19 25); }
+.dark[data-theme='red']    { --c-brand: oklch(0.64 0.19 25); }
+:root[data-theme='green']  { --c-brand: oklch(0.52 0.13 150); }
+.dark[data-theme='green']  { --c-brand: oklch(0.64 0.14 150); }
+:root[data-theme='yellow'] { --c-brand: oklch(0.72 0.14 85); --c-brand-ink: oklch(0.25 0.03 85); }
+.dark[data-theme='yellow'] { --c-brand: oklch(0.80 0.15 85); --c-brand-ink: oklch(0.22 0.03 85); }
+
+:root[data-theme='mono'] {
+  --c-bg:      oklch(0.96 0.003 70);
+  --c-surface: oklch(0.99 0.002 70);
+  --c-elevated:oklch(0.93 0.003 70);
+  --c-line:    oklch(0.88 0.003 70);
+  --c-ink:     oklch(0.26 0.006 70);
+  --c-muted:   oklch(0.48 0.005 70);
+  --c-faint:   oklch(0.62 0.004 70);
+  --c-brand:   oklch(0.26 0.006 70);
+  --c-brand-ink: oklch(0.98 0 0);
+}
+.dark[data-theme='mono'] {
+  --c-bg:      oklch(0.17 0.003 70);
+  --c-surface: oklch(0.21 0.003 70);
+  --c-elevated:oklch(0.26 0.004 70);
+  --c-line:    oklch(0.34 0.004 70);
+  --c-ink:     oklch(0.95 0.003 70);
+  --c-muted:   oklch(0.72 0.004 70);
+  --c-faint:   oklch(0.55 0.004 70);
+  --c-brand:   oklch(0.95 0.003 70);
+  --c-brand-ink: oklch(0.17 0.003 70);
+}
+
 @layer base {
   html, body, #root {
     height: 100%;

@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { exportToCSV, resetFogProgram, getPreferences } from '../db'
 import { usePreferences } from '../hooks/usePreferences'
 import { useAuth } from '../hooks/useAuth'
+import { BASE_THEMES } from '../utils/theme'
 import { FOG_PROGRAMS, flattenFogProgram } from '../data/fogPrograms'
 import { signOut } from 'firebase/auth'
 import { auth } from '../lib/firebase'
@@ -107,6 +108,25 @@ export function Settings() {
               <span className={`absolute top-0.5 left-0.5 w-5 h-5 bg-surface rounded-full shadow transition-transform ${prefs.darkMode ? 'translate-x-6' : 'translate-x-0'}`} />
             </button>
           </Row>
+          <div className="px-4 py-3.5">
+            <p className="text-ink text-sm font-medium">Base colour</p>
+            <p className="text-faint text-xs mb-3">Accent colour used across the app</p>
+            <div className="flex items-center justify-between gap-2">
+              {BASE_THEMES.map(t => {
+                const active = (prefs.theme ?? 'blue') === t.id
+                return (
+                  <button key={t.id} onClick={() => update({ theme: t.id })}
+                    className="flex flex-col items-center gap-1.5 flex-1" aria-label={t.label}>
+                    <span
+                      className={`w-9 h-9 rounded-full transition-all ${active ? 'ring-2 ring-offset-2 ring-offset-surface ring-ink' : ''}`}
+                      style={{ background: t.swatch }}
+                    />
+                    <span className={`text-[10px] font-medium ${active ? 'text-ink' : 'text-faint'}`}>{t.label}</span>
+                  </button>
+                )
+              })}
+            </div>
+          </div>
         </Group>
 
         <Group title="Data">

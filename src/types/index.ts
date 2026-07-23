@@ -78,10 +78,15 @@ export interface PlannedWorkout {
 
 export type WeightUnit = 'kg' | 'lbs'
 
+// Base colour theme (primary accent; `mono` also retints the neutrals to the
+// original pre-redesign look).
+export type BaseTheme = 'blue' | 'red' | 'green' | 'yellow' | 'mono'
+
 export interface UserPreferences {
   weightUnit: WeightUnit
   restTimerDefault: number // seconds
   darkMode: boolean
+  theme?: BaseTheme        // base colour theme; undefined = 'blue'
   planSessionIndex: number // which session in the training plan is next (0-based)
   programProgress: Record<string, number> // fogProgramId -> next session index
 }

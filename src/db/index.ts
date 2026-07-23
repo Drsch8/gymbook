@@ -4,6 +4,7 @@ import {
 } from 'firebase/firestore'
 import type { Session, Template, BodyweightEntry, UserPreferences, PlannedWorkout } from '../types'
 import { auth, db as firestore } from '../lib/firebase'
+import { applyTheme } from '../utils/theme'
 
 export class GymBookDB extends Dexie {
   sessions!: Table<Session>
@@ -58,6 +59,7 @@ const DEFAULT_PREFS: UserPreferences = {
   weightUnit: 'kg',
   restTimerDefault: 90,
   darkMode: false,
+  theme: 'blue',
   planSessionIndex: 0,
   programProgress: {},
 }
@@ -75,6 +77,7 @@ export async function savePreferences(prefs: Partial<UserPreferences>): Promise<
     localStorage.setItem('gymbook_dark', String(next.darkMode))
     document.documentElement.classList.toggle('dark', next.darkMode)
   }
+  if ('theme' in prefs) applyTheme(next.theme)
   const userId = uid()
   if (userId) {
     setDoc(prefsDoc(userId), next).catch(e => console.error('firebase savePreferences', e))
@@ -206,6 +209,7 @@ export async function syncFromFirebase(userId: string, clearFirst = false): Prom
     await db.preferences.put({ ...prefs, id: 1 })
     localStorage.setItem('gymbook_dark', String(prefs.darkMode))
     document.documentElement.classList.toggle('dark', prefs.darkMode)
+    applyTheme(prefs.theme)
   }
 
   if (!plannedSnap.empty) {
