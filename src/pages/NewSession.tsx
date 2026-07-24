@@ -97,7 +97,9 @@ function fmtFlat(s: number) {
   return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`
 }
 
-const TIMER_SIZE = { fontSize: 'min(28vw, 128px)', fontVariantNumeric: 'tabular-nums' } as const
+// Scales with the viewport on phones, but keeps climbing a little past the old
+// 128px cap so the readout still has presence in the wider desktop panel.
+const TIMER_SIZE = { fontSize: 'clamp(88px, 28vw, 160px)', fontVariantNumeric: 'tabular-nums' } as const
 
 function BigTime({ children, dim, blue }: { children: React.ReactNode; dim?: boolean; blue?: boolean }) {
   return (
@@ -139,6 +141,18 @@ function ProgressStrip({ progress, accent }: { progress: number; accent?: string
         className={`h-1 rounded-full transition-all duration-[10ms] ${accent ?? 'bg-fmdim'}`}
         style={{ width: `${Math.min(progress, 1) * 100}%` }}
       />
+    </div>
+  )
+}
+
+// Shell for the fullscreen timer panels. The backdrop stays full-bleed at every
+// size so the dark focus mode always covers the screen, while the content sits
+// in a capped, centred column — otherwise on desktop the Quit button, exercise
+// names and progress strip get flung to opposite edges of a 1600px window.
+function FocusShell({ anim, children }: { anim: string; children: React.ReactNode }) {
+  return (
+    <div className={`fixed inset-0 z-[100] bg-fmbg flex justify-center select-none ${anim}`}>
+      <div className="w-full max-w-[560px] flex flex-col">{children}</div>
     </div>
   )
 }
@@ -429,7 +443,7 @@ function SuperPanel({ exercises, onClose, onComplete }: {
   const { anim, exit } = usePanelExit()
 
   return (
-    <div className={`fixed inset-0 z-[100] bg-fmbg flex flex-col select-none ${anim}`}>
+    <FocusShell anim={anim}>
       {/* Quit */}
       <div className="flex items-center justify-end px-5 shrink-0" style={{ paddingTop: 'calc(env(safe-area-inset-top) + 12px)', paddingBottom: 10 }}>
         <button onClick={() => exit(onClose)} className="text-fmdim hover:text-fmink text-sm font-semibold transition-colors">
@@ -487,7 +501,7 @@ function SuperPanel({ exercises, onClose, onComplete }: {
           </>
         )}
       </div>
-    </div>
+    </FocusShell>
   )
 }
 
@@ -592,7 +606,7 @@ function ClassExercisePanel({ exercise, method, onClose, onComplete }: {
     : undefined
 
   return (
-    <div className={`fixed inset-0 z-[100] bg-fmbg flex flex-col select-none ${anim}`}>
+    <FocusShell anim={anim}>
       {/* Quit */}
       <div className="flex items-center justify-end px-5 shrink-0" style={{ paddingTop: 'calc(env(safe-area-inset-top) + 12px)', paddingBottom: 10 }}>
         <button onClick={() => exit(onClose)} className="text-fmdim hover:text-fmink text-sm font-semibold transition-colors">
@@ -643,7 +657,7 @@ function ClassExercisePanel({ exercise, method, onClose, onComplete }: {
           </>
         )}
       </div>
-    </div>
+    </FocusShell>
   )
 }
 
@@ -697,7 +711,7 @@ function ZirkelPanel({ exercises, onClose, onComplete }: {
   const { anim, exit } = usePanelExit()
 
   return (
-    <div className={`fixed inset-0 z-[100] bg-fmbg flex flex-col select-none ${anim}`}>
+    <FocusShell anim={anim}>
       {/* Quit row */}
       <div className="flex items-center justify-end px-5 shrink-0" style={{ paddingTop: 'calc(env(safe-area-inset-top) + 12px)', paddingBottom: 8 }}>
         <button onClick={() => exit(onClose)} className="text-fmdim hover:text-fmink text-sm font-semibold transition-colors">
@@ -746,7 +760,7 @@ function ZirkelPanel({ exercises, onClose, onComplete }: {
           </>
         )}
       </div>
-    </div>
+    </FocusShell>
   )
 }
 
