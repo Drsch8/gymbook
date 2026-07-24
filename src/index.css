@@ -6,21 +6,25 @@
    Metallic neutral ramp + semantic accents in oklch. Light on :root, dark
    under .dark. Consumed via Tailwind aliases (bg, surface, ink, brand…).
 
-   The neutral ramp is deliberately restrained: bright, clean lights and deep
-   graphite darks with low chroma and soft borders, so surfaces read as tinted
+   The neutral ramp is deliberately restrained: bright, clean lights and soft
+   graphite darks with low chroma and quiet borders, so surfaces read as tinted
    brushed metal rather than saturated colour. Every base colour theme below
    reuses this exact ramp at its own hue, so contrast is identical across
-   themes and only the tint changes. */
-:root {
-  --c-bg:        oklch(0.945 0.014 230);
-  --c-surface:   oklch(0.978 0.009 230);
-  --c-elevated:  oklch(0.995 0.005 230);
-  --c-line:      oklch(0.865 0.018 230);
-  --c-ink:       oklch(0.31 0.030 230);
-  --c-muted:     oklch(0.49 0.024 230);
-  --c-faint:     oklch(0.64 0.018 230);
+   themes and only the tint changes.
 
-  --c-brand:     oklch(0.51 0.10 235);
+   Dark mode deliberately does NOT bottom out at black. The base sits at L≈0.215
+   with ink at 0.925 — backing off both ends keeps the UI from glowing on OLED
+   and stops accents having to shout to be seen against a near-black field. */
+:root {
+  --c-bg:        oklch(0.945 0.012 230);
+  --c-surface:   oklch(0.978 0.008 230);
+  --c-elevated:  oklch(0.995 0.004 230);
+  --c-line:      oklch(0.875 0.016 230);
+  --c-ink:       oklch(0.325 0.028 230);
+  --c-muted:     oklch(0.500 0.022 230);
+  --c-faint:     oklch(0.635 0.016 230);
+
+  --c-brand:     oklch(0.500 0.105 235);
   --c-brand-ink: oklch(0.985 0.006 235);
   --c-work:      oklch(0.66 0.20 25);
   --c-rest:      oklch(0.68 0.13 230);
@@ -40,25 +44,43 @@
   --c-focus-ink:  oklch(0.92 0.018 230);
   --c-focus-dim:  oklch(0.55 0.02 250);
   --c-focus-line: oklch(0.28 0.022 250);
+
+  /* Swatches for the Settings base-colour picker. Each mirrors that theme's
+     --c-brand for the CURRENT light/dark mode, so the dots preview what you
+     actually get. Deliberately not overridden per data-theme: the picker has
+     to show all six at once, whichever theme is active. */
+  --sw-blue:   oklch(0.500 0.105 235);
+  --sw-red:    oklch(0.525 0.170 25);
+  --sw-green:  oklch(0.510 0.120 160);
+  --sw-yellow: oklch(0.700 0.140 85);
+  --sw-silver: oklch(0.620 0.018 255);
+  --sw-mono:   oklch(0.295 0.006 70);
 }
 
 .dark {
-  --c-bg:        oklch(0.175 0.020 230);
-  --c-surface:   oklch(0.215 0.020 230);
-  --c-elevated:  oklch(0.265 0.022 230);
-  --c-line:      oklch(0.375 0.024 230);
-  --c-ink:       oklch(0.94 0.014 230);
-  --c-muted:     oklch(0.74 0.016 230);
-  --c-faint:     oklch(0.565 0.016 230);
+  --c-bg:        oklch(0.215 0.018 230);
+  --c-surface:   oklch(0.252 0.018 230);
+  --c-elevated:  oklch(0.292 0.020 230);
+  --c-line:      oklch(0.365 0.022 230);
+  --c-ink:       oklch(0.925 0.012 230);
+  --c-muted:     oklch(0.715 0.014 230);
+  --c-faint:     oklch(0.560 0.014 230);
 
-  --c-brand:     oklch(0.635 0.12 235);
-  --c-work:      oklch(0.68 0.20 25);
-  --c-rest:      oklch(0.70 0.13 230);
-  --c-class:     oklch(0.62 0.17 280);
-  --c-training:  oklch(0.62 0.12 170);
-  --c-pr:        oklch(0.72 0.15 90);
-  --c-done:      oklch(0.66 0.14 145);
-  --c-danger:    oklch(0.62 0.19 15);
+  --c-brand:     oklch(0.620 0.105 235);
+  --c-work:      oklch(0.645 0.185 25);
+  --c-rest:      oklch(0.665 0.120 230);
+  --c-class:     oklch(0.600 0.155 280);
+  --c-training:  oklch(0.600 0.110 170);
+  --c-pr:        oklch(0.700 0.140 90);
+  --c-done:      oklch(0.630 0.130 145);
+  --c-danger:    oklch(0.600 0.175 15);
+
+  --sw-blue:   oklch(0.620 0.105 235);
+  --sw-red:    oklch(0.605 0.160 25);
+  --sw-green:  oklch(0.610 0.118 160);
+  --sw-yellow: oklch(0.745 0.130 85);
+  --sw-silver: oklch(0.735 0.018 255);
+  --sw-mono:   oklch(0.860 0.003 70);
 }
 
 /* ── Base colour themes ─────────────────────────────────────────────────────
@@ -73,67 +95,67 @@
    Light rule first, dark rule after (equal specificity). Semantic tokens
    (work/rest/class/training/pr/done/danger, focus-mode) stay theme-invariant. */
 :root[data-theme='red'] {
-  --c-bg: oklch(0.945 0.014 25); --c-surface: oklch(0.978 0.009 25); --c-elevated: oklch(0.995 0.005 25);
-  --c-line: oklch(0.865 0.018 25); --c-ink: oklch(0.31 0.030 25); --c-muted: oklch(0.49 0.024 25); --c-faint: oklch(0.64 0.018 25);
-  --c-brand: oklch(0.545 0.185 25); --c-brand-ink: oklch(0.985 0.010 25);
+  --c-bg: oklch(0.945 0.012 25); --c-surface: oklch(0.978 0.008 25); --c-elevated: oklch(0.995 0.004 25);
+  --c-line: oklch(0.875 0.016 25); --c-ink: oklch(0.325 0.028 25); --c-muted: oklch(0.500 0.022 25); --c-faint: oklch(0.635 0.016 25);
+  --c-brand: oklch(0.525 0.170 25); --c-brand-ink: oklch(0.985 0.010 25);
 }
 .dark[data-theme='red'] {
-  --c-bg: oklch(0.175 0.020 25); --c-surface: oklch(0.215 0.020 25); --c-elevated: oklch(0.265 0.022 25);
-  --c-line: oklch(0.375 0.024 25); --c-ink: oklch(0.94 0.014 25); --c-muted: oklch(0.74 0.016 25); --c-faint: oklch(0.565 0.016 25);
-  --c-brand: oklch(0.645 0.190 25);
+  --c-bg: oklch(0.215 0.018 25); --c-surface: oklch(0.252 0.018 25); --c-elevated: oklch(0.292 0.020 25);
+  --c-line: oklch(0.365 0.022 25); --c-ink: oklch(0.925 0.012 25); --c-muted: oklch(0.715 0.014 25); --c-faint: oklch(0.560 0.014 25);
+  --c-brand: oklch(0.605 0.160 25);
 }
 :root[data-theme='green'] {
-  --c-bg: oklch(0.945 0.014 158); --c-surface: oklch(0.978 0.009 158); --c-elevated: oklch(0.995 0.005 158);
-  --c-line: oklch(0.865 0.018 158); --c-ink: oklch(0.31 0.030 158); --c-muted: oklch(0.49 0.024 158); --c-faint: oklch(0.64 0.018 158);
-  --c-brand: oklch(0.540 0.135 160); --c-brand-ink: oklch(0.985 0.008 160);
+  --c-bg: oklch(0.945 0.012 158); --c-surface: oklch(0.978 0.008 158); --c-elevated: oklch(0.995 0.004 158);
+  --c-line: oklch(0.875 0.016 158); --c-ink: oklch(0.325 0.028 158); --c-muted: oklch(0.500 0.022 158); --c-faint: oklch(0.635 0.016 158);
+  --c-brand: oklch(0.510 0.120 160); --c-brand-ink: oklch(0.985 0.008 160);
 }
 .dark[data-theme='green'] {
-  --c-bg: oklch(0.175 0.020 158); --c-surface: oklch(0.215 0.020 158); --c-elevated: oklch(0.265 0.022 158);
-  --c-line: oklch(0.375 0.024 158); --c-ink: oklch(0.94 0.014 158); --c-muted: oklch(0.74 0.016 158); --c-faint: oklch(0.565 0.016 158);
-  --c-brand: oklch(0.660 0.145 160);
+  --c-bg: oklch(0.215 0.018 158); --c-surface: oklch(0.252 0.018 158); --c-elevated: oklch(0.292 0.020 158);
+  --c-line: oklch(0.365 0.022 158); --c-ink: oklch(0.925 0.012 158); --c-muted: oklch(0.715 0.014 158); --c-faint: oklch(0.560 0.014 158);
+  --c-brand: oklch(0.610 0.118 160);
 }
 :root[data-theme='yellow'] {
-  --c-bg: oklch(0.945 0.014 85); --c-surface: oklch(0.978 0.009 85); --c-elevated: oklch(0.995 0.005 85);
-  --c-line: oklch(0.865 0.018 85); --c-ink: oklch(0.31 0.030 85); --c-muted: oklch(0.49 0.024 85); --c-faint: oklch(0.64 0.018 85);
-  --c-brand: oklch(0.720 0.145 85); --c-brand-ink: oklch(0.25 0.030 85);
+  --c-bg: oklch(0.945 0.012 85); --c-surface: oklch(0.978 0.008 85); --c-elevated: oklch(0.995 0.004 85);
+  --c-line: oklch(0.875 0.016 85); --c-ink: oklch(0.325 0.028 85); --c-muted: oklch(0.500 0.022 85); --c-faint: oklch(0.635 0.016 85);
+  --c-brand: oklch(0.700 0.140 85); --c-brand-ink: oklch(0.250 0.030 85);
 }
 .dark[data-theme='yellow'] {
-  --c-bg: oklch(0.175 0.020 85); --c-surface: oklch(0.215 0.020 85); --c-elevated: oklch(0.265 0.022 85);
-  --c-line: oklch(0.375 0.024 85); --c-ink: oklch(0.94 0.014 85); --c-muted: oklch(0.74 0.016 85); --c-faint: oklch(0.565 0.016 85);
-  --c-brand: oklch(0.800 0.150 85); --c-brand-ink: oklch(0.22 0.030 85);
+  --c-bg: oklch(0.215 0.018 85); --c-surface: oklch(0.252 0.018 85); --c-elevated: oklch(0.292 0.020 85);
+  --c-line: oklch(0.365 0.022 85); --c-ink: oklch(0.925 0.012 85); --c-muted: oklch(0.715 0.014 85); --c-faint: oklch(0.560 0.014 85);
+  --c-brand: oklch(0.745 0.130 85); --c-brand-ink: oklch(0.220 0.030 85);
 }
 :root[data-theme='silver'] {
-  --c-bg: oklch(0.950 0.006 255); --c-surface: oklch(0.978 0.004 255); --c-elevated: oklch(0.995 0.003 255);
-  --c-line: oklch(0.870 0.008 255); --c-ink: oklch(0.30 0.014 255); --c-muted: oklch(0.48 0.012 255); --c-faint: oklch(0.64 0.009 255);
-  --c-brand: oklch(0.470 0.030 255); --c-brand-ink: oklch(0.985 0.004 255);
+  --c-bg: oklch(0.945 0.005 255); --c-surface: oklch(0.978 0.004 255); --c-elevated: oklch(0.995 0.003 255);
+  --c-line: oklch(0.875 0.007 255); --c-ink: oklch(0.315 0.013 255); --c-muted: oklch(0.495 0.011 255); --c-faint: oklch(0.635 0.008 255);
+  --c-brand: oklch(0.465 0.028 255); --c-brand-ink: oklch(0.985 0.004 255);
 }
 .dark[data-theme='silver'] {
-  --c-bg: oklch(0.175 0.008 255); --c-surface: oklch(0.215 0.009 255); --c-elevated: oklch(0.265 0.010 255);
-  --c-line: oklch(0.375 0.012 255); --c-ink: oklch(0.94 0.008 255); --c-muted: oklch(0.74 0.010 255); --c-faint: oklch(0.565 0.010 255);
-  --c-brand: oklch(0.820 0.022 255); --c-brand-ink: oklch(0.20 0.010 255);
+  --c-bg: oklch(0.215 0.007 255); --c-surface: oklch(0.252 0.007 255); --c-elevated: oklch(0.292 0.009 255);
+  --c-line: oklch(0.365 0.011 255); --c-ink: oklch(0.925 0.007 255); --c-muted: oklch(0.715 0.009 255); --c-faint: oklch(0.560 0.009 255);
+  --c-brand: oklch(0.735 0.018 255); --c-brand-ink: oklch(0.205 0.010 255);
 }
 
 :root[data-theme='mono'] {
-  --c-bg:      oklch(0.950 0.003 70);
+  --c-bg:      oklch(0.945 0.003 70);
   --c-surface: oklch(0.978 0.002 70);
   --c-elevated:oklch(0.995 0.002 70);
-  --c-line:    oklch(0.870 0.004 70);
-  --c-ink:     oklch(0.28 0.006 70);
-  --c-muted:   oklch(0.48 0.005 70);
-  --c-faint:   oklch(0.64 0.004 70);
-  --c-brand:   oklch(0.28 0.006 70);
+  --c-line:    oklch(0.875 0.004 70);
+  --c-ink:     oklch(0.295 0.006 70);
+  --c-muted:   oklch(0.495 0.005 70);
+  --c-faint:   oklch(0.635 0.004 70);
+  --c-brand:   oklch(0.295 0.006 70);
   --c-brand-ink: oklch(0.985 0 0);
 }
 .dark[data-theme='mono'] {
-  --c-bg:      oklch(0.175 0.003 70);
-  --c-surface: oklch(0.215 0.003 70);
-  --c-elevated:oklch(0.265 0.004 70);
-  --c-line:    oklch(0.375 0.005 70);
-  --c-ink:     oklch(0.94 0.003 70);
-  --c-muted:   oklch(0.74 0.004 70);
-  --c-faint:   oklch(0.565 0.004 70);
-  --c-brand:   oklch(0.94 0.003 70);
-  --c-brand-ink: oklch(0.175 0.003 70);
+  --c-bg:      oklch(0.215 0.003 70);
+  --c-surface: oklch(0.252 0.003 70);
+  --c-elevated:oklch(0.292 0.004 70);
+  --c-line:    oklch(0.365 0.005 70);
+  --c-ink:     oklch(0.925 0.003 70);
+  --c-muted:   oklch(0.715 0.004 70);
+  --c-faint:   oklch(0.560 0.004 70);
+  --c-brand:   oklch(0.860 0.003 70);
+  --c-brand-ink: oklch(0.215 0.003 70);
 }
 
 @layer base {

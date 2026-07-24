@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { Route, Routes, useLocation, useNavigate } from 'react-router-dom'
 import { onAuthStateChanged, signOut } from 'firebase/auth'
-import { BottomNav } from './components/BottomNav'
+import { AppNav } from './components/AppNav'
 import { Home } from './pages/Home'
 import { Classes } from './pages/Classes'
 import { NewSession } from './pages/NewSession'
@@ -157,8 +157,11 @@ export function App() {
   }
 
   return (
-    <div className="h-dvh flex flex-col bg-bg font-sans">
+    <div className="h-dvh flex flex-col md:flex-row bg-bg font-sans">
       <main className="flex-1 min-h-0 overflow-y-auto">
+        {/* Phone-width column, centred once the viewport outgrows it, so the
+            layout stays legible on desktop instead of stretching edge to edge. */}
+        <div className="mx-auto w-full max-w-[680px]">
         <Routes>
           <Route path="/login" element={<Login />} />
           {authed && <>
@@ -174,8 +177,9 @@ export function App() {
             <Route path="/settings" element={<Settings />} />
           </>}
         </Routes>
+        </div>
       </main>
-      {showNav && authed && <BottomNav />}
+      {showNav && authed && <AppNav />}
       {wellDone && (
         <div className={`fixed inset-0 z-[300] flex items-center justify-center bg-fmbg transition-opacity duration-500 pointer-events-none ${wellDoneShown ? 'opacity-100' : 'opacity-0'}`}>
           <div className="text-center animate-scaleIn">
