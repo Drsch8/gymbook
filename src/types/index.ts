@@ -80,7 +80,7 @@ export type WeightUnit = 'kg' | 'lbs'
 
 // Base colour theme (primary accent; `mono` also retints the neutrals to the
 // original pre-redesign look).
-export type BaseTheme = 'blue' | 'red' | 'green' | 'yellow' | 'mono'
+export type BaseTheme = 'blue' | 'red' | 'green' | 'yellow' | 'silver' | 'mono'
 
 export interface UserPreferences {
   weightUnit: WeightUnit

@@ -3,19 +3,25 @@
 @tailwind utilities;
 
 /* ── "Instrument Panel" design tokens ──────────────────────────────────────
-   Cool-neutral scale (hue 230) + semantic accents in oklch. Light on :root,
-   dark under .dark. Consumed via Tailwind aliases (bg, surface, ink, brand…). */
-:root {
-  --c-bg:        oklch(0.93 0.02 230);
-  --c-surface:   oklch(0.97 0.01 230);
-  --c-elevated:  oklch(0.99 0.004 230);
-  --c-line:      oklch(0.84 0.025 230);
-  --c-ink:       oklch(0.34 0.035 230);
-  --c-muted:     oklch(0.50 0.03 230);
-  --c-faint:     oklch(0.62 0.025 230);
+   Metallic neutral ramp + semantic accents in oklch. Light on :root, dark
+   under .dark. Consumed via Tailwind aliases (bg, surface, ink, brand…).
 
-  --c-brand:     oklch(0.50 0.09 230);
-  --c-brand-ink: oklch(0.98 0.008 230);
+   The neutral ramp is deliberately restrained: bright, clean lights and deep
+   graphite darks with low chroma and soft borders, so surfaces read as tinted
+   brushed metal rather than saturated colour. Every base colour theme below
+   reuses this exact ramp at its own hue, so contrast is identical across
+   themes and only the tint changes. */
+:root {
+  --c-bg:        oklch(0.945 0.014 230);
+  --c-surface:   oklch(0.978 0.009 230);
+  --c-elevated:  oklch(0.995 0.005 230);
+  --c-line:      oklch(0.865 0.018 230);
+  --c-ink:       oklch(0.31 0.030 230);
+  --c-muted:     oklch(0.49 0.024 230);
+  --c-faint:     oklch(0.64 0.018 230);
+
+  --c-brand:     oklch(0.51 0.10 235);
+  --c-brand-ink: oklch(0.985 0.006 235);
   --c-work:      oklch(0.66 0.20 25);
   --c-rest:      oklch(0.68 0.13 230);
   --c-class:     oklch(0.55 0.16 280);
@@ -37,15 +43,15 @@
 }
 
 .dark {
-  --c-bg:        oklch(0.20 0.032 230);
-  --c-surface:   oklch(0.24 0.03 230);
-  --c-elevated:  oklch(0.29 0.03 230);
-  --c-line:      oklch(0.44 0.03 230);
-  --c-ink:       oklch(0.92 0.018 230);
-  --c-muted:     oklch(0.75 0.02 230);
-  --c-faint:     oklch(0.60 0.02 230);
+  --c-bg:        oklch(0.175 0.020 230);
+  --c-surface:   oklch(0.215 0.020 230);
+  --c-elevated:  oklch(0.265 0.022 230);
+  --c-line:      oklch(0.375 0.024 230);
+  --c-ink:       oklch(0.94 0.014 230);
+  --c-muted:     oklch(0.74 0.016 230);
+  --c-faint:     oklch(0.565 0.016 230);
 
-  --c-brand:     oklch(0.58 0.11 230);
+  --c-brand:     oklch(0.635 0.12 235);
   --c-work:      oklch(0.68 0.20 25);
   --c-rest:      oklch(0.70 0.13 230);
   --c-class:     oklch(0.62 0.17 280);
@@ -57,64 +63,77 @@
 
 /* ── Base colour themes ─────────────────────────────────────────────────────
    Selected in Settings via a data-theme attribute on <html>. Each theme rotates
-   the whole neutral scale to its hue (same L/C as the steel default, so contrast
-   is preserved) plus the brand accent — not just the accent alone, otherwise the
-   app still reads as steel-blue with a colour dot. `mono` is the same idea taken
-   to near-zero chroma, restoring the original warm-grey + monochrome look.
+   the whole neutral ramp above to its own hue — not just the brand accent,
+   otherwise the app still reads as steel with a colour dot. Accents are kept
+   slightly anodised (a touch muted) rather than neon, so they sit on the
+   metallic neutrals instead of floating above them.
+
+   `silver` is a cool brushed platinum and `mono` a warm graphite — both drop
+   the neutral chroma near zero, so they read as bare metal rather than tint.
    Light rule first, dark rule after (equal specificity). Semantic tokens
    (work/rest/class/training/pr/done/danger, focus-mode) stay theme-invariant. */
 :root[data-theme='red'] {
-  --c-bg: oklch(0.93 0.02 25); --c-surface: oklch(0.97 0.01 25); --c-elevated: oklch(0.99 0.004 25);
-  --c-line: oklch(0.84 0.025 25); --c-ink: oklch(0.34 0.035 25); --c-muted: oklch(0.50 0.03 25); --c-faint: oklch(0.62 0.025 25);
-  --c-brand: oklch(0.55 0.19 25); --c-brand-ink: oklch(0.98 0.008 25);
+  --c-bg: oklch(0.945 0.014 25); --c-surface: oklch(0.978 0.009 25); --c-elevated: oklch(0.995 0.005 25);
+  --c-line: oklch(0.865 0.018 25); --c-ink: oklch(0.31 0.030 25); --c-muted: oklch(0.49 0.024 25); --c-faint: oklch(0.64 0.018 25);
+  --c-brand: oklch(0.545 0.185 25); --c-brand-ink: oklch(0.985 0.010 25);
 }
 .dark[data-theme='red'] {
-  --c-bg: oklch(0.20 0.032 25); --c-surface: oklch(0.24 0.03 25); --c-elevated: oklch(0.29 0.03 25);
-  --c-line: oklch(0.44 0.03 25); --c-ink: oklch(0.92 0.018 25); --c-muted: oklch(0.75 0.02 25); --c-faint: oklch(0.60 0.02 25);
-  --c-brand: oklch(0.64 0.19 25);
+  --c-bg: oklch(0.175 0.020 25); --c-surface: oklch(0.215 0.020 25); --c-elevated: oklch(0.265 0.022 25);
+  --c-line: oklch(0.375 0.024 25); --c-ink: oklch(0.94 0.014 25); --c-muted: oklch(0.74 0.016 25); --c-faint: oklch(0.565 0.016 25);
+  --c-brand: oklch(0.645 0.190 25);
 }
 :root[data-theme='green'] {
-  --c-bg: oklch(0.93 0.02 150); --c-surface: oklch(0.97 0.01 150); --c-elevated: oklch(0.99 0.004 150);
-  --c-line: oklch(0.84 0.025 150); --c-ink: oklch(0.34 0.035 150); --c-muted: oklch(0.50 0.03 150); --c-faint: oklch(0.62 0.025 150);
-  --c-brand: oklch(0.52 0.13 150); --c-brand-ink: oklch(0.98 0.008 150);
+  --c-bg: oklch(0.945 0.014 158); --c-surface: oklch(0.978 0.009 158); --c-elevated: oklch(0.995 0.005 158);
+  --c-line: oklch(0.865 0.018 158); --c-ink: oklch(0.31 0.030 158); --c-muted: oklch(0.49 0.024 158); --c-faint: oklch(0.64 0.018 158);
+  --c-brand: oklch(0.540 0.135 160); --c-brand-ink: oklch(0.985 0.008 160);
 }
 .dark[data-theme='green'] {
-  --c-bg: oklch(0.20 0.032 150); --c-surface: oklch(0.24 0.03 150); --c-elevated: oklch(0.29 0.03 150);
-  --c-line: oklch(0.44 0.03 150); --c-ink: oklch(0.92 0.018 150); --c-muted: oklch(0.75 0.02 150); --c-faint: oklch(0.60 0.02 150);
-  --c-brand: oklch(0.64 0.14 150);
+  --c-bg: oklch(0.175 0.020 158); --c-surface: oklch(0.215 0.020 158); --c-elevated: oklch(0.265 0.022 158);
+  --c-line: oklch(0.375 0.024 158); --c-ink: oklch(0.94 0.014 158); --c-muted: oklch(0.74 0.016 158); --c-faint: oklch(0.565 0.016 158);
+  --c-brand: oklch(0.660 0.145 160);
 }
 :root[data-theme='yellow'] {
-  --c-bg: oklch(0.93 0.02 85); --c-surface: oklch(0.97 0.01 85); --c-elevated: oklch(0.99 0.004 85);
-  --c-line: oklch(0.84 0.025 85); --c-ink: oklch(0.34 0.035 85); --c-muted: oklch(0.50 0.03 85); --c-faint: oklch(0.62 0.025 85);
-  --c-brand: oklch(0.72 0.14 85); --c-brand-ink: oklch(0.25 0.03 85);
+  --c-bg: oklch(0.945 0.014 85); --c-surface: oklch(0.978 0.009 85); --c-elevated: oklch(0.995 0.005 85);
+  --c-line: oklch(0.865 0.018 85); --c-ink: oklch(0.31 0.030 85); --c-muted: oklch(0.49 0.024 85); --c-faint: oklch(0.64 0.018 85);
+  --c-brand: oklch(0.720 0.145 85); --c-brand-ink: oklch(0.25 0.030 85);
 }
 .dark[data-theme='yellow'] {
-  --c-bg: oklch(0.20 0.032 85); --c-surface: oklch(0.24 0.03 85); --c-elevated: oklch(0.29 0.03 85);
-  --c-line: oklch(0.44 0.03 85); --c-ink: oklch(0.92 0.018 85); --c-muted: oklch(0.75 0.02 85); --c-faint: oklch(0.60 0.02 85);
-  --c-brand: oklch(0.80 0.15 85); --c-brand-ink: oklch(0.22 0.03 85);
+  --c-bg: oklch(0.175 0.020 85); --c-surface: oklch(0.215 0.020 85); --c-elevated: oklch(0.265 0.022 85);
+  --c-line: oklch(0.375 0.024 85); --c-ink: oklch(0.94 0.014 85); --c-muted: oklch(0.74 0.016 85); --c-faint: oklch(0.565 0.016 85);
+  --c-brand: oklch(0.800 0.150 85); --c-brand-ink: oklch(0.22 0.030 85);
+}
+:root[data-theme='silver'] {
+  --c-bg: oklch(0.950 0.006 255); --c-surface: oklch(0.978 0.004 255); --c-elevated: oklch(0.995 0.003 255);
+  --c-line: oklch(0.870 0.008 255); --c-ink: oklch(0.30 0.014 255); --c-muted: oklch(0.48 0.012 255); --c-faint: oklch(0.64 0.009 255);
+  --c-brand: oklch(0.470 0.030 255); --c-brand-ink: oklch(0.985 0.004 255);
+}
+.dark[data-theme='silver'] {
+  --c-bg: oklch(0.175 0.008 255); --c-surface: oklch(0.215 0.009 255); --c-elevated: oklch(0.265 0.010 255);
+  --c-line: oklch(0.375 0.012 255); --c-ink: oklch(0.94 0.008 255); --c-muted: oklch(0.74 0.010 255); --c-faint: oklch(0.565 0.010 255);
+  --c-brand: oklch(0.820 0.022 255); --c-brand-ink: oklch(0.20 0.010 255);
 }
 
 :root[data-theme='mono'] {
-  --c-bg:      oklch(0.96 0.003 70);
-  --c-surface: oklch(0.99 0.002 70);
-  --c-elevated:oklch(0.93 0.003 70);
-  --c-line:    oklch(0.88 0.003 70);
-  --c-ink:     oklch(0.26 0.006 70);
+  --c-bg:      oklch(0.950 0.003 70);
+  --c-surface: oklch(0.978 0.002 70);
+  --c-elevated:oklch(0.995 0.002 70);
+  --c-line:    oklch(0.870 0.004 70);
+  --c-ink:     oklch(0.28 0.006 70);
   --c-muted:   oklch(0.48 0.005 70);
-  --c-faint:   oklch(0.62 0.004 70);
-  --c-brand:   oklch(0.26 0.006 70);
-  --c-brand-ink: oklch(0.98 0 0);
+  --c-faint:   oklch(0.64 0.004 70);
+  --c-brand:   oklch(0.28 0.006 70);
+  --c-brand-ink: oklch(0.985 0 0);
 }
 .dark[data-theme='mono'] {
-  --c-bg:      oklch(0.17 0.003 70);
-  --c-surface: oklch(0.21 0.003 70);
-  --c-elevated:oklch(0.26 0.004 70);
-  --c-line:    oklch(0.34 0.004 70);
-  --c-ink:     oklch(0.95 0.003 70);
-  --c-muted:   oklch(0.72 0.004 70);
-  --c-faint:   oklch(0.55 0.004 70);
-  --c-brand:   oklch(0.95 0.003 70);
-  --c-brand-ink: oklch(0.17 0.003 70);
+  --c-bg:      oklch(0.175 0.003 70);
+  --c-surface: oklch(0.215 0.003 70);
+  --c-elevated:oklch(0.265 0.004 70);
+  --c-line:    oklch(0.375 0.005 70);
+  --c-ink:     oklch(0.94 0.003 70);
+  --c-muted:   oklch(0.74 0.004 70);
+  --c-faint:   oklch(0.565 0.004 70);
+  --c-brand:   oklch(0.94 0.003 70);
+  --c-brand-ink: oklch(0.175 0.003 70);
 }
 
 @layer base {
