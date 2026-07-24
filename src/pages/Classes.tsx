@@ -90,6 +90,11 @@ function ProgramInfoPanel({
 
       {tab === 'plan' && (
         <div className="space-y-6">
+          {/* Shape-of-the-program overview. Also lives on the My-program tab,
+              but that one only exists once a program is under way — here it's
+              reachable for any program, including ones not started yet. */}
+          <ProgramArc program={program} sessionIndex={currentIndex} />
+
           {program.blocks.map(block => (
             <div key={block.weekLabel}>
               <div className="flex items-baseline gap-2 mb-2">

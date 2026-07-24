@@ -9,7 +9,7 @@ export function InfoPanel({ title, onClose, children }: InfoPanelProps) {
     <div className="fixed inset-0 z-[60]" onClick={onClose}>
       <div className="absolute inset-0 bg-black/50" />
       <div
-        className="absolute left-3 right-3 bg-elevated rounded-panel shadow-2xl overflow-hidden flex flex-col"
+        className="absolute left-3 right-3 mx-auto max-w-[680px] bg-elevated rounded-panel shadow-2xl overflow-hidden flex flex-col"
         style={{
           top: 'calc(env(safe-area-inset-top) + 12px)',
           bottom: 'calc(env(safe-area-inset-bottom) + 12px)',
